@@ -1,0 +1,272 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 1 1
+Title "Variometer"
+Date "2021-10-15"
+Rev "1.0"
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_ST_STM32F7:STM32F745VETx U?
+U 1 1 6169AFBF
+P 7550 4000
+F 0 "U?" H 8100 1250 50  0000 C CNN
+F 1 "STM32F745VET6" H 8100 1350 50  0000 C CNN
+F 2 "Package_QFP:LQFP-100_14x14mm_P0.5mm" H 6850 1400 50  0001 R CNN
+F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00166116.pdf" H 7550 4000 50  0001 C CNN
+	1    7550 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 616CA8A6
+P 7250 6850
+F 0 "#PWR?" H 7250 6600 50  0001 C CNN
+F 1 "GND" H 7255 6677 50  0000 C CNN
+F 2 "" H 7250 6850 50  0001 C CNN
+F 3 "" H 7250 6850 50  0001 C CNN
+	1    7250 6850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7250 6850 7250 6800
+Wire Wire Line
+	7350 6850 7350 6800
+Wire Wire Line
+	7250 6850 7350 6850
+Connection ~ 7250 6850
+Wire Wire Line
+	7450 6850 7450 6800
+Wire Wire Line
+	7350 6850 7450 6850
+Connection ~ 7350 6850
+Wire Wire Line
+	7550 6850 7550 6800
+Wire Wire Line
+	7450 6850 7550 6850
+Connection ~ 7450 6850
+Wire Wire Line
+	7650 6850 7650 6800
+Wire Wire Line
+	7550 6850 7650 6850
+Connection ~ 7550 6850
+Wire Wire Line
+	7750 6850 7750 6800
+Wire Wire Line
+	7650 6850 7750 6850
+Connection ~ 7650 6850
+$Comp
+L power:+3.3V #PWR?
+U 1 1 616D264B
+P 7250 1250
+F 0 "#PWR?" H 7250 1100 50  0001 C CNN
+F 1 "+3.3V" H 7250 1400 50  0000 C CNN
+F 2 "" H 7250 1250 50  0001 C CNN
+F 3 "" H 7250 1250 50  0001 C CNN
+	1    7250 1250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7250 1250 7250 1300
+Wire Wire Line
+	7250 1250 7350 1250
+Wire Wire Line
+	7350 1250 7350 1300
+Connection ~ 7250 1250
+Wire Wire Line
+	7350 1250 7450 1250
+Wire Wire Line
+	7450 1250 7450 1300
+Connection ~ 7350 1250
+Wire Wire Line
+	7450 1250 7550 1250
+Wire Wire Line
+	7550 1250 7550 1300
+Connection ~ 7450 1250
+Wire Wire Line
+	7550 1250 7650 1250
+Wire Wire Line
+	7650 1250 7650 1300
+Connection ~ 7550 1250
+Wire Wire Line
+	7650 1250 7750 1250
+Wire Wire Line
+	7750 1250 7750 1300
+Connection ~ 7650 1250
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 616D6079
+P 7850 1250
+F 0 "#PWR?" H 7850 1100 50  0001 C CNN
+F 1 "+3.3VA" H 7865 1423 50  0000 C CNN
+F 2 "" H 7850 1250 50  0001 C CNN
+F 3 "" H 7850 1250 50  0001 C CNN
+	1    7850 1250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7850 1250 7850 1300
+Text GLabel 6650 1600 0    50   Input ~ 0
+NRST
+Text GLabel 6650 1800 0    50   Input ~ 0
+BOOT0
+$Comp
+L Device:C_Small C?
+U 1 1 6172E176
+P 6400 2300
+F 0 "C?" H 6492 2346 50  0000 L CNN
+F 1 "2.2uF" H 6492 2255 50  0000 L CNN
+F 2 "" H 6400 2300 50  0001 C CNN
+F 3 "~" H 6400 2300 50  0001 C CNN
+	1    6400 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 6172F04B
+P 6050 2300
+F 0 "C?" H 6142 2346 50  0000 L CNN
+F 1 "2.2uF" H 6100 2250 50  0000 L CNN
+F 2 "" H 6050 2300 50  0001 C CNN
+F 3 "~" H 6050 2300 50  0001 C CNN
+	1    6050 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6400 2100 6650 2100
+$Comp
+L power:GND #PWR?
+U 1 1 61735662
+P 6400 2400
+F 0 "#PWR?" H 6400 2150 50  0001 C CNN
+F 1 "GND" H 6405 2227 50  0000 C CNN
+F 2 "" H 6400 2400 50  0001 C CNN
+F 3 "" H 6400 2400 50  0001 C CNN
+	1    6400 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 61735B37
+P 6050 2400
+F 0 "#PWR?" H 6050 2150 50  0001 C CNN
+F 1 "GND" H 6055 2227 50  0000 C CNN
+F 2 "" H 6050 2400 50  0001 C CNN
+F 3 "" H 6050 2400 50  0001 C CNN
+	1    6050 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPDT SW?
+U 1 1 61737035
+P 4750 2050
+F 0 "SW?" H 4750 2335 50  0000 C CNN
+F 1 "SW_SPDT" H 4750 2244 50  0000 C CNN
+F 2 "" H 4750 2050 50  0001 C CNN
+F 3 "~" H 4750 2050 50  0001 C CNN
+	1    4750 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_Small R?
+U 1 1 61737CBF
+P 4350 2050
+F 0 "R?" V 4250 2050 50  0000 C CNN
+F 1 "10k" V 4450 2050 50  0000 C CNN
+F 2 "" H 4350 2050 50  0001 C CNN
+F 3 "~" H 4350 2050 50  0001 C CNN
+	1    4350 2050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6050 2200 6050 2000
+Wire Wire Line
+	6050 2000 6650 2000
+Wire Wire Line
+	6400 2100 6400 2200
+Wire Wire Line
+	4450 2050 4550 2050
+Text GLabel 4250 2050 0    50   Input ~ 0
+BOOT0
+$Comp
+L power:+3.3V #PWR?
+U 1 1 6173E137
+P 5000 1900
+F 0 "#PWR?" H 5000 1750 50  0001 C CNN
+F 1 "+3.3V" H 5015 2073 50  0000 C CNN
+F 2 "" H 5000 1900 50  0001 C CNN
+F 3 "" H 5000 1900 50  0001 C CNN
+	1    5000 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 1950 5000 1950
+Wire Wire Line
+	5000 1950 5000 1900
+$Comp
+L power:GND #PWR?
+U 1 1 6173ECFA
+P 5000 2200
+F 0 "#PWR?" H 5000 1950 50  0001 C CNN
+F 1 "GND" H 5005 2027 50  0000 C CNN
+F 2 "" H 5000 2200 50  0001 C CNN
+F 3 "" H 5000 2200 50  0001 C CNN
+	1    5000 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 2150 5000 2150
+Wire Wire Line
+	5000 2150 5000 2200
+Text GLabel 6650 3000 0    50   Input ~ 0
+HSE_IN
+Text GLabel 6650 3100 0    50   Input ~ 0
+HSE_OUT
+Text GLabel 8350 5100 2    50   Input ~ 0
+MS5611_MOSI
+Text GLabel 8350 5200 2    50   Input ~ 0
+MS5611_MISO
+Text GLabel 8350 1600 2    50   Input ~ 0
+VBATT_MSR
+Text GLabel 8350 1800 2    50   Input ~ 0
+BLE_TX
+Text GLabel 8350 1900 2    50   Input ~ 0
+BLE_RX
+Text GLabel 8350 2100 2    50   Input ~ 0
+IMU_SCK
+Text GLabel 8350 2200 2    50   Input ~ 0
+IMU_MISO
+Text GLabel 8350 2300 2    50   Input ~ 0
+IMU_MOSI
+Text GLabel 8350 3500 2    50   Input ~ 0
+SDCARD_MOSI
+Text GLabel 6650 4400 0    50   Input ~ 0
+BUZZER_PWM
+Text GLabel 8350 4300 2    50   Input ~ 0
+MS5611_SCK
+Text GLabel 8350 2500 2    50   Input ~ 0
+GPS_TX
+Text GLabel 8350 2600 2    50   Input ~ 0
+GPS_RX
+Text GLabel 8350 2800 2    50   Input ~ 0
+USB_D+
+Text GLabel 8350 2700 2    50   Input ~ 0
+USB_D-
+Text GLabel 8350 2900 2    50   Input ~ 0
+SWDIO
+Text GLabel 8350 3000 2    50   Input ~ 0
+SWCLK
+Text GLabel 8350 6000 2    50   Input ~ 0
+SDCARD_SCK
+Text GLabel 8350 6100 2    50   Input ~ 0
+SDCARD_MISO
+Text GLabel 8350 3600 2    50   Input ~ 0
+SWO
+$EndSCHEMATC
