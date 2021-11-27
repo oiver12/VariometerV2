@@ -1653,7 +1653,7 @@ Connection ~ 5550 3800
 Wire Wire Line
 	5550 3800 5750 3800
 $Comp
-L Vario2_Library:TPS76801QDR U?
+L VariometerV2-rescue:TPS76801QDR-Vario2_Library U?
 U 1 1 61A53EF8
 P 4300 2950
 F 0 "U?" H 4275 3275 50  0000 C CNN
@@ -1666,7 +1666,7 @@ $EndComp
 Wire Wire Line
 	650  1800 2200 1800
 $Comp
-L Vario2_Library:TP4056 IC?
+L VariometerV2-rescue:TP4056-Vario2_Library IC?
 U 1 1 61A54DF9
 P 2200 1250
 F 0 "IC?" H 2175 1815 50  0000 C CNN
@@ -1945,7 +1945,7 @@ SPI1_MISO
 Text GLabel 8350 1350 0    50   Input ~ 0
 SPI1_SCK
 $Comp
-L Vario2_Library:BMI088 U?
+L VariometerV2-rescue:BMI088-Vario2_Library U?
 U 1 1 6198EA40
 P 8750 1550
 F 0 "U?" H 9300 1900 50  0000 C CNN
@@ -2467,7 +2467,7 @@ Wire Wire Line
 	12950 2700 13300 2700
 Connection ~ 13250 1200
 $Comp
-L Vario2_Library:ATGM336H-5N31 U?
+L VariometerV2-rescue:ATGM336H-5N31-Vario2_Library U?
 U 1 1 620A5AC0
 P 11200 5200
 F 0 "U?" H 11075 5865 50  0000 C CNN
@@ -2599,7 +2599,7 @@ Connection ~ 11800 4900
 Wire Wire Line
 	11800 4900 12150 4900
 $Comp
-L Vario2_Library:E104-BT51 U?
+L VariometerV2-rescue:E104-BT51-Vario2_Library U?
 U 1 1 619E049C
 P 6700 5650
 F 0 "U?" H 6975 6775 50  0000 C CNN
@@ -2814,4 +2814,108 @@ Wire Wire Line
 Connection ~ 8600 5700
 Wire Wire Line
 	8600 5700 8600 5750
+Text GLabel 6150 2500 1    50   Input ~ 0
+BATT+
+$Comp
+L Device:R_Small R?
+U 1 1 619C2CC4
+P 6800 2600
+F 0 "R?" V 6700 2600 50  0000 C CNN
+F 1 "1M" H 6905 2600 50  0000 C CNN
+F 2 "" H 6800 2600 50  0001 C CNN
+F 3 "~" H 6800 2600 50  0001 C CNN
+	1    6800 2600
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_Small R?
+U 1 1 619C3D54
+P 6400 3200
+F 0 "R?" V 6300 3200 50  0000 C CNN
+F 1 "10k" H 6505 3200 50  0000 C CNN
+F 2 "" H 6400 3200 50  0001 C CNN
+F 3 "~" H 6400 3200 50  0001 C CNN
+	1    6400 3200
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_Small R?
+U 1 1 619C3321
+P 6400 3550
+F 0 "R?" V 6300 3550 50  0000 C CNN
+F 1 "33k" H 6505 3550 50  0000 C CNN
+F 2 "" H 6400 3550 50  0001 C CNN
+F 3 "~" H 6400 3550 50  0001 C CNN
+	1    6400 3550
+	-1   0    0    1   
+$EndComp
+$Comp
+L Transistor_FET:AO3401A Q?
+U 1 1 619C5BA0
+P 6500 2800
+F 0 "Q?" H 6705 2754 50  0000 L CNN
+F 1 "AO3401A" H 6705 2845 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 6700 2725 50  0001 L CIN
+F 3 "http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf" H 6500 2800 50  0001 L CNN
+	1    6500 2800
+	-1   0    0    1   
+$EndComp
+$Comp
+L Transistor_FET:AO3400A Q?
+U 1 1 61AA11B0
+P 6900 3400
+F 0 "Q?" H 6750 3550 50  0000 L CNN
+F 1 "AO3400A" H 6600 3250 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 7100 3325 50  0001 L CIN
+F 3 "http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf" H 6900 3400 50  0001 L CNN
+	1    6900 3400
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6150 2500 6400 2500
+Wire Wire Line
+	6400 2500 6400 2600
+Wire Wire Line
+	6400 3000 6400 3100
+Wire Wire Line
+	6400 3300 6400 3350
+Text GLabel 6250 3350 0    50   Input ~ 0
+BAT_ADC
+Wire Wire Line
+	6250 3350 6400 3350
+Connection ~ 6400 3350
+Wire Wire Line
+	6400 3350 6400 3450
+Text GLabel 3050 10250 2    50   Input ~ 0
+BAT_MS
+Text GLabel 7100 3400 2    50   Input ~ 0
+BAT_MS
+Wire Wire Line
+	6400 2500 6800 2500
+Connection ~ 6400 2500
+Wire Wire Line
+	6800 2700 6800 2800
+Wire Wire Line
+	6700 2800 6800 2800
+Connection ~ 6800 2800
+Wire Wire Line
+	6800 2800 6800 3200
+$Comp
+L power:GND #PWR?
+U 1 1 61B744F6
+P 6800 3750
+F 0 "#PWR?" H 6800 3500 50  0001 C CNN
+F 1 "GND" H 6805 3577 50  0000 C CNN
+F 2 "" H 6800 3750 50  0001 C CNN
+F 3 "" H 6800 3750 50  0001 C CNN
+	1    6800 3750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6400 3650 6800 3650
+Wire Wire Line
+	6800 3650 6800 3600
+Wire Wire Line
+	6800 3650 6800 3750
+Connection ~ 6800 3650
 $EndSCHEMATC
