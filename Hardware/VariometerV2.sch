@@ -3348,7 +3348,6 @@ F 3 "" H 3650 4450 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4300 7450 4300 7700
-NoConn ~ 1350 7150
 NoConn ~ 1350 7250
 NoConn ~ 1350 7350
 NoConn ~ 1350 7450
@@ -3845,4 +3844,32 @@ Text GLabel 9600 3750 2    50   Input ~ 0
 POW_SW+
 Wire Wire Line
 	1650 2950 2150 2950
+Text GLabel 1350 7150 0    50   Input ~ 0
+Button_Input
+$Comp
+L power:+3.3V #PWR0181
+U 1 1 61C02EA8
+P 7450 7750
+F 0 "#PWR0181" H 7450 7600 50  0001 C CNN
+F 1 "+3.3V" H 7450 7900 50  0000 C CNN
+F 2 "" H 7450 7750 50  0001 C CNN
+F 3 "" H 7450 7750 50  0001 C CNN
+	1    7450 7750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_Push SW3
+U 1 1 61C035A8
+P 7450 7950
+F 0 "SW3" H 7450 8235 50  0000 C CNN
+F 1 "SW_Push" H 7450 8144 50  0000 C CNN
+F 2 "" H 7450 8150 50  0001 C CNN
+F 3 "~" H 7450 8150 50  0001 C CNN
+	1    7450 7950
+	0    -1   -1   0   
+$EndComp
+Text GLabel 7450 8350 0    50   Input ~ 0
+Button_Input
+Wire Wire Line
+	7450 8350 7450 8150
 $EndSCHEMATC
