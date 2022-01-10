@@ -1,7 +1,7 @@
 (export (version D)
   (design
-    (source "C:\\Users\\Oliver Baumgartner\\Documents\\VariometerV2\\VariometerV2\\Hardware\\VariometerV2.sch")
-    (date "08.01.2022 19:01:44")
+    (source C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware\VariometerV2.sch)
+    (date "10/01/2022 23:16:12")
     (tool "Eeschema (5.1.10)-1")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -493,7 +493,7 @@
       (tstamp 61DFEB57))
     (comp (ref R46)
       (value 100k)
-      (footprint Resistor_SMD:R_0402_1005Metric)
+      (footprint Resistor_SMD:R_0805_2012Metric)
       (datasheet ~)
       (libsource (lib Device) (part R_Small) (description "Resistor, small symbol"))
       (sheetpath (names /) (tstamps /))
@@ -1663,7 +1663,7 @@
     (library (logical Transistor_FET)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library/Transistor_FET.lib"))
     (library (logical VariometerV2-rescue)
-      (uri "C:\\Users\\Oliver Baumgartner\\Documents\\VariometerV2\\VariometerV2\\Hardware/VariometerV2-rescue.lib")))
+      (uri C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware/VariometerV2-rescue.lib)))
   (nets
     (net (code 1) (name "Net-(U3-Pad4)")
       (node (ref U3) (pin 4)))
