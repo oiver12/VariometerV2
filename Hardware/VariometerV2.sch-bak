@@ -1256,7 +1256,7 @@ U 1 1 61A364E4
 P 6400 1500
 F 0 "C3" H 6450 1650 50  0000 L CNN
 F 1 "10uF" H 6450 1550 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0201_0603Metric" H 6400 1500 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 6400 1500 50  0001 C CNN
 F 3 "~" H 6400 1500 50  0001 C CNN
 	1    6400 1500
 	1    0    0    -1  
@@ -2438,7 +2438,7 @@ F 3 "~" H 13100 2550 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	13200 2550 14100 2550
+	13200 2550 13450 2550
 Wire Wire Line
 	13850 1650 13850 1450
 Wire Wire Line
@@ -2572,17 +2572,6 @@ Wire Wire Line
 	12750 2350 13350 2350
 Wire Wire Line
 	13400 4050 13450 4050
-Wire Wire Line
-	13450 4050 13450 3050
-Wire Wire Line
-	13450 3050 12800 3050
-Wire Wire Line
-	12800 3050 12800 2550
-Wire Wire Line
-	12800 2550 13000 2550
-Wire Wire Line
-	12550 2550 12800 2550
-Connection ~ 12800 2550
 Wire Wire Line
 	12550 2750 13550 2750
 Connection ~ 13600 2750
@@ -3553,7 +3542,7 @@ U 1 1 6259759B
 P 5800 7100
 F 0 "J3" H 5772 6982 50  0000 R CNN
 F 1 "Conn_01x02_Male" H 5772 7073 50  0000 R CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 5800 7100 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 5800 7100 50  0001 C CNN
 F 3 "~" H 5800 7100 50  0001 C CNN
 	1    5800 7100
 	-1   0    0    1   
@@ -3886,4 +3875,11 @@ F 3 "~" H 7850 1300 50  0001 C CNN
 	1    7850 1300
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	12550 2550 13000 2550
+Wire Wire Line
+	13450 2550 13450 4050
+Connection ~ 13450 2550
+Wire Wire Line
+	13450 2550 14100 2550
 $EndSCHEMATC

@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source "C:\\Users\\Oliver Baumgartner\\Documents\\VariometerV2\\VariometerV2\\Hardware\\VariometerV2.sch")
-    (date "02.01.2022 16:00:58")
+    (date "08.01.2022 19:01:44")
     (tool "Eeschema (5.1.10)-1")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -840,7 +840,7 @@
       (tstamp 61E50C19))
     (comp (ref J3)
       (value Conn_01x02_Male)
-      (footprint Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical)
+      (footprint Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical)
       (datasheet ~)
       (libsource (lib Connector) (part Conn_01x02_Male) (description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (sheetpath (names /) (tstamps /))

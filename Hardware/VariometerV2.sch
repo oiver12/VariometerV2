@@ -3542,7 +3542,7 @@ U 1 1 6259759B
 P 5800 7100
 F 0 "J3" H 5772 6982 50  0000 R CNN
 F 1 "Conn_01x02_Male" H 5772 7073 50  0000 R CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 5800 7100 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 5800 7100 50  0001 C CNN
 F 3 "~" H 5800 7100 50  0001 C CNN
 	1    5800 7100
 	-1   0    0    1   
