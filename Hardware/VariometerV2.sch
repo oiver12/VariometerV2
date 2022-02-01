@@ -1836,7 +1836,7 @@ U 1 1 61E8EFDB
 P 7950 9700
 F 0 "J7" H 7912 10014 50  0000 C CNN
 F 1 "5-1814832-1" H 8000 9950 50  0000 C CNN
-F 2 "Hardware:5-1814832-1" H 7950 9700 50  0001 L BNN
+F 2 "Hardware:518148322" H 7950 9700 50  0001 L BNN
 F 3 "https://www.te.com/usa-en/product-518148321.html?te_bu=Cor&te_type=disp&te_campaign=seda_glo_cor-seda-global-disp-prtnr-fy19-seda-model-bom-cta_sma-317_1&elqCampaignId=32493" H 7950 9700 50  0001 L BNN
 F 4 "TE Connectivity" H 7950 9700 50  0001 L BNN "Field4"
 F 5 "SMA/QMA socket 50 Ohm | TE Connectivity 518148321 _SMA/QMA socket 50 Ohm RF Connectors_." H 7950 9700 50  0001 L BNN "Field5"
