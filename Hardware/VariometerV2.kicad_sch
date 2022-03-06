@@ -8984,7 +8984,7 @@
 
   (symbol (lib_id "Connector:TestPoint") (at 309.88 222.25 180) (unit 1)
     (in_bom yes) (on_board yes)
-    (uuid 6b97376a-d7c1-4412-b853-63c06d539300)
+    (uuid 6b97376a-d7c1-4412-b853-63c06d539301)
     (property "Reference" "TP9" (id 0) (at 308.483 226.4605 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
@@ -8997,7 +8997,7 @@
     (property "Datasheet" "~" (id 3) (at 304.8 222.25 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 8c8d0a48-ae57-42b5-bb71-51a4ec07bb73))
+    (pin "1" (uuid 8c8d0a48-ae57-42b5-bb71-51a4ec07bb74))
   )
 
   (symbol (lib_id "power:PWR_FLAG") (at 130.81 170.18 0) (unit 1)
@@ -9682,7 +9682,7 @@
     (path "/7e4da2fe-d052-41d6-86e4-85591fcb004a"
       (reference "TP8") (unit 1) (value "TP_SPI1_SCK") (footprint "TestPoint:TestPoint_Pad_D1.0mm")
     )
-    (path "/6b97376a-d7c1-4412-b853-63c06d539300"
+    (path "/6b97376a-d7c1-4412-b853-63c06d539301"
       (reference "TP9") (unit 1) (value "TP_SPI1_MOSI") (footprint "TestPoint:TestPoint_Pad_D1.0mm")
     )
     (path "/0b0bcab2-304e-4ffd-a333-72d9f6501e25"
