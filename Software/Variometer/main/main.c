@@ -2,6 +2,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/spi_master.h"
+#include "MS5611.h"
+#include <esp_log.h>
 
 #define Button_Input 4
 
@@ -38,10 +40,12 @@
 #define BUZZ_1 1
 #define BUZZ_2 2
 
+static const char *TAG = "main";
+
 void app_main(void)
 {
+    //Initialize SPI for MS5611 and BMI088
     esp_err_t ret;
-    spi_device_handle_t spi;
     spi_bus_config_t spi1cfg={
         .miso_io_num=SPI1_MISO,
         .mosi_io_num=SPI1_MOSI,
@@ -50,4 +54,20 @@ void app_main(void)
         .quadhd_io_num=-1,
         .max_transfer_sz=4092
     };
+    ret = spi_bus_initialize(SPI2_HOST, &spi1cfg, SPI_DMA_CH_AUTO);
+    ESP_ERROR_CHECK(ret);
+    ESP_LOGI(TAG, "Initialized SPI1");
+    //Initialize MS5611
+    spi_device_handle_t ms5611_spi_handle;
+    spi_device_interface_config_t ms5611_spi_cfg = {
+        .clock_speed_hz = 10*1000*1000, //10 MHz
+        .mode = 0,
+        .queue_size = 7, 
+        .spics_io_num = PresSens_CS
+    };
+    ret = spi_bus_add_device(SPI2_HOST, &ms5611_spi_cfg, &ms5611_spi_handle);
+    ESP_ERROR_CHECK(ret);
+    ms5611_t ms;
+    ms5611_init(&ms, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
+    ms5611_get_sensor_data(&ms);
 }
