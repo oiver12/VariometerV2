@@ -115,6 +115,40 @@ esp_err_t ms5611_get_sensor_data(ms5611_t *dev)
     ESP_ERROR_CHECK(send_command(dev, MS5611_CMD_CONVERT_D1 + dev->osrTemperature));
     wait_conversion(dev->osrTemperature);
     ESP_ERROR_CHECK(read_adc(dev, &raw_temperature));
+    //compensate Pressure
+    int32_t dt = raw_temperature - ((int32_t)dev->config_data.t_ref << 8);
+    int64_t temp = (2000 + (int64_t)dt * dev->config_data.tempsens / 8388608);
+    int64_t off = (int64_t)((int64_t)dev->config_data.off * 65536)+ (((int64_t)dev->config_data.tco * dt) / 128);
+    int64_t sens = (int64_t)(((int64_t)dev->config_data.sens) * 32768)+ (((int64_t)dev->config_data.tcs * dt) / 256);
+    // Set defaults for temp >= 2000
+    int64_t t_2 = 0;
+    int64_t off_2 = 0;
+    int64_t sens_2 = 0;
+    int64_t help = 0;
+    if (temp < 2000)
+    {
+        // Low temperature
+        t_2 = ((dt * dt) >> 31); // T2 = dT^2/2^31
+        help = (temp - 2000);
+        help = 5 * help * help;
+        off_2 = help >> 1;       // OFF_2  = 5 * (TEMP - 2000)^2/2^1
+        sens_2 = help >> 2;      // SENS_2 = 5 * (TEMP - 2000)^2/2^2
+        if (temp < -1500)
+        {
+            // Very low temperature
+            help = (temp + 1500);
+            help = help * help;
+            off_2 = off_2 + 7 * help;             // OFF_2  = OFF_2 + 7 * (TEMP + 1500)^2
+            sens_2 = sens_2 + ((11 * help) >> 1); // SENS_2 = SENS_2 + 7 * (TEMP + 1500)^2/2^1
+        }
+    }
+    temp = temp - t_2;
+    off = off - off_2;
+    sens = sens - sens_2;
+    // Temperature compensated pressure (10...1200mbar with 0.01mbar resolution
+    // P = digital pressure value  * SENS - OFF = (D1 * SENS/2^21 -OFF)/2^15
+    dev->Pressure = (int32_t)(((int64_t)raw_pressure * (sens / 0x200000) - off) / 32768);
+    dev->Temperature = (float)temp / 100.0;
     return ESP_OK;
 }
 
