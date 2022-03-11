@@ -32,7 +32,7 @@ static inline esp_err_t read_Bytes(ms5611_t *dev, const uint8_t addr, size_t siz
 {
     spi_transaction_t transaction;
     memset(&transaction, 0, sizeof(transaction));
-    transaction.addr = addr;
+    transaction.addr = addr | 0x80;
     transaction.length = size * 8;
     transaction.rxlength = size * 8;
     transaction.user = NULL;
