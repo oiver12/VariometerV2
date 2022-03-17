@@ -3,15 +3,20 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "driver/spi_master.h"
+#include "driver/i2c.h"
 #include <esp_log.h>
+#include <math.h>
 #include "MS5611.h"
 #include "BMI088.h"
 #include "nmea_parser.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
 
+#define USEI2C
+
 #define Button_Input 4
 
+#ifndef USEI2C
 #define SPI1_MOSI 11
 #define SPI1_SCK 12
 #define SPI1_MISO 13
@@ -22,6 +27,12 @@
 #define GYR_INT 7
 
 #define PresSens_CS 10
+
+#else
+#define I2C_SDA 10
+#define I2C_SCL 12
+#define IMU_ACC_CS 13
+#endif
 
 #define SPI2_MOSI 35
 #define SPI2_SCK 36
@@ -45,9 +56,15 @@
 #define BUZZ_1 1
 #define BUZZ_2 2
 
+#define R_SPECIFIC 287.053
+#define GRAVITY_G 9.80665
+#define TEMPGRAD_L 0.0065
 
+/* Kalman Filter */
 float ms5611_stnd_height = 0.1298; //Standardabweichung Höhenmessung
 float bmi088_stnd_acc = 0.0069; //Standardabweichung Beschleunigungssensor
+TaskHandle_t TaskKalmanFilter_Handle; //zum ensperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
+
 /* GPS */
 #define TIME_ZONE (+1)   //Schweiz
 #define YEAR_BASE (2000) //date in GPS starts from 2000
@@ -55,28 +72,58 @@ float bmi088_stnd_acc = 0.0069; //Standardabweichung Beschleunigungssensor
 static const char *TAG = "main";
 
 typedef struct {
+    float height;
     float velocity;
     float accX;
-    float q[4];
 } vario_state_t;
 
+//wird gesetzt in TaskKalmanFilter!
 vario_state_t vario_state;
+SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
+
+float startPressure;
+float startTemperature;
+float pressure; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
+float temperature;
+SemaphoreHandle_t pressure_temperature_Mutex = NULL;
+
+volatile bool hasMeasuredStartPressure = false;
 
 /* Sensoren */
-ms5611_t MS5611_Data; //nur von TaskMeasureHeight benutzen!
+#ifndef USEI2C
 spi_device_handle_t ms5611_spi_handle; //nur von TaskMeasureHeight benutzen!
 
 spi_device_handle_t acc_spi_handle; //nur von TaskMeasureAcc benutzen!
 spi_device_handle_t gyro_spi_handle; //nur von TaskMeasureAcc benutzen!
-SemaphoreHandle_t vario_state_Mutex = NULL;
+#endif
 QueueHandle_t measuredAccMessage = NULL; //speichert Acc Data in einer Queue, damit dann ausgelesen werden kann, wenn Luftdruckdaten zur verfügung stehen
 
 void TaskMeasureHeight(void *parameters)
 {
+    ms5611_t MS5611_Data;
     ms5611_init(&MS5611_Data, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
+    startPressure = 0;
+    startTemperature = 0;
+    for (size_t i = 0; i < 10; i++)
+    {
+        ms5611_get_sensor_data(&MS5611_Data);
+        startPressure += MS5611_Data.Pressure;
+        startTemperature += MS5611_Data.Temperature;
+    }
+    startPressure /= 10;
+    startTemperature /= 10;
+    hasMeasuredStartPressure = true;
     while(1)
     {
         ms5611_get_sensor_data(&MS5611_Data);
+        xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
+        {
+            pressure = MS5611_Data.Pressure;
+            temperature = MS5611_Data.Temperature;
+        }
+        xSemaphoreGive(pressure_temperature_Mutex);
+        //notify Kalman Filter of new Pressure Reading
+        xTaskNotifyGive(TaskKalmanFilter_Handle);
     }
     vTaskDelete(NULL);
 }
@@ -91,18 +138,19 @@ IRAM_ATTR void bmiISR(TaskHandle_t taskHandle)
 
 void TaskMeasureAcc(void *parameters)
 {
+    //wait till StartPressure has read
+    while(!hasMeasuredStartPressure){
+        vTaskDelay(2 / portTICK_PERIOD_MS);
+    }
+    float rotation[4]; //Nur benutzen in TaskMeasureAcc
     bmi088_t BMI088_Data;
     bmi088_init(&BMI088_Data, acc_spi_handle, IMU_ACC_CS, gyro_spi_handle, IMU_GYR_CS);
     QuaternionFilter_init();
     //reset Rotation
-    xSemaphoreTake(vario_state_Mutex, portMAX_DELAY);
-    {
-        vario_state.q[0] = 1.0f;
-        vario_state.q[1] = 0.0f;
-        vario_state.q[2] = 0.0f;
-        vario_state.q[3] = 0.0f;
-    }
-    xSemaphoreGive(vario_state_Mutex);
+    rotation[0] = 1.0f;
+    rotation[1] = 0.0f;
+    rotation[2] = 0.0f;
+    rotation[3] = 0.0f;
     // Setup Interrupt
     gpio_config_t gpio_config_int_bmi = {
         .pin_bit_mask = (uint64_t) 0x1 << ACC_INT,
@@ -111,8 +159,11 @@ void TaskMeasureAcc(void *parameters)
         .pull_down_en = GPIO_PULLDOWN_ENABLE,
         .intr_type    = GPIO_INTR_POSEDGE  //
     };
+    //set Acc Pin as Interrupt 
+    //TODO: nur AccelPin wir als Interrupt benutzt. Vielleicht auch Gyro benutzen?
     gpio_config(&gpio_config_int_bmi);
     gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
     gpio_isr_handler_add((gpio_num_t) ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
     float lastTime = esp_timer_get_time();
     while(1)
@@ -127,19 +178,13 @@ void TaskMeasureAcc(void *parameters)
         bmi088_ReadGyroskop(&BMI088_Data);
         float deltaT = esp_timer_get_time() - lastTime;
         lastTime = esp_timer_get_time();
-        float accX = 0;
-        xSemaphoreTake(vario_state_Mutex, portMAX_DELAY);
+        /* Update Orientation */
+        QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0], BMI088_Data.acc_mps2[1], BMI088_Data.acc_mps2[2], BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
+        /* Calculate global Acc in X Direction */
+        float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
+        if(xQueueSend(measuredAccMessage, &accX, 0) != pdTRUE)
         {
-            /* Update Orientation */
-            QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0], BMI088_Data.acc_mps2[1], BMI088_Data.acc_mps2[2], BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, vario_state.q);
-            /* Calculate global Acc in X Direction */
-            accX = (2*(vario_state.q[1]*vario_state.q[3] - vario_state.q[0]*vario_state.q[2])) * -BMI088_Data.acc_mps2[0] + (2*(vario_state.q[2]*vario_state.q[3]+vario_state.q[0]*vario_state.q[1])) * BMI088_Data.acc_mps2[1] + (2*(vario_state.q[0]*vario_state.q[0]+vario_state.q[3]*vario_state.q[3]) -1)*BMI088_Data.acc_mps2[2];
-            vario_state.accX = accX;
-        };
-        xSemaphoreGive(vario_state_Mutex);
-        if(xQueueSend(measuredAccMessage, &accX, portMAX_DELAY) != pdTRUE)
-        {
-            ESP_LOGI(TAG, "Queue full");
+            ESP_LOGI(TAG, "Queue full. Acc Daten verloren");
         }
     }
     vTaskDelete(NULL);
@@ -147,9 +192,13 @@ void TaskMeasureAcc(void *parameters)
 
 void TaskKalmanFilter(void *parameters)
 {
+    //wait till StartPressure has read
+    while(!hasMeasuredStartPressure){
+        vTaskDelay(2 / portTICK_PERIOD_MS);
+    }
     kalman_t kf;
     kalman_filter_init(&kf);
-    float deltaT = 30 / 1000; //alle 30ms
+    float deltaT = 0.025;
     /* Set State Transition Matrix */
     /* F = 1 t
            0 1 */
@@ -197,8 +246,62 @@ void TaskKalmanFilter(void *parameters)
     matrix_t *x = &kf.x;
     matrix_set(x, 0, 0, 0);
     matrix_set(x, 1, 0, 0);
-    kalman_update(&kf);
     kalman_predict(&kf);
+    matrix_t *z = &kf.z;
+    float lastTime = esp_timer_get_time();
+    while(1)
+    {
+        //wait for new Result from Pressure Sensor
+        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if (notificationValue > 1) {
+            ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
+            continue;
+        }
+        float heightDifferenz;
+        xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
+        {
+            heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L)*(pow(pressure / startPressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
+        }
+        xSemaphoreGive(pressure_temperature_Mutex);
+        float acc = 0;
+        float accSum = 0;
+        int i = 0;
+        //TODO: ist Mean am besten?
+        //read Acc Queue till its empty and compute mean from Acc
+        while(xQueueReceive(measuredAccMessage, &acc, 0) == pdPASS )
+        {
+            accSum += acc;
+            i++;
+        }
+        acc = accSum / i;
+        if(i == 0)
+        {
+            ESP_LOGI(TAG, "Had no Acc Readings in Queue");
+        }
+
+        deltaT = esp_timer_get_time() - lastTime;
+        /* Set Q with new deltaT */
+        matrix_set(Q, 0, 0, ((deltaT*deltaT*deltaT*deltaT)/4)*bmi088_stnd_acc*bmi088_stnd_acc);
+        matrix_set(Q, 0, 1, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
+        matrix_set(Q, 1, 0, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
+        matrix_set(Q, 1, 1, (deltaT*deltaT)*bmi088_stnd_acc*bmi088_stnd_acc);
+        /* Set G with new deltaT */
+        matrix_set(G, 0, 0, 0.5*deltaT*deltaT);
+        matrix_set(G, 1, 0, deltaT);
+        /* Set F with new deltaT */
+        matrix_set(F, 0, 0, 1);
+        matrix_set(F, 0, 1, deltaT);
+        matrix_set(F, 1, 0, 0);
+        matrix_set(F, 1, 1, 1);
+        /* Set z measurement */
+        matrix_set(z, 0, 0, heightDifferenz);
+        /* Set Input */
+        matrix_set(u, 0, 0, acc - 9.81);
+        kalman_update(&kf);
+        kalman_predict(&kf);
+        lastTime = esp_timer_get_time();
+    }
+    vTaskDelete(NULL);
 } 
 
 static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -229,7 +332,10 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
 void app_main(void)
 {
     vario_state_Mutex = xSemaphoreCreateMutex();
-    measuredAccMessage = xQueueCreate(10, sizeof(float));
+    pressure_temperature_Mutex = xSemaphoreCreateMutex();
+    measuredAccMessage = xQueueCreate(20, sizeof(float));
+
+    #ifndef USEI2C
     /* Initialize SPI for MS5611 and BMI088 */
     spi_bus_config_t spi1cfg={
         .miso_io_num=SPI1_MISO,
@@ -267,10 +373,14 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-
+    #else
+    #endif
     /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
     gps_config.uart.rx_pin = USART2_RX;
     nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config);
     nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
+    
+    /* Start Kalman Filter Task (High Priority)*/
+    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
 }

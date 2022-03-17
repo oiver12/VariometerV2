@@ -45,19 +45,19 @@ void kalman_update(kalman_t *kf)
     matrix_t *RESTRICT const x = &kf->x;
 
     // temporaries
-    matrix_data_t *RESTRICT const aux = &kf->temporary.aux;
+    matrix_data_t *RESTRICT const aux = kf->temporary.aux;
     matrix_t *RESTRICT const Sinv = &kf->temporary.S_inv;
     matrix_t *RESTRICT const temp_HP = &kf->temporary.HP;
     matrix_t *RESTRICT const temp_KH = &kf->temporary.KH;
     matrix_t *RESTRICT const temp_KHP = &kf->temporary.KHP;
     matrix_t *RESTRICT const temp_PHt = &kf->temporary.PHt;
-    matrix_t *RESTRICT const temp_KHtP = &kf->temporary.KHtP_Buffer;
+    matrix_t *RESTRICT const temp_KHtP = &kf->temporary.KHtP;
     const matrix_t *RESTRICT const temp_identity = & kf->temporary.identity;
 
     /*******************************************/
     /*  K = P*H'*(H*P*H'+R)^-1                 */
     /*******************************************/
-    //TODO vereinfachen: nur ein PH'
+    //TODO: vereinfachen: nur ein PH'
     // S = H*P*H' + R
     matrix_mult(H, P, temp_HP, aux);            // temp_HP = H*P
     matrix_mult_transb(temp_HP, H, S);         // S = temp_HP*H'
@@ -100,7 +100,7 @@ void kalman_predict(kalman_t *kf)
     const matrix_t *RESTRICT const Q = &kf->Q;
 
     // temporaries
-    matrix_data_t *RESTRICT const aux = &kf->temporary.aux;
+    matrix_data_t *RESTRICT const aux = kf->temporary.aux;
     matrix_t *RESTRICT const xtemp = &kf->temporary.xtemp;
     matrix_t *RESTRICT const temp_Gu = &kf->temporary.Gu;
     matrix_t *RESTRICT const temp_FP = &kf->temporary.KHP;

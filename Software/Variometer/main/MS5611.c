@@ -3,6 +3,7 @@
 #include <string.h>
 #include "freertos/task.h"
 #include <esp_log.h>
+#include "freertos/semphr.h"
 
 static const char *TAG = "MS5611";
 
@@ -76,9 +77,19 @@ static esp_err_t read_Prom(ms5611_t *dev, uint8_t addr, uint16_t *result)
     return *result == 0 ? ESP_ERR_INVALID_RESPONSE : ESP_OK;
 }
 
+#ifndef USEI2C
 esp_err_t ms5611_init(ms5611_t *dev, spi_device_handle_t spi_handle, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature)
+#else
+esp_err_t ms5611_init(ms5611_t *dev, SemaphoreHandle_t i2c_Mutex, int I2C_Master_Num, uint8_t ms5611_i2c_addr, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature)
+#endif
 {
+    #ifndef USEI2C
     dev->spi_handle = spi_handle;
+    #else
+    dev->i2c_Mutex = i2c_Mutex;
+    dev->I2C_Master_Num = I2C_Master_Num;
+    dev->ms5611_i2c_addr = ms5611_i2c_addr;
+    #endif
     dev->osrPressure = osrPressure;
     dev->osrTemperature = osrTemperature;
     //reset MS5611
