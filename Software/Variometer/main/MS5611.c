@@ -1,9 +1,12 @@
 #include "MS5611.h"
+#include "driver/i2c.h"
 #include <driver/spi_master.h>
 #include <string.h>
 #include "freertos/task.h"
 #include <esp_log.h>
 #include "freertos/semphr.h"
+
+#define I2C_MASTER_TIMEOUT_MS       1000
 
 static const char *TAG = "MS5611";
 
@@ -21,16 +24,27 @@ static const char *TAG = "MS5611";
 
 static inline esp_err_t send_command(ms5611_t *dev, const uint8_t cmd)
 {
+    #ifndef USEI2C
     spi_transaction_t t;
     memset(&t, 0, sizeof(t));
     t.length=8;    
     t.tx_buffer=&cmd;            
     t.user=(void*)0;  
     return spi_device_polling_transmit(dev->spi_handle, &t);   
+    #else
+    esp_err_t err = ESP_ERR_TIMEOUT;
+    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
+    {
+        err = i2c_master_write_to_device(dev->I2C_Master_Num, dev->ms5611_i2c_addr, &cmd, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    }
+    xSemaphoreGive(*(dev->i2c_Mutex));
+    return err;
+    #endif
 }
 
 static inline esp_err_t read_Bytes(ms5611_t *dev, const uint8_t addr, size_t size, uint8_t *data)
 {
+    #ifndef USEI2C
     spi_transaction_t transaction;
     memset(&transaction, 0, sizeof(transaction));
     transaction.addr = addr | 0x80;
@@ -40,6 +54,15 @@ static inline esp_err_t read_Bytes(ms5611_t *dev, const uint8_t addr, size_t siz
     transaction.tx_buffer = NULL;
     transaction.rx_buffer = data;
     return spi_device_polling_transmit(dev->spi_handle, &transaction);
+    #else
+    esp_err_t err = ESP_ERR_TIMEOUT;
+    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
+    {
+        err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->ms5611_i2c_addr, &addr, 1, data, size, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    }
+    xSemaphoreGive(*(dev->i2c_Mutex));
+    return err;
+    #endif
 }
 
 static inline uint16_t shuffle(uint16_t val)
@@ -79,13 +102,11 @@ static esp_err_t read_Prom(ms5611_t *dev, uint8_t addr, uint16_t *result)
 
 #ifndef USEI2C
 esp_err_t ms5611_init(ms5611_t *dev, spi_device_handle_t spi_handle, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature)
-#else
-esp_err_t ms5611_init(ms5611_t *dev, SemaphoreHandle_t i2c_Mutex, int I2C_Master_Num, uint8_t ms5611_i2c_addr, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature)
-#endif
 {
-    #ifndef USEI2C
     dev->spi_handle = spi_handle;
-    #else
+#else
+esp_err_t ms5611_init(ms5611_t *dev, SemaphoreHandle_t *i2c_Mutex, int I2C_Master_Num, uint8_t ms5611_i2c_addr, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature)
+{
     dev->i2c_Mutex = i2c_Mutex;
     dev->I2C_Master_Num = I2C_Master_Num;
     dev->ms5611_i2c_addr = ms5611_i2c_addr;

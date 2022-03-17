@@ -36,7 +36,7 @@ typedef struct
     #ifndef USEI2C
     spi_device_handle_t spi_handle;
     #else
-    SemaphoreHandle_t i2c_Mutex;
+    SemaphoreHandle_t *i2c_Mutex;
     int I2C_Master_Num;
     uint8_t ms5611_i2c_addr;
     #endif
@@ -50,7 +50,7 @@ typedef struct
 #ifndef USEI2C
 esp_err_t ms5611_init(ms5611_t *dev, spi_device_handle_t spi_handle, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature);
 #else
-esp_err_t ms5611_init(ms5611_t *dev, SemaphoreHandle_t i2c_Mutex, int I2C_Master_Num, uint8_t ms5611_i2c_addr, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature);
+esp_err_t ms5611_init(ms5611_t *dev, SemaphoreHandle_t *i2c_Mutex, int I2C_Master_Num, uint8_t ms5611_i2c_addr, ms5611_osr_t osrPressure, ms5611_osr_t osrTemperature);
 #endif
 esp_err_t ms5611_get_sensor_data(ms5611_t *dev);
 

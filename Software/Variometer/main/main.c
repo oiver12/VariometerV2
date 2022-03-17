@@ -29,9 +29,11 @@
 #define PresSens_CS 10
 
 #else
+#define I2C_MASTER_FREQ_HZ 400000     
 #define I2C_SDA 10
 #define I2C_SCL 12
-#define IMU_ACC_CS 13
+#define ACC_INT 13
+#define i2c_master_port 0
 #endif
 
 #define SPI2_MOSI 35
@@ -95,13 +97,19 @@ spi_device_handle_t ms5611_spi_handle; //nur von TaskMeasureHeight benutzen!
 
 spi_device_handle_t acc_spi_handle; //nur von TaskMeasureAcc benutzen!
 spi_device_handle_t gyro_spi_handle; //nur von TaskMeasureAcc benutzen!
+#else
+SemaphoreHandle_t sensor_i2c_Mutex = NULL;
 #endif
 QueueHandle_t measuredAccMessage = NULL; //speichert Acc Data in einer Queue, damit dann ausgelesen werden kann, wenn Luftdruckdaten zur verfügung stehen
 
 void TaskMeasureHeight(void *parameters)
 {
     ms5611_t MS5611_Data;
+    #ifndef USEI2C
     ms5611_init(&MS5611_Data, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
+    #else
+    ms5611_init(&MS5611_Data, &sensor_i2c_Mutex, i2c_master_port, 0x77,  MS5611_OSR_256, MS5611_OSR_256);
+    #endif
     startPressure = 0;
     startTemperature = 0;
     for (size_t i = 0; i < 10; i++)
@@ -144,7 +152,11 @@ void TaskMeasureAcc(void *parameters)
     }
     float rotation[4]; //Nur benutzen in TaskMeasureAcc
     bmi088_t BMI088_Data;
+    #ifndef USEI2C
     bmi088_init(&BMI088_Data, acc_spi_handle, IMU_ACC_CS, gyro_spi_handle, IMU_GYR_CS);
+    #else
+    bmi088_init(&BMI088_Data, &sensor_i2c_Mutex, i2c_master_port, 0x18, 0x68);
+    #endif
     QuaternionFilter_init();
     //reset Rotation
     rotation[0] = 1.0f;
@@ -374,6 +386,20 @@ void app_main(void)
     ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
     #else
+    sensor_i2c_Mutex = xSemaphoreCreateMutex();
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = I2C_SDA,
+        .scl_io_num = I2C_SCL,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    };
+    i2c_param_config(i2c_master_port, &conf);
+    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf.mode, 0, 0, 0));
+
+    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
+    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
     #endif
     /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
