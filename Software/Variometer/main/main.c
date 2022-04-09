@@ -11,6 +11,10 @@
 #include "nmea_parser.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+#include <sys/unistd.h>
+#include <sys/stat.h>
 
 #define USEI2C
 
@@ -38,10 +42,11 @@
 
 #define SPI2_MOSI 35
 #define SPI2_SCK 36
-#define SPI2_MSIO 37
+#define SPI2_MISO 37
 
 #define SDCARD_CS 38
 #define SDCARD_DETECT 45
+#define SDCARD_MOUNT_POINT "/sdcard"
 
 #define LCD_CS 48
 #define LCD_DS 47
@@ -79,7 +84,6 @@ typedef struct {
     float accX;
 } vario_state_t;
 
-//wird gesetzt in TaskKalmanFilter!
 vario_state_t vario_state;
 SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
 
@@ -291,7 +295,7 @@ void TaskKalmanFilter(void *parameters)
             ESP_LOGI(TAG, "Had no Acc Readings in Queue");
         }
 
-        deltaT = esp_timer_get_time() - lastTime;
+        deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         /* Set Q with new deltaT */
         matrix_set(Q, 0, 0, ((deltaT*deltaT*deltaT*deltaT)/4)*bmi088_stnd_acc*bmi088_stnd_acc);
         matrix_set(Q, 0, 1, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
@@ -311,6 +315,13 @@ void TaskKalmanFilter(void *parameters)
         matrix_set(u, 0, 0, acc - 9.81);
         kalman_update(&kf);
         kalman_predict(&kf);
+        xSemaphoreTake(vario_state_Mutex, portMAX_DELAY);
+        {
+            vario_state.accX = acc;
+            vario_state.height = heightDifferenz; //TODO: add startHeight
+            vario_state.velocity = matrix_get(x, 1, 0);
+        }
+        xSemaphoreGive(vario_state_Mutex);
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
@@ -341,6 +352,13 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
     }
 }
 
+void TaskSDCard(void *pvParameters)
+{
+    sdmmc_card_t *card = (sdmmc_card_t *)pvParameters;
+    sdmmc_card_print_info(stdout, card);
+
+}
+
 void app_main(void)
 {
     vario_state_Mutex = xSemaphoreCreateMutex();
@@ -357,7 +375,7 @@ void app_main(void)
         .quadhd_io_num=-1,
         .max_transfer_sz=4092
     };
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
+    ESP_ERROR_CHECK(spi_bus_initialize(SPI1_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
     ESP_LOGI(TAG, "Initialized SPI1");
     /* Add MS5611 to SPI */
     spi_device_interface_config_t ms5611_spi_cfg = {
@@ -366,7 +384,7 @@ void app_main(void)
         .queue_size = 7, 
         .spics_io_num = PresSens_CS
     };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
+    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
 
     /* Add BMI088 to SPI */
@@ -376,14 +394,14 @@ void app_main(void)
         .queue_size = 7,
         .spics_io_num = IMU_ACC_CS
     };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &bmi088_acc_spi_cfg, &acc_spi_handle));
+    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_acc_spi_cfg, &acc_spi_handle));
     spi_device_interface_config_t bmi088_gyr_spi_cfg = {
         .clock_speed_hz = 10*1000*1000,
         .mode = 0,
         .queue_size = 7,
         .spics_io_num = IMU_GYR_CS
     };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
+    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
     #else
     sensor_i2c_Mutex = xSemaphoreCreateMutex();
@@ -409,4 +427,63 @@ void app_main(void)
     
     /* Start Kalman Filter Task (High Priority)*/
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
+    /* Configure SDCard */
+    //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
+    gpio_config_t sdcard_detect_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
+        .pull_down_en = 0,
+        .pull_up_en = 0
+    };
+    gpio_config(&sdcard_detect_conf);
+    int sdCardLevel = gpio_get_level(SDCARD_DETECT);
+    if(sdCardLevel != 1)
+    {
+        //TODO: Was nun machen?
+        ESP_LOGI(TAG, "No SD Card detected!");
+    }
+    else if(sdCardLevel == 1)
+    {
+        ESP_LOGI(TAG, "SD Card detected!");
+    }
+    esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
+        .format_if_mount_failed = true,
+        .max_files = 5,
+        .allocation_unit_size = 16 * 1024
+    };
+    sdmmc_card_t *card;
+    ESP_LOGI(TAG, "Initialized SD Card");
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.slot = SPI2_HOST;
+    spi_bus_config_t spi2cfg={
+        .miso_io_num=SPI2_MISO,
+        .mosi_io_num=SPI2_MOSI,
+        .sclk_io_num=SPI2_SCK,
+        .quadwp_io_num=-1,
+        .quadhd_io_num=-1,
+        .max_transfer_sz=4000
+    };
+    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
+    ESP_LOGI(TAG, "Initialized SPI2");
+    sdspi_device_config_t slot_config ={ 
+        .host_id   = SPI2_HOST, 
+        .gpio_cs   = SDCARD_CS, 
+        .gpio_cd   = SDSPI_SLOT_NO_CD, 
+        .gpio_wp   = SDSPI_SLOT_NO_WP, 
+        .gpio_int  = GPIO_NUM_NC};
+    ESP_LOGI(TAG, "Mounting filesystem");
+    //TODO: schlechte Funktion oder so da kein Error Handling
+    esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
+    if (ret != ESP_OK) {
+        if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount filesystem. "
+                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        } else {
+            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
+                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+        }
+    }
+    ESP_LOGI(TAG, "Filesystem mounted");
+    xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);
 }
