@@ -329,6 +329,7 @@ void TaskKalmanFilter(void *parameters)
 
 static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+    //TODO: GNZDA kann ignoriert werden
     gps_t *gps = NULL;
     switch (event_id) {
     case GPS_UPDATE:
@@ -359,131 +360,141 @@ void TaskSDCard(void *pvParameters)
 
 }
 
+void PrintTask(void *params)
+{
+    while(1)
+    {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "TestLog");
+    }
+}
+
 void app_main(void)
 {
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     measuredAccMessage = xQueueCreate(20, sizeof(float));
 
-    #ifndef USEI2C
-    /* Initialize SPI for MS5611 and BMI088 */
-    spi_bus_config_t spi1cfg={
-        .miso_io_num=SPI1_MISO,
-        .mosi_io_num=SPI1_MOSI,
-        .sclk_io_num=SPI1_SCK,
-        .quadwp_io_num=-1,
-        .quadhd_io_num=-1,
-        .max_transfer_sz=4092
-    };
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI1_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
-    ESP_LOGI(TAG, "Initialized SPI1");
-    /* Add MS5611 to SPI */
-    spi_device_interface_config_t ms5611_spi_cfg = {
-        .clock_speed_hz = 10*1000*1000, //10 MHz
-        .mode = 0,
-        .queue_size = 7, 
-        .spics_io_num = PresSens_CS
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
-    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
+    // #ifndef USEI2C
+    // /* Initialize SPI for MS5611 and BMI088 */
+    // spi_bus_config_t spi1cfg={
+    //     .miso_io_num=SPI1_MISO,
+    //     .mosi_io_num=SPI1_MOSI,
+    //     .sclk_io_num=SPI1_SCK,
+    //     .quadwp_io_num=-1,
+    //     .quadhd_io_num=-1,
+    //     .max_transfer_sz=4092
+    // };
+    // ESP_ERROR_CHECK(spi_bus_initialize(SPI1_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
+    // ESP_LOGI(TAG, "Initialized SPI1");
+    // /* Add MS5611 to SPI */
+    // spi_device_interface_config_t ms5611_spi_cfg = {
+    //     .clock_speed_hz = 10*1000*1000, //10 MHz
+    //     .mode = 0,
+    //     .queue_size = 7, 
+    //     .spics_io_num = PresSens_CS
+    // };
+    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
+    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
 
-    /* Add BMI088 to SPI */
-    spi_device_interface_config_t bmi088_acc_spi_cfg = {
-        .clock_speed_hz = 10*1000*1000,
-        .mode = 0,
-        .queue_size = 7,
-        .spics_io_num = IMU_ACC_CS
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_acc_spi_cfg, &acc_spi_handle));
-    spi_device_interface_config_t bmi088_gyr_spi_cfg = {
-        .clock_speed_hz = 10*1000*1000,
-        .mode = 0,
-        .queue_size = 7,
-        .spics_io_num = IMU_GYR_CS
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
-    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-    #else
-    sensor_i2c_Mutex = xSemaphoreCreateMutex();
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_SDA,
-        .scl_io_num = I2C_SCL,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-    i2c_param_config(i2c_master_port, &conf);
-    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf.mode, 0, 0, 0));
+    // /* Add BMI088 to SPI */
+    // spi_device_interface_config_t bmi088_acc_spi_cfg = {
+    //     .clock_speed_hz = 10*1000*1000,
+    //     .mode = 0,
+    //     .queue_size = 7,
+    //     .spics_io_num = IMU_ACC_CS
+    // };
+    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_acc_spi_cfg, &acc_spi_handle));
+    // spi_device_interface_config_t bmi088_gyr_spi_cfg = {
+    //     .clock_speed_hz = 10*1000*1000,
+    //     .mode = 0,
+    //     .queue_size = 7,
+    //     .spics_io_num = IMU_GYR_CS
+    // };
+    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
+    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
+    // #else
+    // sensor_i2c_Mutex = xSemaphoreCreateMutex();
+    // i2c_config_t conf = {
+    //     .mode = I2C_MODE_MASTER,
+    //     .sda_io_num = I2C_SDA,
+    //     .scl_io_num = I2C_SCL,
+    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    // };
+    // i2c_param_config(i2c_master_port, &conf);
+    // ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf.mode, 0, 0, 0));
 
-    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
-    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-    #endif
+    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
+    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
+    // #endif
     /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
     gps_config.uart.rx_pin = USART2_RX;
-    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config);
+    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
     nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
-    
-    /* Start Kalman Filter Task (High Priority)*/
-    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
-    /* Configure SDCard */
-    //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
-    gpio_config_t sdcard_detect_conf = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
-        .pull_down_en = 0,
-        .pull_up_en = 0
-    };
-    gpio_config(&sdcard_detect_conf);
-    int sdCardLevel = gpio_get_level(SDCARD_DETECT);
-    if(sdCardLevel != 1)
-    {
-        //TODO: Was nun machen?
-        ESP_LOGI(TAG, "No SD Card detected!");
-    }
-    else if(sdCardLevel == 1)
-    {
-        ESP_LOGI(TAG, "SD Card detected!");
-    }
-    esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
-        .format_if_mount_failed = true,
-        .max_files = 5,
-        .allocation_unit_size = 16 * 1024
-    };
-    sdmmc_card_t *card;
-    ESP_LOGI(TAG, "Initialized SD Card");
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.slot = SPI2_HOST;
-    spi_bus_config_t spi2cfg={
-        .miso_io_num=SPI2_MISO,
-        .mosi_io_num=SPI2_MOSI,
-        .sclk_io_num=SPI2_SCK,
-        .quadwp_io_num=-1,
-        .quadhd_io_num=-1,
-        .max_transfer_sz=4000
-    };
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
-    ESP_LOGI(TAG, "Initialized SPI2");
-    sdspi_device_config_t slot_config ={ 
-        .host_id   = SPI2_HOST, 
-        .gpio_cs   = SDCARD_CS, 
-        .gpio_cd   = SDSPI_SLOT_NO_CD, 
-        .gpio_wp   = SDSPI_SLOT_NO_WP, 
-        .gpio_int  = GPIO_NUM_NC};
-    ESP_LOGI(TAG, "Mounting filesystem");
-    //TODO: schlechte Funktion oder so da kein Error Handling
-    esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        } else {
-            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
-        }
-    }
-    ESP_LOGI(TAG, "Filesystem mounted");
-    xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);
+    ESP_LOGI(TAG, "GPS started");
+    // xTaskCreate(PrintTask, "Measure Height", 4 * 1024, NULL, 1, NULL);
+    // /* Start Kalman Filter Task (High Priority)*/
+    // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
+    // /* Configure SDCard */
+    // //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
+    // gpio_config_t sdcard_detect_conf = {
+    //     .intr_type = GPIO_INTR_DISABLE,
+    //     .mode = GPIO_MODE_INPUT,
+    //     .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
+    //     .pull_down_en = 0,
+    //     .pull_up_en = 0
+    // };
+    // gpio_config(&sdcard_detect_conf);
+    // int sdCardLevel = gpio_get_level(SDCARD_DETECT);
+    // if(sdCardLevel != 1)
+    // {
+    //     //TODO: Was nun machen?
+    //     ESP_LOGI(TAG, "No SD Card detected!");
+    // }
+    // else if(sdCardLevel == 1)
+    // {
+    //     ESP_LOGI(TAG, "SD Card detected!");
+    // }
+    // esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
+    //     .format_if_mount_failed = true,
+    //     .max_files = 5,
+    //     .allocation_unit_size = 16 * 1024
+    // };
+    // sdmmc_card_t *card;
+    // ESP_LOGI(TAG, "Initialized SD Card");
+    // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    // host.slot = SPI2_HOST;
+    // spi_bus_config_t spi2cfg={
+    //     .miso_io_num=SPI2_MISO,
+    //     .mosi_io_num=SPI2_MOSI,
+    //     .sclk_io_num=SPI2_SCK,
+    //     .quadwp_io_num=-1,
+    //     .quadhd_io_num=-1,
+    //     .max_transfer_sz=4000
+    // };
+    // ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
+    // ESP_LOGI(TAG, "Initialized SPI2");
+    // sdspi_device_config_t slot_config ={ 
+    //     .host_id   = SPI2_HOST, 
+    //     .gpio_cs   = SDCARD_CS, 
+    //     .gpio_cd   = SDSPI_SLOT_NO_CD, 
+    //     .gpio_wp   = SDSPI_SLOT_NO_WP, 
+    //     .gpio_int  = GPIO_NUM_NC};
+    // ESP_LOGI(TAG, "Mounting filesystem");
+    // //TODO: schlechte Funktion oder so da kein Error Handling
+    // esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
+    // if (ret != ESP_OK) {
+    //     if (ret == ESP_FAIL) {
+    //         ESP_LOGE(TAG, "Failed to mount filesystem. "
+    //                  "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+    //     } else {
+    //         ESP_LOGE(TAG, "Failed to initialize the card (%s). "
+    //                  "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+    //     }
+    // }
+    // ESP_LOGI(TAG, "Filesystem mounted");
+    // xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);
 }

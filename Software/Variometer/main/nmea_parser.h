@@ -17,6 +17,7 @@ extern "C" {
 
 #define GPS_MAX_SATELLITES_IN_USE (12)
 #define GPS_MAX_SATELLITES_IN_VIEW (16)
+#define NMEA_MAX_STATEMENT_ITEM_LENGTH (16)
 
 /**
  * @brief Declare of NMEA Parser Event base
@@ -87,7 +88,9 @@ typedef enum {
     STATEMENT_RMC,         /*!< RMC */
     STATEMENT_GSV,         /*!< GSV */
     STATEMENT_GLL,         /*!< GLL */
-    STATEMENT_VTG          /*!< VTG */
+    STATEMENT_VTG,          /*!< VTG */
+    STATEMENT_TXT,
+    STATEMENT_GNZDA
 } nmea_statement_t;
 
 /**
@@ -113,6 +116,7 @@ typedef struct {
     float speed;                                                   /*!< Ground speed, unit: m/s */
     float cog;                                                     /*!< Course over ground */
     float variation;                                               /*!< Magnetic variation */
+    char infoString[NMEA_MAX_STATEMENT_ITEM_LENGTH];
 } gps_t;
 
 /**
@@ -169,7 +173,7 @@ typedef enum {
  * @param config Configuration of NMEA Parser
  * @return nmea_parser_handle_t handle of NMEA parser
  */
-nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config);
+nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config, uint32_t taskStackSize);
 
 /**
  * @brief Deinit NMEA Parser

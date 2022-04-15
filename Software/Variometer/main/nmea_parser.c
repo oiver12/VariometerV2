@@ -26,7 +26,6 @@
  *
  */
 #define NMEA_PARSER_RUNTIME_BUFFER_SIZE (CONFIG_NMEA_PARSER_RING_BUFFER_SIZE / 2)
-#define NMEA_MAX_STATEMENT_ITEM_LENGTH (16)
 #define NMEA_EVENT_LOOP_QUEUE_SIZE (16)
 
 /**
@@ -49,7 +48,7 @@ typedef struct {
     uint8_t parsed_statement;                      /*!< OR'd of statements that have been parsed */
     uint8_t sat_num;                               /*!< Satellite number */
     uint8_t sat_count;                             /*!< Satellite count */
-    uint8_t cur_statement;                         /*!< Current statement ID */
+    uint16_t cur_statement;                         /*!< Current statement ID */
     uint32_t all_statements;                       /*!< All statements mask */
     char item_str[NMEA_MAX_STATEMENT_ITEM_LENGTH]; /*!< Current item */
     gps_t parent;                                  /*!< Parent class */
@@ -84,6 +83,11 @@ static float parse_lat_long(esp_gps_t *esp_gps)
 static inline uint8_t convert_two_digit2number(const char *digit_char)
 {
     return 10 * (digit_char[0] - '0') + (digit_char[1] - '0');
+}
+
+static inline uint8_t convert_four_digit2number(const char *digit_char)
+{
+    return 1000 * (digit_char[0] - '0') + 100 * (digit_char[1] - '0') + 10 * (digit_char[2] - '0') + (digit_char[3] - '0');
 }
 
 /**
@@ -278,6 +282,7 @@ static void parse_rmc(esp_gps_t *esp_gps)
         esp_gps->parent.cog = strtof(esp_gps->item_str, NULL);
         break;
     case 9: /* Process date */
+        ESP_LOGI(GPS_TAG, "%s", esp_gps->item_str);
         esp_gps->parent.date.day = convert_two_digit2number(esp_gps->item_str + 0);
         esp_gps->parent.date.month = convert_two_digit2number(esp_gps->item_str + 2);
         esp_gps->parent.date.year = convert_two_digit2number(esp_gps->item_str + 4);
@@ -356,6 +361,41 @@ static void parse_vtg(esp_gps_t *esp_gps)
     }
 }
 #endif
+static void parse_txt(esp_gps_t *esp_gps)
+{
+    switch (esp_gps->item_num) {
+        case 1: //sentence Number 
+            break;
+        case 2: //Text identifier
+            break;
+        case 3: //Text message
+            break;
+        case 4:
+            strcpy(esp_gps->parent.infoString, esp_gps->item_str);
+        default:
+            break;
+    }
+}
+static void parse_gnzda(esp_gps_t *esp_gps)
+{
+    //$GNZDA,132145.000,14,04,2022,00,00*4B
+    switch (esp_gps->item_num) {
+        case 1:
+            parse_utc_time(esp_gps);
+            break;
+        case 2:
+            esp_gps->parent.date.day = convert_two_digit2number(esp_gps->item_str);
+            break;
+        case 3:
+            esp_gps->parent.date.month = convert_two_digit2number(esp_gps->item_str);
+            break;
+        case 4:
+            esp_gps->parent.date.year = convert_four_digit2number(esp_gps->item_str);
+            break;
+        default:
+            break;
+    }
+}
 
 /**
  * @brief Parse received item
@@ -400,6 +440,14 @@ static esp_err_t parse_item(esp_gps_t *esp_gps)
             esp_gps->cur_statement = STATEMENT_VTG;
         }
 #endif
+        else if (strstr(esp_gps->item_str, "TXT"))
+        {
+            esp_gps->cur_statement = STATEMENT_TXT;
+        }
+        else if (strstr(esp_gps->item_str, "GNZDA"))
+        {
+            esp_gps->cur_statement = STATEMENT_GNZDA;
+        }
         else {
             esp_gps->cur_statement = STATEMENT_UNKNOWN;
         }
@@ -439,6 +487,14 @@ static esp_err_t parse_item(esp_gps_t *esp_gps)
         parse_vtg(esp_gps);
     }
 #endif
+    else if (esp_gps->cur_statement == STATEMENT_TXT)
+    {
+        parse_txt(esp_gps);
+    }
+    else if(esp_gps->cur_statement == STATEMENT_GNZDA)
+    {
+        parse_gnzda(esp_gps);
+    }
     else {
         err =  ESP_FAIL;
     }
@@ -643,7 +699,7 @@ static void nmea_parser_task_entry(void *arg)
  * @param config Configuration of NMEA Parser
  * @return nmea_parser_handle_t handle of nmea_parser
  */
-nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config)
+nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config, uint32_t taskStackSize)
 {
     esp_gps_t *esp_gps = calloc(1, sizeof(esp_gps_t));
     if (!esp_gps) {
@@ -717,7 +773,7 @@ nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config)
     BaseType_t err = xTaskCreate(
                          nmea_parser_task_entry,
                          "nmea_parser",
-                         CONFIG_NMEA_PARSER_TASK_STACK_SIZE,
+                         taskStackSize,
                          esp_gps,
                          CONFIG_NMEA_PARSER_TASK_PRIORITY,
                          &esp_gps->tsk_hdl);
