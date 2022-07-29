@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #define PI 3.14159265358979323846
 // für Madgwick
 float GyroMeasError = PI * (40.0f / 180.0f);     // gyroscope measurement error in rads/s (start at 40 deg/s)
@@ -178,3 +179,25 @@ void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, f
     q[2] = q[2] * recipNorm;
     q[3] = q[3] * recipNorm;
 } 
+
+void Quaternion_get_RPY(float qw, float qx, float qy, float qz, float* roll, float* pitch, float* yaw)
+{
+    float magnetic_declination = -7.51;
+    float a12, a22, a31, a32, a33;  // rotation matrix coefficients for Euler angles and gravity components
+    a12 = 2.0f * (qx * qy + qw * qz);
+    a22 = qw * qw + qx * qx - qy * qy - qz * qz;
+    a31 = 2.0f * (qw * qx + qy * qz);
+    a32 = 2.0f * (qx * qz - qw * qy);
+    a33 = qw * qw - qx * qx - qy * qy + qz * qz;
+    *roll = atan2f(a31, a33);
+    *pitch = -asinf(a32);
+    *yaw = atan2f(a12, a22);
+    *roll *= 180.0f / PI;
+    *pitch *= 180.0f / PI;
+    *yaw *= 180.0f / PI;
+    *yaw += magnetic_declination;
+    if (*yaw >= +180.f)
+        *yaw -= 360.f;
+    else if (*yaw < -180.f)
+        *yaw += 360.f;
+}

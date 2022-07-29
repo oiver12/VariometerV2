@@ -118,6 +118,8 @@ void matrix_multadd_transb(const matrix_t *const a, const matrix_t *const b, con
 */
 void matrix_multscale_transb(const matrix_t *const a, const matrix_t *const b, register const matrix_data_t scale, const matrix_t *RESTRICT c) HOT;
 
+void print_matrix(const matrix_t *a);
+
 /*!
 * \brief Gets a matrix element
 * \param[in] mat The matrix to get from

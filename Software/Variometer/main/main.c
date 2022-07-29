@@ -6,8 +6,8 @@
 #include "driver/i2c.h"
 #include <esp_log.h>
 #include <math.h>
-#include "MS5611.h"
 #include "BMI088.h"
+#include "DPS310.h"
 #include "nmea_parser.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
@@ -15,12 +15,13 @@
 #include "sdmmc_cmd.h"
 #include <sys/unistd.h>
 #include <sys/stat.h>
+#include <string.h>
 
-#define USEI2C
+#define BMI088_I2C
+
+#define DEG_TO_RAD  0.017453292519943295769236907684886
 
 #define Button_Input 4
-
-#ifndef USEI2C
 #define SPI1_MOSI 11
 #define SPI1_SCK 12
 #define SPI1_MISO 13
@@ -32,13 +33,11 @@
 
 #define PresSens_CS 10
 
-#else
 #define I2C_MASTER_FREQ_HZ 400000     
-#define I2C_SDA 10
-#define I2C_SCL 12
-#define ACC_INT 13
+#define I2C_SDA 39
+#define I2C_SCL 42
+#define I2C_ACC_INT 41
 #define i2c_master_port 0
-#endif
 
 #define SPI2_MOSI 35
 #define SPI2_SCK 36
@@ -69,8 +68,8 @@
 
 /* Kalman Filter */
 float ms5611_stnd_height = 0.1298; //Standardabweichung Höhenmessung
-float bmi088_stnd_acc = 0.0069; //Standardabweichung Beschleunigungssensor
-TaskHandle_t TaskKalmanFilter_Handle; //zum ensperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
+float bmi088_stnd_acc = 0.2; //Standardabweichung Beschleunigungssensor
+TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
 
 /* GPS */
 #define TIME_ZONE (+1)   //Schweiz
@@ -87,6 +86,10 @@ typedef struct {
 vario_state_t vario_state;
 SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
 
+float accSum;
+float accCount;
+SemaphoreHandle_t acc_Mutex = NULL;
+
 float startPressure;
 float startTemperature;
 float pressure; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
@@ -96,44 +99,43 @@ SemaphoreHandle_t pressure_temperature_Mutex = NULL;
 volatile bool hasMeasuredStartPressure = false;
 
 /* Sensoren */
-#ifndef USEI2C
 spi_device_handle_t ms5611_spi_handle; //nur von TaskMeasureHeight benutzen!
 
 spi_device_handle_t acc_spi_handle; //nur von TaskMeasureAcc benutzen!
 spi_device_handle_t gyro_spi_handle; //nur von TaskMeasureAcc benutzen!
-#else
-SemaphoreHandle_t sensor_i2c_Mutex = NULL;
-#endif
-QueueHandle_t measuredAccMessage = NULL; //speichert Acc Data in einer Queue, damit dann ausgelesen werden kann, wenn Luftdruckdaten zur verfügung stehen
 
 void TaskMeasureHeight(void *parameters)
 {
-    ms5611_t MS5611_Data;
-    #ifndef USEI2C
-    ms5611_init(&MS5611_Data, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
-    #else
-    ms5611_init(&MS5611_Data, &sensor_i2c_Mutex, i2c_master_port, 0x77,  MS5611_OSR_256, MS5611_OSR_256);
-    #endif
     startPressure = 0;
     startTemperature = 0;
+    dps310_t DPS310_Data;
+    dps310_init(&DPS310_Data, I2C_NUM_1, 0x77);
     for (size_t i = 0; i < 10; i++)
     {
-        ms5611_get_sensor_data(&MS5611_Data);
-        startPressure += MS5611_Data.Pressure;
-        startTemperature += MS5611_Data.Temperature;
+        dsp310_get_Pressure(&DPS310_Data);
+        dps310_get_Temperature(&DPS310_Data);
+        startPressure += DPS310_Data.Pressure;
+        startTemperature += DPS310_Data.Temperature;
     }
     startPressure /= 10;
     startTemperature /= 10;
     hasMeasuredStartPressure = true;
+    int count = 0;
     while(1)
     {
-        ms5611_get_sensor_data(&MS5611_Data);
+        dsp310_get_Pressure(&DPS310_Data);
+        if(count % 34 == 0)
+        {
+            dps310_get_Temperature(&DPS310_Data);
+        }
+        count++;
         xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
         {
-            pressure = MS5611_Data.Pressure;
-            temperature = MS5611_Data.Temperature;
+            pressure = DPS310_Data.Pressure;
+            temperature = DPS310_Data.Temperature;
         }
         xSemaphoreGive(pressure_temperature_Mutex);
+        vTaskDelay(30 / portTICK_PERIOD_MS);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
     }
@@ -156,10 +158,10 @@ void TaskMeasureAcc(void *parameters)
     }
     float rotation[4]; //Nur benutzen in TaskMeasureAcc
     bmi088_t BMI088_Data;
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     bmi088_init(&BMI088_Data, acc_spi_handle, IMU_ACC_CS, gyro_spi_handle, IMU_GYR_CS);
     #else
-    bmi088_init(&BMI088_Data, &sensor_i2c_Mutex, i2c_master_port, 0x18, 0x68);
+    bmi088_init(&BMI088_Data, i2c_master_port, 0x19, 0x69);
     #endif
     QuaternionFilter_init();
     //reset Rotation
@@ -168,40 +170,46 @@ void TaskMeasureAcc(void *parameters)
     rotation[2] = 0.0f;
     rotation[3] = 0.0f;
     // Setup Interrupt
-    gpio_config_t gpio_config_int_bmi = {
-        .pin_bit_mask = (uint64_t) 0x1 << ACC_INT,
-        .mode         = GPIO_MODE_INPUT,
-        .pull_up_en   = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-        .intr_type    = GPIO_INTR_POSEDGE  //
-    };
-    //set Acc Pin as Interrupt 
-    //TODO: nur AccelPin wir als Interrupt benutzt. Vielleicht auch Gyro benutzen?
-    gpio_config(&gpio_config_int_bmi);
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    gpio_isr_handler_add((gpio_num_t) ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
+    // gpio_config_t gpio_config_int_bmi = {
+    //     .pin_bit_mask = 1ULL << I2C_ACC_INT,
+    //     .mode         = GPIO_MODE_INPUT,
+    //     .pull_up_en   = GPIO_PULLUP_DISABLE,
+    //     .pull_down_en = GPIO_PULLDOWN_ENABLE,
+    //     .intr_type    = GPIO_INTR_NEGEDGE  //
+    // };
+    // //set Acc Pin as Interrupt 
+    // //TODO: nur AccelPin wir als Interrupt benutzt. Vielleicht auch Gyro benutzen?
+    // gpio_config(&gpio_config_int_bmi);
+    // gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    // //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
+    // gpio_isr_handler_add((gpio_num_t)I2C_ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
     float lastTime = esp_timer_get_time();
+    // volatile float roll = 0;
+    // volatile float pitch = 0;
+    // volatile float yaw = 0;
     while(1)
     {
         //wait till unblocked from Interrupt
-        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        if (notificationValue > 1) {
+        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        /*if (notificationValue > 1) {
             ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
-            continue;
-        }
+        }*/
         bmi088_ReadAccelerometer(&BMI088_Data);
         bmi088_ReadGyroskop(&BMI088_Data);
-        float deltaT = esp_timer_get_time() - lastTime;
+        float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
-        QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0], BMI088_Data.acc_mps2[1], BMI088_Data.acc_mps2[2], BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
+        QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
+        //Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
-        if(xQueueSend(measuredAccMessage, &accX, 0) != pdTRUE)
+        //printf("%.2f \n\r", accX);
+        xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
-            ESP_LOGI(TAG, "Queue full. Acc Daten verloren");
+            accSum += accX;
+            accCount++;
         }
+        xSemaphoreGive(acc_Mutex);
     }
     vTaskDelete(NULL);
 }
@@ -210,7 +218,7 @@ void TaskKalmanFilter(void *parameters)
 {
     //wait till StartPressure has read
     while(!hasMeasuredStartPressure){
-        vTaskDelay(2 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
     kalman_t kf;
     kalman_filter_init(&kf);
@@ -280,21 +288,20 @@ void TaskKalmanFilter(void *parameters)
         }
         xSemaphoreGive(pressure_temperature_Mutex);
         float acc = 0;
-        float accSum = 0;
-        int i = 0;
         //TODO: ist Mean am besten?
         //read Acc Queue till its empty and compute mean from Acc
-        while(xQueueReceive(measuredAccMessage, &acc, 0) == pdPASS )
+        xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
-            accSum += acc;
-            i++;
+            acc = accSum / accCount;
+            if(accCount == 0)
+            {
+                ESP_LOGI(TAG, "Had no Acc Readings");
+                acc = 9.81f;
+            }
+            accSum = 0;
+            accCount = 0;
         }
-        acc = accSum / i;
-        if(i == 0)
-        {
-            ESP_LOGI(TAG, "Had no Acc Readings in Queue");
-        }
-
+        xSemaphoreGive(acc_Mutex);
         deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         /* Set Q with new deltaT */
         matrix_set(Q, 0, 0, ((deltaT*deltaT*deltaT*deltaT)/4)*bmi088_stnd_acc*bmi088_stnd_acc);
@@ -322,6 +329,7 @@ void TaskKalmanFilter(void *parameters)
             vario_state.velocity = matrix_get(x, 1, 0);
         }
         xSemaphoreGive(vario_state_Mutex);
+        printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
@@ -339,10 +347,12 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
                  "\t\t\t\t\t\tlatitude   = %.05f°N\r\n"
                  "\t\t\t\t\t\tlongitude = %.05f°E\r\n"
                  "\t\t\t\t\t\taltitude   = %.02fm\r\n"
-                 "\t\t\t\t\t\tspeed      = %fm/s",
+                 "\t\t\t\t\t\tspeed      = %fm/s\r\n"
+                 "\t\t\t\t\t\tsats in View      = %u\r\n"
+                "\t\t\t\t\t\tmessage      = %s ",
                  gps->date.year + YEAR_BASE, gps->date.month, gps->date.day,
                  gps->tim.hour + TIME_ZONE, gps->tim.minute, gps->tim.second,
-                 gps->latitude, gps->longitude, gps->altitude, gps->speed);
+                 gps->latitude, gps->longitude, gps->altitude, gps->speed, gps->sats_in_view, gps->infoString);
         break;
     case GPS_UNKNOWN:
         /* print unknown statements */
@@ -357,7 +367,7 @@ void TaskSDCard(void *pvParameters)
 {
     sdmmc_card_t *card = (sdmmc_card_t *)pvParameters;
     sdmmc_card_print_info(stdout, card);
-
+    vTaskDelete(NULL);
 }
 
 void PrintTask(void *params)
@@ -367,16 +377,15 @@ void PrintTask(void *params)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         ESP_LOGI(TAG, "TestLog");
     }
+    vTaskDelete(NULL);
 }
 
 void app_main(void)
-{
+ {
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
-    measuredAccMessage = xQueueCreate(20, sizeof(float));
-
-    // #ifndef USEI2C
-    // /* Initialize SPI for MS5611 and BMI088 */
+    acc_Mutex = xSemaphoreCreateMutex();
+    /* Initialize SPI for MS5611 and BMI088 */
     // spi_bus_config_t spi1cfg={
     //     .miso_io_num=SPI1_MISO,
     //     .mosi_io_num=SPI1_MOSI,
@@ -385,17 +394,31 @@ void app_main(void)
     //     .quadhd_io_num=-1,
     //     .max_transfer_sz=4092
     // };
-    // ESP_ERROR_CHECK(spi_bus_initialize(SPI1_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
+    // ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
     // ESP_LOGI(TAG, "Initialized SPI1");
     // /* Add MS5611 to SPI */
     // spi_device_interface_config_t ms5611_spi_cfg = {
-    //     .clock_speed_hz = 10*1000*1000, //10 MHz
+    //     .clock_speed_hz = 1*1000, //1 kHz
     //     .mode = 0,
     //     .queue_size = 7, 
-    //     .spics_io_num = PresSens_CS
+    //     .spics_io_num = PresSens_CS,
+    //     .address_bits = 8,
+    //     .command_bits = 8,
     // };
-    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
-    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
+    // ESP_ERROR_CHECK(spi_bus_add_device(SPI3_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
+    // ms5611_t MS5611_Data;
+    // ms5611_init(&MS5611_Data, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
+    // while(1)
+    // {
+    //     ms5611_get_sensor_data(&MS5611_Data);
+    //     xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
+    //     {
+    //         pressure = MS5611_Data.Pressure;
+    //         temperature = MS5611_Data.Temperature;
+    //     }
+    //     xSemaphoreGive(pressure_temperature_Mutex);
+    // }
+    //xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
 
     // /* Add BMI088 to SPI */
     // spi_device_interface_config_t bmi088_acc_spi_cfg = {
@@ -414,21 +437,37 @@ void app_main(void)
     // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
     // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
     // #else
-    // sensor_i2c_Mutex = xSemaphoreCreateMutex();
-    // i2c_config_t conf = {
-    //     .mode = I2C_MODE_MASTER,
-    //     .sda_io_num = I2C_SDA,
-    //     .scl_io_num = I2C_SCL,
-    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    // };
-    // i2c_param_config(i2c_master_port, &conf);
-    // ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf.mode, 0, 0, 0));
 
-    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
-    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
+    i2c_config_t conf_MS5611 = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = SPI1_MOSI,
+        .scl_io_num = SPI1_SCK,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    };
+    i2c_param_config(I2C_NUM_1, &conf_MS5611);
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, conf_MS5611.mode, 0, 0, 0));
+
+    i2c_config_t conf_BMI088 = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = I2C_SDA,
+        .scl_io_num = I2C_SCL,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    };
+    i2c_param_config(i2c_master_port, &conf_BMI088);
+    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_BMI088.mode, 0, 0, 0));
+
+    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
+    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
+    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
     // #endif
+    while(1)
+    {
+        vTaskDelay(100000 / portTICK_PERIOD_MS);
+    }
     /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
     gps_config.uart.rx_pin = USART2_RX;
@@ -440,61 +479,62 @@ void app_main(void)
     // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
     // /* Configure SDCard */
     // //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
-    // gpio_config_t sdcard_detect_conf = {
-    //     .intr_type = GPIO_INTR_DISABLE,
-    //     .mode = GPIO_MODE_INPUT,
-    //     .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
-    //     .pull_down_en = 0,
-    //     .pull_up_en = 0
-    // };
-    // gpio_config(&sdcard_detect_conf);
-    // int sdCardLevel = gpio_get_level(SDCARD_DETECT);
-    // if(sdCardLevel != 1)
-    // {
-    //     //TODO: Was nun machen?
-    //     ESP_LOGI(TAG, "No SD Card detected!");
-    // }
-    // else if(sdCardLevel == 1)
-    // {
-    //     ESP_LOGI(TAG, "SD Card detected!");
-    // }
-    // esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
-    //     .format_if_mount_failed = true,
-    //     .max_files = 5,
-    //     .allocation_unit_size = 16 * 1024
-    // };
-    // sdmmc_card_t *card;
-    // ESP_LOGI(TAG, "Initialized SD Card");
-    // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    // host.slot = SPI2_HOST;
-    // spi_bus_config_t spi2cfg={
-    //     .miso_io_num=SPI2_MISO,
-    //     .mosi_io_num=SPI2_MOSI,
-    //     .sclk_io_num=SPI2_SCK,
-    //     .quadwp_io_num=-1,
-    //     .quadhd_io_num=-1,
-    //     .max_transfer_sz=4000
-    // };
-    // ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
-    // ESP_LOGI(TAG, "Initialized SPI2");
-    // sdspi_device_config_t slot_config ={ 
-    //     .host_id   = SPI2_HOST, 
-    //     .gpio_cs   = SDCARD_CS, 
-    //     .gpio_cd   = SDSPI_SLOT_NO_CD, 
-    //     .gpio_wp   = SDSPI_SLOT_NO_WP, 
-    //     .gpio_int  = GPIO_NUM_NC};
-    // ESP_LOGI(TAG, "Mounting filesystem");
-    // //TODO: schlechte Funktion oder so da kein Error Handling
-    // esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
-    // if (ret != ESP_OK) {
-    //     if (ret == ESP_FAIL) {
-    //         ESP_LOGE(TAG, "Failed to mount filesystem. "
-    //                  "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-    //     } else {
-    //         ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-    //                  "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
-    //     }
-    // }
-    // ESP_LOGI(TAG, "Filesystem mounted");
-    // xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);
+    /*gpio_config_t sdcard_detect_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
+        .pull_down_en = 0,
+        .pull_up_en = 0
+    };
+    gpio_config(&sdcard_detect_conf);
+    int sdCardLevel = gpio_get_level(SDCARD_DETECT);
+    ESP_LOGI(TAG, "%i", sdCardLevel);
+    if(sdCardLevel != 1)
+    {
+        //TODO: Was nun machen?
+        ESP_LOGI(TAG, "No SD Card detected!");
+    }
+    else if(sdCardLevel == 1)
+    {
+        ESP_LOGI(TAG, "SD Card detected!");
+    }
+    esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
+        .format_if_mount_failed = true,
+        .max_files = 5,
+        .allocation_unit_size = 16 * 1024
+    };
+    sdmmc_card_t *card;
+    ESP_LOGI(TAG, "Initialized SD Card");
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.slot = SPI2_HOST;
+    spi_bus_config_t spi2cfg={
+        .miso_io_num=SPI2_MISO,
+        .mosi_io_num=SPI2_MOSI,
+        .sclk_io_num=SPI2_SCK,
+        .quadwp_io_num=-1,
+        .quadhd_io_num=-1,
+        .max_transfer_sz=4000
+    };
+    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
+    ESP_LOGI(TAG, "Initialized SPI2");
+    sdspi_device_config_t slot_config ={ 
+        .host_id   = SPI2_HOST, 
+        .gpio_cs   = SDCARD_CS, 
+        .gpio_cd   = SDSPI_SLOT_NO_CD, 
+        .gpio_wp   = SDSPI_SLOT_NO_WP, 
+        .gpio_int  = GPIO_NUM_NC};
+    ESP_LOGI(TAG, "Mounting filesystem");
+    //TODO: schlechte Funktion oder so da kein Error Handling
+    esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
+    if (ret != ESP_OK) {
+        if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount filesystem. "
+                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        } else {
+            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
+                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+        }
+    }
+    ESP_LOGI(TAG, "Filesystem mounted");
+    xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);*/
 }

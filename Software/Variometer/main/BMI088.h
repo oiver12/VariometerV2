@@ -6,7 +6,7 @@
 #include "driver/gpio.h"
 #include "freertos/semphr.h"
 
-#define USEI2C
+#define BMI088_I2C
 
 typedef enum {
     ACCEL_RANGE_3G,
@@ -62,13 +62,12 @@ typedef enum {
 } bmi088_gyr_odr_t;
 
 typedef struct {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     spi_device_handle_t acc_spi_handle;
     spi_device_handle_t gyro_spi_handle;
     gpio_num_t acc_cs_pin;
     gpio_num_t gyro_cs_pin;
     #else
-    SemaphoreHandle_t *i2c_Mutex;
     int I2C_Master_Num;
     uint8_t acc_i2c_addr;
     uint8_t gyr_i2c_addr;
@@ -81,10 +80,10 @@ typedef struct {
     float gyr_rps[3];
 } bmi088_t;
 
-#ifndef USEI2C
+#ifndef BMI088_I2C
 esp_err_t bmi088_init(bmi088_t *dev, spi_device_handle_t acc_spi_handle, gpio_num_t acc_cs_pin,spi_device_handle_t gyro_spi_handle, gpio_num_t gyro_cs_pin);
 #else
-esp_err_t bmi088_init(bmi088_t *dev, SemaphoreHandle_t *i2c_Mutex, int I2C_Master_Num, uint8_t acc_i2c_addr, uint8_t gyr_i2c_addr);
+esp_err_t bmi088_init(bmi088_t *dev, int I2C_Master_Num, uint8_t acc_i2c_addr, uint8_t gyr_i2c_addr);
 #endif
 //esp_err_t bmi088_setOdr(bmi088_t *dev, bmi088_acc_odr_t odr, bmi088_gyr_odr_t gyr_odr);
 //esp_err_t bmi088_setRange(bmi088_t *dev, bmi088_accelRange_t accelRange, bmi088_gyroRange_t gyroRange);

@@ -36,7 +36,7 @@ static const char *TAG = "BMI088";
 
 static inline esp_err_t writeAccByte(bmi088_t *dev, uint8_t regAddr, const uint8_t data)
 {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     spi_transaction_t transaction;
     transaction.flags = 0;
     transaction.cmd = 0;
@@ -50,18 +50,14 @@ static inline esp_err_t writeAccByte(bmi088_t *dev, uint8_t regAddr, const uint8
     #else
     esp_err_t err = ESP_ERR_TIMEOUT;
     uint8_t write_buf[2] = {regAddr, data};
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
-    {
-        err = i2c_master_write_to_device(dev->I2C_Master_Num, dev->acc_i2c_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    err = i2c_master_write_to_device(dev->I2C_Master_Num, dev->acc_i2c_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     return err;
     #endif
 }
 
 static inline esp_err_t writeGyrByte(bmi088_t *dev, uint8_t regAddr, const uint8_t data)
 {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     spi_transaction_t transaction;
     transaction.flags = 0;
     transaction.cmd = 0;
@@ -75,18 +71,14 @@ static inline esp_err_t writeGyrByte(bmi088_t *dev, uint8_t regAddr, const uint8
     #else
     esp_err_t err = ESP_ERR_TIMEOUT;
     uint8_t write_buf[2] = {regAddr, data};
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
-    {
-        err = i2c_master_write_to_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    err = i2c_master_write_to_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     return err;
     #endif
 }
 
 static inline esp_err_t readAccByte(bmi088_t *dev, uint8_t regAddr, uint8_t *data)
 {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     uint8_t rxBuffer[2]; // dummyByte + dataByte
     spi_transaction_t transaction;
     transaction.flags = 0;
@@ -105,18 +97,14 @@ static inline esp_err_t readAccByte(bmi088_t *dev, uint8_t regAddr, uint8_t *dat
     return err;
     #else
     esp_err_t err = ESP_ERR_TIMEOUT;
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
-    {
-        err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->acc_i2c_addr, &regAddr, 1, data, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->acc_i2c_addr, &regAddr, 1, data, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     return err;
     #endif
 }
 
 static inline esp_err_t readGyroByte(bmi088_t *dev, uint8_t regAddr, uint8_t *data)
 {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     spi_transaction_t transaction;
     transaction.flags = 0;
     transaction.cmd = 0;
@@ -130,16 +118,12 @@ static inline esp_err_t readGyroByte(bmi088_t *dev, uint8_t regAddr, uint8_t *da
     return err;
     #else
     esp_err_t err = ESP_ERR_TIMEOUT;
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY );
-    {
-        err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, &regAddr, 1, data, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, &regAddr, 1, data, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     return err;
     #endif
 }
 
-#ifndef USEI2C
+#ifndef BMI088_I2C
 esp_err_t bmi088_init(bmi088_t *dev, spi_device_handle_t acc_spi_handle, gpio_num_t acc_cs_pin,spi_device_handle_t gyro_spi_handle, gpio_num_t gyro_cs_pin)
 {
     dev->acc_spi_handle = acc_spi_handle;
@@ -152,15 +136,20 @@ esp_err_t bmi088_init(bmi088_t *dev, spi_device_handle_t acc_spi_handle, gpio_nu
     ESP_ERROR_CHECK(gpio_set_level(acc_cs_pin,1));
     vTaskDelay(50 / portTICK_PERIOD_MS);
 #else
-esp_err_t bmi088_init(bmi088_t *dev, SemaphoreHandle_t *i2c_Mutex, int I2C_Master_Num, uint8_t acc_i2c_addr, uint8_t gyr_i2c_addr)
+esp_err_t bmi088_init(bmi088_t *dev, int I2C_Master_Num, uint8_t acc_i2c_addr, uint8_t gyr_i2c_addr)
 {
-    dev->i2c_Mutex = i2c_Mutex;
     dev->I2C_Master_Num = I2C_Master_Num;
     dev->acc_i2c_addr = acc_i2c_addr;
     dev->gyr_i2c_addr = gyr_i2c_addr;
     #endif
     /* Soft Reset Acc */
-    ESP_ERROR_CHECK(writeAccByte(dev, BMI_ACC_SOFTRESET, 0xB6));
+    int count = 0;
+    esp_err_t err;
+    do{
+        err = writeAccByte(dev, BMI_ACC_SOFTRESET, 0xB6);
+        count++;
+    }while(err != ESP_OK || count < 5);
+    ESP_ERROR_CHECK(err);
     vTaskDelay(50 / portTICK_PERIOD_MS);
     /* Check Device ID */
     uint8_t chipID;
@@ -231,7 +220,7 @@ esp_err_t bmi088_init(bmi088_t *dev, SemaphoreHandle_t *i2c_Mutex, int I2C_Maste
 
 esp_err_t bmi088_ReadAccelerometer(bmi088_t *dev)
 {
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     uint8_t rxBuf[7]; // dummyByte + 6 Bytes Data
     spi_transaction_t transaction;
     transaction.flags = 0;
@@ -251,12 +240,8 @@ esp_err_t bmi088_ReadAccelerometer(bmi088_t *dev)
     #else
     uint8_t rxBuf[6];
     esp_err_t err = ESP_ERR_TIMEOUT;
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY);
-    {
-        uint8_t writeBuff = BMI_ACC_DATA;
-        err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->acc_i2c_addr, &writeBuff, 1, rxBuf, sizeof(rxBuf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    uint8_t writeBuff = BMI_ACC_DATA;
+    err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->acc_i2c_addr, &writeBuff, 1, rxBuf, sizeof(rxBuf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     /* Form signed 16-bit integers */
 	int16_t accX = (int16_t) ((rxBuf[1] << 8) | rxBuf[0]);
 	int16_t accY = (int16_t) ((rxBuf[3] << 8) | rxBuf[2]);
@@ -272,7 +257,7 @@ esp_err_t bmi088_ReadAccelerometer(bmi088_t *dev)
 esp_err_t bmi088_ReadGyroskop(bmi088_t *dev)
 {
     uint8_t rxBuf[6]; /* 6 Bytes Data */
-    #ifndef USEI2C
+    #ifndef BMI088_I2C
     spi_transaction_t transaction;
     transaction.flags = 0;
     transaction.cmd = 0;
@@ -285,12 +270,8 @@ esp_err_t bmi088_ReadGyroskop(bmi088_t *dev)
     esp_err_t err = spi_device_polling_transmit(dev->acc_spi_handle, &transaction);
     #else
     esp_err_t err = ESP_ERR_TIMEOUT;
-    xSemaphoreTake(*(dev->i2c_Mutex), portMAX_DELAY);
-    {
-        uint8_t writeBuff = BMI_GYR_DATA;
-        err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, &writeBuff, 1, rxBuf, sizeof(rxBuf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    }
-    xSemaphoreGive(*(dev->i2c_Mutex));
+    uint8_t writeBuff = BMI_GYR_DATA;
+    err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->gyr_i2c_addr, &writeBuff, 1, rxBuf, sizeof(rxBuf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     #endif
         /* Form signed 16-bit integers */
 	int16_t gyrX = (int16_t) ((rxBuf[1] << 8) | rxBuf[0]);

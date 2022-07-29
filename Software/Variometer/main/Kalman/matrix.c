@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <assert.h>
+#include <stdio.h>
 
 #define EXTERN_INLINE_MATRIX INLINE
 #include "matrix.h"
@@ -319,4 +320,17 @@ void matrix_multadd_rowvector(const matrix_t *RESTRICT const a, const matrix_t *
 
         cdata[cIndex++] += total;
     }
+}
+
+void print_matrix(const matrix_t *a)
+{
+    for (size_t row = 0; row < a->rows; row++)
+    {
+        for (size_t col = 0; col < a->cols; col++)
+        {
+            printf("%.2f   ", a->data[row * a->cols + col]);
+        }
+        printf("\n");
+    }
+    
 }
