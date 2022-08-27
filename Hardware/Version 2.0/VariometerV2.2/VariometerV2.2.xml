@@ -1,0 +1,2870 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware\Version 2.0\VariometerV2.2\VariometerV2.2.kicad_sch</source>
+    <date>19/08/2022 22:13:00</date>
+    <tool>Eeschema (6.0.1)</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>VariometerV2.2.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C96446</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C96446"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5712b90d-e939-4f2f-bf57-3f971903d912</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C96446</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C96446"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1f7eb137-93fd-4c71-9f1a-12cb2070c09b</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C52923</field>
+        <field name="LCSC Part #">C2345</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C52923"/>
+      <property name="LCSC Part #" value="C2345"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f192e6e1-34c3-495d-b74f-9e41ab654402</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>10nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C15195</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C15195"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d03f2083-5a86-40f7-ba08-71cc7365993e</tstamps>
+    </comp>
+    <comp ref="C5">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C52923</field>
+        <field name="LCSC Part #">C2345</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C52923"/>
+      <property name="LCSC Part #" value="C2345"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f4e6e2ac-e185-40f2-99e0-49767db8fd92</tstamps>
+    </comp>
+    <comp ref="C6">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C52923</field>
+        <field name="LCSC Part #">C2345</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C52923"/>
+      <property name="LCSC Part #" value="C2345"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e731c11a-a86a-4a58-a122-f3b50d80dece</tstamps>
+    </comp>
+    <comp ref="C7">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>51eb3f3a-1bab-408a-9076-167afced66c2</tstamps>
+    </comp>
+    <comp ref="C8">
+      <value>22uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C59461</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C59461"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ea647cfe-1117-4d53-8318-519564664515</tstamps>
+    </comp>
+    <comp ref="C9">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c9a1ff01-b84d-4b70-ad4d-91f8806e8d8d</tstamps>
+    </comp>
+    <comp ref="C10">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C52923</field>
+        <field name="LCSC Part #">C2345</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C52923"/>
+      <property name="LCSC Part #" value="C2345"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>736345e8-f713-418f-9627-947c05dc49c6</tstamps>
+    </comp>
+    <comp ref="C11">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C14663</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C14663"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1a25fdfc-b887-4092-85f8-f291e5d98eb4</tstamps>
+    </comp>
+    <comp ref="C12">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dd6d280d-0828-4aa2-a58c-1dcf455133bb</tstamps>
+    </comp>
+    <comp ref="C13">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C15849</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C15849"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6d22d819-b3d2-48e2-bd27-7d9ac9a5e513</tstamps>
+    </comp>
+    <comp ref="C14">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C15849</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C15849"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4b117fd3-25aa-48e2-9195-98a895937f7d</tstamps>
+    </comp>
+    <comp ref="C15">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C15849</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C15849"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e7a45aed-1637-4e1f-b9f3-f746b33ef5b3</tstamps>
+    </comp>
+    <comp ref="C16">
+      <value>1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C15849</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C15849"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>225fc94c-15a3-48cc-b4fe-8a0ce3cd374a</tstamps>
+    </comp>
+    <comp ref="C17">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6744669e-f095-4889-a110-ec41e6426601</tstamps>
+    </comp>
+    <comp ref="C18">
+      <value>2.2uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C23630</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C23630"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e0c3b7af-59ab-4e80-8eca-30bdbeefca10</tstamps>
+    </comp>
+    <comp ref="C19">
+      <value>2.2uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C23630</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C23630"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c592d12d-32f7-4a37-a900-48b4a199f929</tstamps>
+    </comp>
+    <comp ref="C20">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C96446</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C96446"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6be14073-22f3-4045-999e-d1bde6ba0c35</tstamps>
+    </comp>
+    <comp ref="C21">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>057025a5-0926-4b8a-8dd9-4e154ca26982</tstamps>
+    </comp>
+    <comp ref="C22">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7a001a6e-0d92-4131-a9ce-ae2e3c429173</tstamps>
+    </comp>
+    <comp ref="C23">
+      <value>220nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C16772</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C16772"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c114ebdb-5e70-4083-a4ee-1cfe5f64b48b</tstamps>
+    </comp>
+    <comp ref="C24">
+      <value>4.7uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C19666</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C19666"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cc0b8ff8-a81e-451b-a907-c24f3f1b82ba</tstamps>
+    </comp>
+    <comp ref="C25">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2b484ce2-27f0-421a-a17f-58ee8cffbee4</tstamps>
+    </comp>
+    <comp ref="C26">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7e640284-984c-4339-a42e-da5c40fd02a3</tstamps>
+    </comp>
+    <comp ref="C27">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C96446</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C96446"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b13a77e-3970-4fc2-a84c-a0e61e2d581f</tstamps>
+    </comp>
+    <comp ref="C28">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e551a9a9-095d-4758-8efc-8bf18c1f4561</tstamps>
+    </comp>
+    <comp ref="C29">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C307331</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="JLCPCB Part #" value="C307331"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>99be91f4-102c-49ca-a43c-cc6cf435202d</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>B5819W SL</value>
+      <footprint>Diode_SMD:D_SOD-123</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C8598</field>
+      </fields>
+      <libsource lib="Device" part="D_Schottky_Small" description="Schottky diode, small symbol"/>
+      <property name="JLCPCB Part #" value="C8598"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>41dccdc4-6210-4430-84da-eb71b4fb06a3</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>RED</value>
+      <footprint>LED_SMD:LED_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C2286</field>
+      </fields>
+      <libsource lib="Device" part="LED_Small" description="Light emitting diode, small symbol"/>
+      <property name="JLCPCB Part #" value="C2286"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9c614a92-4db0-4682-b200-e8121deaa926</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>BLUE</value>
+      <footprint>LED_SMD:LED_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C72041</field>
+      </fields>
+      <libsource lib="Device" part="LED_Small" description="Light emitting diode, small symbol"/>
+      <property name="JLCPCB Part #" value="C72041"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e6372ccc-fa24-4ba5-a157-3b84648a683a</tstamps>
+    </comp>
+    <comp ref="FB1">
+      <value>600 @ 100 MHz</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C1002</field>
+      </fields>
+      <libsource lib="Device" part="FerriteBead_Small" description="Ferrite bead, small symbol"/>
+      <property name="JLCPCB Part #" value="C1002"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f1e60150-a789-465a-81f3-2e5104da06b6</tstamps>
+    </comp>
+    <comp ref="H1">
+      <value>MountingHole_Pad</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2_DIN965_Pad</footprint>
+      <libsource lib="Mechanical" part="MountingHole_Pad" description="Mounting Hole with connection"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5fde482b-2c3e-416d-aef0-aa54bb4d4140</tstamps>
+    </comp>
+    <comp ref="H2">
+      <value>MountingHole_Pad</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2_DIN965_Pad</footprint>
+      <libsource lib="Mechanical" part="MountingHole_Pad" description="Mounting Hole with connection"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c35701b2-0bf7-439e-88ca-641e17ca60ce</tstamps>
+    </comp>
+    <comp ref="H3">
+      <value>MountingHole_Pad</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2_DIN965_Pad</footprint>
+      <libsource lib="Mechanical" part="MountingHole_Pad" description="Mounting Hole with connection"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ad0c2544-75aa-42c5-b372-64c1330d6c32</tstamps>
+    </comp>
+    <comp ref="H4">
+      <value>MountingHole_Pad</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2_DIN965_Pad</footprint>
+      <libsource lib="Mechanical" part="MountingHole_Pad" description="Mounting Hole with connection"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9a956713-77ba-473b-b599-e9d94a651939</tstamps>
+    </comp>
+    <comp ref="IC1">
+      <value>TP4056</value>
+      <footprint>Hardware:SOIC127P600X175-9N</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C16581</field>
+      </fields>
+      <libsource lib="VariometerV2-rescue" part="TP4056-Vario2_Library" description=""/>
+      <property name="JLCPCB Part #" value="C16581"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5f4b7cad-b738-43a8-b6c8-63f297f3fdd3</tstamps>
+    </comp>
+    <comp ref="IC2">
+      <value>MAX809STRG</value>
+      <footprint>SamacSys_Parts:SOT96P237X111-3N</footprint>
+      <datasheet>http://www.onsemi.com/pub/Collateral/MAX809S-D.PDF</datasheet>
+      <fields>
+        <field name="Height">1.11</field>
+        <field name="JLCPCB Part #">C9965</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">MAX809STRG</field>
+        <field name="Mouser Part Number">863-MAX809STRG</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/MAX809STRG?qs=3JMERSakebqcBKnn9fhlxw%3D%3D</field>
+      </fields>
+      <libsource lib="SamacSys_Parts" part="MAX809STRG" description=""/>
+      <property name="Description" value=""/>
+      <property name="Height" value="1.11"/>
+      <property name="Mouser Part Number" value="863-MAX809STRG"/>
+      <property name="Mouser Price/Stock" value="https://www.mouser.co.uk/ProductDetail/onsemi/MAX809STRG?qs=3JMERSakebqcBKnn9fhlxw%3D%3D"/>
+      <property name="Manufacturer_Name" value="onsemi"/>
+      <property name="Manufacturer_Part_Number" value="MAX809STRG"/>
+      <property name="JLCPCB Part #" value="C9965"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>421ff936-1efb-4662-bd45-0ee0d5cfb5e7</tstamps>
+    </comp>
+    <comp ref="IC3">
+      <value>TPS73701DCQR</value>
+      <footprint>SamacSys_Parts:SOT127P706X180-6N</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C56848</field>
+      </fields>
+      <libsource lib="" part="TPS73701DCQR_1" description=""/>
+      <property name="JLCPCB Part #" value="C56848"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f3f6d3ed-502c-491b-8ed0-24c7de15281e</tstamps>
+    </comp>
+    <comp ref="IC4">
+      <value>TPS22916CNYFPR</value>
+      <footprint>SamacSys_Parts:BGA4C40P2X2_78X78X50</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C2655476</field>
+      </fields>
+      <libsource lib="" part="TPS22916CNYFPR_1" description=""/>
+      <property name="JLCPCB Part #" value="C2655476"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>64ae91ce-d743-4505-94ab-419edaa2b81a</tstamps>
+    </comp>
+    <comp ref="IC5">
+      <value>ESP32-S3-WROOM</value>
+      <footprint>SamacSys_Parts:ESP32S3WROOM1</footprint>
+      <datasheet>https://www.mouser.com/catalog/specsheets/Espressif_ESP32_S3_WROOM_1_1U_Preliminary.pdf</datasheet>
+      <fields>
+        <field name="Description">WiFi Modules - 802.11 (Engineering Samples Only) SMD Module, ESP32-S3, 8 MB SPI Flash, PCB Antenna</field>
+        <field name="Height">3.25</field>
+        <field name="JLCPCB Part #">C2913198</field>
+        <field name="Manufacturer_Name">Espressif Systems</field>
+        <field name="Manufacturer_Part_Number">ESP32-S3-WROOM-1</field>
+      </fields>
+      <libsource lib="VariometerV2" part="ESP32-S3-WROOM-1-SamacSys_Parts" description=""/>
+      <property name="Description" value="WiFi Modules - 802.11 (Engineering Samples Only) SMD Module, ESP32-S3, 8 MB SPI Flash, PCB Antenna"/>
+      <property name="Height" value="3.25"/>
+      <property name="Manufacturer_Name" value="Espressif Systems"/>
+      <property name="Manufacturer_Part_Number" value="ESP32-S3-WROOM-1"/>
+      <property name="JLCPCB Part #" value="C2913198"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b1e8daa-8973-47e8-8595-f8d419b95fe2</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>LED_CHRG</value>
+      <footprint>Connector_PinHeader_2.00mm:PinHeader_2x01_P2.00mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_02x01" description="Generic connector, double row, 02x01, this symbol is compatible with counter-clockwise, top-bottom and odd-even numbering schemes., script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>24f075ea-56ed-45c2-8e9b-f9f579f6544f</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>LED_STBY</value>
+      <footprint>Connector_PinHeader_2.00mm:PinHeader_2x01_P2.00mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_02x01" description="Generic connector, double row, 02x01, this symbol is compatible with counter-clockwise, top-bottom and odd-even numbering schemes., script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>19da16a8-75f6-4eb2-bb0e-65c93b4e42d9</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>USB_B_Micro</value>
+      <footprint>Hardware:USB313530A</footprint>
+      <libsource lib="Connector" part="USB_B_Micro" description="USB Micro Type B connector"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>68859fa7-5359-46b0-b00e-2a6e0395166f</tstamps>
+    </comp>
+    <comp ref="J4">
+      <value>Conn_01x08</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x08" description="Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5f4cb696-e6bc-464c-94ab-37f28a906a5c</tstamps>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x02_Male</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector" part="Conn_01x02_Male" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a4372ae3-288f-4a9a-96e7-306ddba718f6</tstamps>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x02</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>982e693e-df07-4cac-a94b-c9d6cbf3dc5e</tstamps>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x05</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x05" description="Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>229202cd-20dc-4eab-ac2e-7f028bc91419</tstamps>
+    </comp>
+    <comp ref="J8">
+      <value>Conn_01x02</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2b94af90-1d39-4b7a-bd0e-39bb3acea9e3</tstamps>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_01x02</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>468889db-0fac-4987-a19f-dbe2ba74e1cf</tstamps>
+    </comp>
+    <comp ref="J10">
+      <value>Conn_01x02</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>22410681-5c59-47c7-87e7-a790cdef52e6</tstamps>
+    </comp>
+    <comp ref="J11">
+      <value>Conn_01x02</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x02" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>db69bd5c-fa2d-4665-b191-5a21e7f0d10b</tstamps>
+    </comp>
+    <comp ref="J12">
+      <value>TFP09-2-12B</value>
+      <footprint>SamacSys_Parts:TFP09212B</footprint>
+      <datasheet>http://images.100y.com.tw/pdf_file/10-TFP09-2-12B.pdf</datasheet>
+      <fields>
+        <field name="Description">Micro SD Card Connector</field>
+        <field name="Height">2.45</field>
+        <field name="Manufacturer_Name">100y</field>
+        <field name="Manufacturer_Part_Number">TFP09-2-12B</field>
+      </fields>
+      <libsource lib="" part="TFP09-2-12B_1" description="Micro SD Card Connector"/>
+      <property name="Description" value="Micro SD Card Connector"/>
+      <property name="Height" value="2.45"/>
+      <property name="Manufacturer_Name" value="100y"/>
+      <property name="Manufacturer_Part_Number" value="TFP09-2-12B"/>
+      <property name="Mouser Part Number" value=""/>
+      <property name="Mouser Price/Stock" value=""/>
+      <property name="Arrow Part Number" value=""/>
+      <property name="Arrow Price/Stock" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>699e7a1b-86d5-4938-afe9-3bf09aac2cb5</tstamps>
+    </comp>
+    <comp ref="J13">
+      <value>5-1814832-2</value>
+      <footprint>Hardware:518148322</footprint>
+      <datasheet>https://www.te.com/usa-en/product-518148321.html?te_bu=Cor&amp;te_type=disp&amp;te_campaign=seda_glo_cor-seda-global-disp-prtnr-fy19-seda-model-bom-cta_sma-317_1&amp;elqCampaignId=32493</datasheet>
+      <fields>
+        <field name="Field4">TE Connectivity</field>
+        <field name="Field5">SMA/QMA socket 50 Ohm | TE Connectivity 518148321 _SMA/QMA socket 50 Ohm RF Connectors_.</field>
+        <field name="Field6">518148321</field>
+        <field name="Field7">None</field>
+        <field name="Field8">Unavailable</field>
+        <field name="Field9">None</field>
+      </fields>
+      <libsource lib="VariometerV2-rescue" part="5-1814832-1-5-1814832-1" description=""/>
+      <property name="Field4" value="TE Connectivity"/>
+      <property name="Field5" value="SMA/QMA socket 50 Ohm | TE Connectivity 518148321 _SMA/QMA socket 50 Ohm RF Connectors_."/>
+      <property name="Field6" value="518148321"/>
+      <property name="Field7" value="None"/>
+      <property name="Field8" value="Unavailable"/>
+      <property name="Field9" value="None"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d9bfe9bd-e251-4410-a386-e2c62742e6ee</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8d25e89f-c51a-4537-a2ef-d124b21d1796</tstamps>
+    </comp>
+    <comp ref="JP2">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>19ec0c04-4dca-40dd-970c-d811c6b1b5fa</tstamps>
+    </comp>
+    <comp ref="JP3">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8cd8fee2-2e20-4951-8fb7-b8aeb4899c01</tstamps>
+    </comp>
+    <comp ref="JP4">
+      <value>SolderJumper_3_Open</value>
+      <footprint>Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels</footprint>
+      <libsource lib="Jumper" part="SolderJumper_3_Open" description="Solder Jumper, 3-pole, open"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6b9f44d2-0ca4-4a46-a131-796675c52d34</tstamps>
+    </comp>
+    <comp ref="L1">
+      <value>47nH</value>
+      <footprint>Inductor_SMD:L_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C346317</field>
+      </fields>
+      <libsource lib="Device" part="L_Small" description="Inductor, small symbol"/>
+      <property name="JLCPCB Part #" value="C346317"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>20fe2883-e973-4a5d-9080-83b48a50abcb</tstamps>
+    </comp>
+    <comp ref="Q1">
+      <value>AO3401A</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C15127</field>
+      </fields>
+      <libsource lib="Transistor_FET" part="AO3401A" description="-4.0A Id, -30V Vds, P-Channel MOSFET, SOT-23"/>
+      <property name="JLCPCB Part #" value="C15127"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ceba6a9a-f03d-4629-ada1-b0a9eee0b8fd</tstamps>
+    </comp>
+    <comp ref="Q2">
+      <value>AO3401A</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C15127</field>
+      </fields>
+      <libsource lib="Transistor_FET" part="AO3401A" description="-4.0A Id, -30V Vds, P-Channel MOSFET, SOT-23"/>
+      <property name="JLCPCB Part #" value="C15127"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c33ac1ee-8d12-4689-bcfb-fdb600cb6b42</tstamps>
+    </comp>
+    <comp ref="Q3">
+      <value>AO3400A</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C20917</field>
+      </fields>
+      <libsource lib="Transistor_FET" part="AO3400A" description="30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23"/>
+      <property name="JLCPCB Part #" value="C20917"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4d409754-b900-4748-904c-0456c4cfe61b</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>1.2k</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C17379</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C17379"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0299721d-1067-4799-8a87-e48d9a48522b</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9987777c-5150-40a6-837e-ede85428a04f</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>77392c0e-9ba0-4f6f-9c99-0372ce421e01</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>47k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25819</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25819"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9e4648d2-2198-4930-9c97-e00411c8d25b</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>20k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C4184</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C4184"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>0b968949-6054-4b49-9bc5-8a85226f381f</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>9.1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C23260</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C23260"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>24558d58-4dca-4fcf-9e95-74eb120d30c1</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>1.5k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C22843</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C22843"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c8fb0e8c-a702-4abf-8afe-bedb64abe0e1</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>1M</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C26083</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C26083"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>66f5c95c-a659-477f-b6fe-630567f7a429</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4c0e7baa-4688-4937-9908-5b057fee00b9</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>33k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25779</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25779"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>956bed0a-6b12-492e-b88a-5d45afb39c14</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6b7dbd3b-1b71-47c2-b6b6-64f5f692f758</tstamps>
+    </comp>
+    <comp ref="R12">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>88d13ce5-5017-4fab-b92f-8e9feba206d0</tstamps>
+    </comp>
+    <comp ref="R15">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6ba453f5-ce46-459e-b5f3-08274a3a992a</tstamps>
+    </comp>
+    <comp ref="R16">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c7942674-1f26-4f28-b03e-40c8f9d35674</tstamps>
+    </comp>
+    <comp ref="R17">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d8403f6f-c2a5-46bb-9ede-ad204313c6c3</tstamps>
+    </comp>
+    <comp ref="R18">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>76dcb581-9054-4528-87cb-63ce185731c7</tstamps>
+    </comp>
+    <comp ref="R19">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>18fe427b-37a7-4fdb-b937-37db4a75d76f</tstamps>
+    </comp>
+    <comp ref="R20">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>18e22798-c1e1-440b-a298-26dc4784a39b</tstamps>
+    </comp>
+    <comp ref="R21">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9c74ba5c-0a54-48fa-8fd2-a1e58cc667c1</tstamps>
+    </comp>
+    <comp ref="R22">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fbafed62-5efe-448a-b17f-32fac64c17a6</tstamps>
+    </comp>
+    <comp ref="R23">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b5438a85-f423-46d3-80a0-117b9725ebc4</tstamps>
+    </comp>
+    <comp ref="R24">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c636b20e-b63a-469d-bcb9-17227e55d2d8</tstamps>
+    </comp>
+    <comp ref="R25">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1b2d67a2-245e-4a97-a325-6acf09b07330</tstamps>
+    </comp>
+    <comp ref="R26">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4cf92318-313f-4ad1-b4f4-73b4e8fcdaed</tstamps>
+    </comp>
+    <comp ref="R27">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8e967023-aad6-4155-b212-b359268078c7</tstamps>
+    </comp>
+    <comp ref="R28">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5cb98823-54d9-4c61-9501-784d12593260</tstamps>
+    </comp>
+    <comp ref="R29">
+      <value>22</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25092</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25092"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3e9f7547-eb33-489b-a966-2ce13f2be88d</tstamps>
+    </comp>
+    <comp ref="R30">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>61e26ac4-2be7-4914-b513-83405f3ac65f</tstamps>
+    </comp>
+    <comp ref="R31">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c93418f4-9e71-4afc-b9a0-d8472c3ce1df</tstamps>
+    </comp>
+    <comp ref="R32">
+      <value>1M</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C26083</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C26083"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9328c48b-eef7-4493-b193-154e49ffa5d9</tstamps>
+    </comp>
+    <comp ref="R33">
+      <value>0</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C17477</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C17477"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>453687b7-3c6b-407c-a1cc-a0d1b6a9f729</tstamps>
+    </comp>
+    <comp ref="R34">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>326f9778-7b79-4d09-a8ad-033373ee82a9</tstamps>
+    </comp>
+    <comp ref="R35">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25744</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25744"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2410438b-24fb-48bc-9614-263d798ade50</tstamps>
+    </comp>
+    <comp ref="R36">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dcdbcbf9-7aea-4250-aee2-9503ee7ea0ae</tstamps>
+    </comp>
+    <comp ref="R37">
+      <value>10k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25804</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25804"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ef4ba482-6d39-41e7-a91a-758314e25642</tstamps>
+    </comp>
+    <comp ref="R38">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C21190</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C21190"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3a47c926-1160-4806-b8f9-20fff47e7fb2</tstamps>
+    </comp>
+    <comp ref="R39">
+      <value>100k</value>
+      <footprint>Resistor_SMD:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C25741</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="JLCPCB Part #" value="C25741"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e2c8a344-fa64-4e32-96a6-f44c87a9c8c8</tstamps>
+    </comp>
+    <comp ref="SW1">
+      <value>Switch_SW_Push</value>
+      <footprint>Button_Switch_THT:SW_PUSH_6mm</footprint>
+      <libsource lib="VariometerV2-rescue" part="Switch_SW_Push-VariometerV2-cache" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3daf8dbe-bfbf-436f-b61f-547416eda5a0</tstamps>
+    </comp>
+    <comp ref="SW2">
+      <value>Switch_SW_Push</value>
+      <footprint>Button_Switch_THT:SW_PUSH_6mm</footprint>
+      <libsource lib="VariometerV2-rescue" part="Switch_SW_Push-VariometerV2-cache" description=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6d11fbe1-f045-4483-b82f-a859539bc2f1</tstamps>
+    </comp>
+    <comp ref="TP1">
+      <value>3.1V TP</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d563df24-8aae-473c-90ab-d7558a128a7a</tstamps>
+    </comp>
+    <comp ref="TP2">
+      <value>TP_BATTERY</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b1d5445e-f7c3-429b-b44b-b46a41be3fc6</tstamps>
+    </comp>
+    <comp ref="TP3">
+      <value>TP_DAT2</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ace7af41-b7fe-4718-96d7-e65e52d9a746</tstamps>
+    </comp>
+    <comp ref="TP4">
+      <value>TP_DAT3</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fe35cec7-cf5e-4040-8061-b1427ee85e35</tstamps>
+    </comp>
+    <comp ref="TP5">
+      <value>TP_CMD</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>95041069-fe9b-4fe4-897a-31752cbf460f</tstamps>
+    </comp>
+    <comp ref="TP7">
+      <value>TP_CLK</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>836e7d5b-796f-4657-8fb4-531cf2b979c0</tstamps>
+    </comp>
+    <comp ref="TP8">
+      <value>TP_DAT0</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>113135d9-3af3-45e2-852a-6191363674d6</tstamps>
+    </comp>
+    <comp ref="TP9">
+      <value>TP_DAT1</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b0c68371-1e94-4253-aa60-e5324931087a</tstamps>
+    </comp>
+    <comp ref="TP10">
+      <value>TP_CD</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d8642041-7bda-4379-8425-93b1646aa849</tstamps>
+    </comp>
+    <comp ref="TP11">
+      <value>TP_BCLK</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>60422fb0-f014-44be-9878-3edf2fcdd523</tstamps>
+    </comp>
+    <comp ref="TP12">
+      <value>TP_LRCLK</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3a08eb80-2fec-48ef-bf75-98c77901a989</tstamps>
+    </comp>
+    <comp ref="TP13">
+      <value>TP_DIN</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>200d0d72-7140-496e-b307-798f590e04b4</tstamps>
+    </comp>
+    <comp ref="TP14">
+      <value>TP_SDA</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c7920af9-f0ca-493c-9e80-7052b97d6c99</tstamps>
+    </comp>
+    <comp ref="TP15">
+      <value>TP_SCL</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bede4ae3-65ee-491d-93c5-559f4aaf672f</tstamps>
+    </comp>
+    <comp ref="TP16">
+      <value>TP_TX</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b3f85fec-dff0-4357-8074-8f05bb54d39d</tstamps>
+    </comp>
+    <comp ref="TP17">
+      <value>TP_RX</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>372e27ec-b3ea-4267-a038-11e130147637</tstamps>
+    </comp>
+    <comp ref="TP18">
+      <value>TP_D+</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>edb557d8-b427-4187-a3a0-8c69b6b9f15c</tstamps>
+    </comp>
+    <comp ref="TP19">
+      <value>TP_D-</value>
+      <footprint>TestPoint:TestPoint_Pad_D1.5mm</footprint>
+      <libsource lib="Connector" part="TestPoint" description="test point"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>57548200-abe4-438a-9a8e-527562d027da</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>SRV05-4</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.onsemi.com/pub/Collateral/SRV05-4-D.PDF</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C85364</field>
+      </fields>
+      <libsource lib="Power_Protection" part="SRV05-4" description="ESD Protection Diodes with Low Clamping Voltage, SOT-23-6"/>
+      <property name="JLCPCB Part #" value="C85364"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>13db847d-0e2f-444a-afb8-527df89a34bf</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>SRV05-4</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.onsemi.com/pub/Collateral/SRV05-4-D.PDF</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C85364</field>
+      </fields>
+      <libsource lib="Power_Protection" part="SRV05-4" description="ESD Protection Diodes with Low Clamping Voltage, SOT-23-6"/>
+      <property name="JLCPCB Part #" value="C85364"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3aeeec3d-5285-4550-9622-c1c01b2a777b</tstamps>
+    </comp>
+    <comp ref="U3">
+      <value>SRV05-4</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <datasheet>http://www.onsemi.com/pub/Collateral/SRV05-4-D.PDF</datasheet>
+      <fields>
+        <field name="JLCPCB Part #">C85364</field>
+      </fields>
+      <libsource lib="Power_Protection" part="SRV05-4" description="ESD Protection Diodes with Low Clamping Voltage, SOT-23-6"/>
+      <property name="JLCPCB Part #" value="C85364"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>99e48fb8-c7f7-4487-b669-b0f9a6eb0e67</tstamps>
+    </comp>
+    <comp ref="U4">
+      <value>MAX98357A</value>
+      <footprint>SamacSys_Parts:QFN50P300X300X80-17N</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C910544</field>
+      </fields>
+      <libsource lib="VariometerV2" part="MAX98357A" description=""/>
+      <property name="JLCPCB Part #" value="C910544"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ee9901b6-9246-43c1-9ce1-96856e9a1a1f</tstamps>
+    </comp>
+    <comp ref="U5">
+      <value>QMC5883L</value>
+      <footprint>SamacSys_Parts:QMC5883L</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C976032</field>
+      </fields>
+      <libsource lib="VariometerV2" part="QMC5883L" description=""/>
+      <property name="JLCPCB Part #" value="C976032"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>118a9bdc-2b1f-4f3f-b4bd-5885991da4e2</tstamps>
+    </comp>
+    <comp ref="U6">
+      <value>BMI088</value>
+      <footprint>Hardware:BMI088</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C194919</field>
+      </fields>
+      <libsource lib="VariometerV2-rescue" part="BMI088-Vario2_Library" description=""/>
+      <property name="JLCPCB Part #" value="C194919"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c20b96ad-d227-4526-b6eb-6eb51a564256</tstamps>
+    </comp>
+    <comp ref="U7">
+      <value>ATGM336H-5N31</value>
+      <footprint>Hardware:ATGM336H5N31</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C90770</field>
+      </fields>
+      <libsource lib="VariometerV2-rescue" part="ATGM336H-5N31-Vario2_Library" description=""/>
+      <property name="JLCPCB Part #" value="C90770"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5e35b737-2d6e-47db-a05b-42e2064d2645</tstamps>
+    </comp>
+    <comp ref="U8">
+      <value>DPS310</value>
+      <footprint>SamacSys_Parts:DPS310XTSA1</footprint>
+      <fields>
+        <field name="JLCPCB Part #">C130156</field>
+      </fields>
+      <libsource lib="VariometerV2" part="DPS310" description=""/>
+      <property name="JLCPCB Part #" value="C130156"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="VariometerV2.2.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dc7b6cc1-f84d-4e0c-afea-81d4c9fdd657</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="" part="TFP09-2-12B_1">
+      <description>Micro SD Card Connector</description>
+      <docs>http://images.100y.com.tw/pdf_file/10-TFP09-2-12B.pdf</docs>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">TFP09-2-12B_1</field>
+        <field name="Footprint">TFP09212B</field>
+        <field name="Datasheet">http://images.100y.com.tw/pdf_file/10-TFP09-2-12B.pdf</field>
+        <field name="Description">Micro SD Card Connector</field>
+        <field name="Height">2.45</field>
+        <field name="Manufacturer_Name">100y</field>
+        <field name="Manufacturer_Part_Number">TFP09-2-12B</field>
+      </fields>
+      <pins>
+        <pin num="1" name="DAT2" type="passive"/>
+        <pin num="2" name="CD/DAT3" type="passive"/>
+        <pin num="3" name="CMD" type="passive"/>
+        <pin num="4" name="VDD" type="passive"/>
+        <pin num="5" name="CLK" type="passive"/>
+        <pin num="6" name="VSS" type="passive"/>
+        <pin num="7" name="DAT0" type="passive"/>
+        <pin num="8" name="DAT1" type="passive"/>
+        <pin num="9" name="CARD_DETECTION" type="passive"/>
+        <pin num="10" name="GND" type="passive"/>
+        <pin num="11" name="11" type="passive"/>
+        <pin num="12" name="12" type="passive"/>
+        <pin num="13" name="13" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="" part="TPS22916CNYFPR_1">
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">TPS22916CNYFPR_1</field>
+      </fields>
+      <pins>
+        <pin num="A1" name="VOUT" type="power_out"/>
+        <pin num="A2" name="VIN" type="input"/>
+        <pin num="B1" name="GND" type="input"/>
+        <pin num="B2" name="ON" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="" part="TPS73701DCQR_1">
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">TPS73701DCQR_1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Vin" type="input"/>
+        <pin num="2" name="Vout" type="power_out"/>
+        <pin num="3" name="GND_1" type="input"/>
+        <pin num="4" name="FB" type="input"/>
+        <pin num="5" name="EN" type="input"/>
+        <pin num="6" name="GND_2" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x02_Male">
+      <description>Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Male</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="TestPoint">
+      <description>test point</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Pin*</fp>
+        <fp>Test*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TP</field>
+        <field name="Value">TestPoint</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="USB_B_Micro">
+      <description>USB Micro Type B connector</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>USB*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">USB_B_Micro</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VBUS" type="power_out"/>
+        <pin num="2" name="D-" type="bidirectional"/>
+        <pin num="3" name="D+" type="bidirectional"/>
+        <pin num="4" name="ID" type="passive"/>
+        <pin num="5" name="GND" type="power_out"/>
+        <pin num="6" name="Shield" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_01x02">
+      <description>Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_01x05">
+      <description>Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x05</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_01x08">
+      <description>Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x08</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_02x01">
+      <description>Generic connector, double row, 02x01, this symbol is compatible with counter-clockwise, top-bottom and odd-even numbering schemes., script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_2x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_02x01</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Small">
+      <description>Unpolarized capacitor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D_Schottky_Small">
+      <description>Schottky diode, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="FerriteBead_Small">
+      <description>Ferrite bead, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+        <fp>*Ferrite*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">FB</field>
+        <field name="Value">FerriteBead_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED_Small">
+      <description>Light emitting diode, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="L_Small">
+      <description>Inductor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Choke_*</fp>
+        <fp>*Coil*</fp>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">L_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Small">
+      <description>Resistor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_3_Open">
+      <description>Solder Jumper, 3-pole, open</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>SolderJumper*Open*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_3_Open</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="C" type="input"/>
+        <pin num="3" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Mechanical" part="MountingHole_Pad">
+      <description>Mounting Hole with connection</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>MountingHole*Pad*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">MountingHole_Pad</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="Power_Protection" part="SRV05-4">
+      <description>ESD Protection Diodes with Low Clamping Voltage, SOT-23-6</description>
+      <docs>http://www.onsemi.com/pub/Collateral/SRV05-4-D.PDF</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">SRV05-4</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23-6</field>
+        <field name="Datasheet">http://www.onsemi.com/pub/Collateral/SRV05-4-D.PDF</field>
+      </fields>
+      <pins>
+        <pin num="1" name="IO1" type="passive"/>
+        <pin num="2" name="VN" type="passive"/>
+        <pin num="3" name="IO2" type="passive"/>
+        <pin num="4" name="IO3" type="passive"/>
+        <pin num="5" name="VP" type="passive"/>
+        <pin num="6" name="IO4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="SamacSys_Parts" part="MAX809STRG">
+      <docs>http://www.onsemi.com/pub/Collateral/MAX809S-D.PDF</docs>
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">MAX809STRG</field>
+        <field name="Footprint">SOT96P237X111-3N</field>
+        <field name="Datasheet">http://www.onsemi.com/pub/Collateral/MAX809S-D.PDF</field>
+        <field name="Height">1.11</field>
+        <field name="Mouser Part Number">863-MAX809STRG</field>
+        <field name="Mouser Price/Stock">https://www.mouser.co.uk/ProductDetail/onsemi/MAX809STRG?qs=3JMERSakebqcBKnn9fhlxw%3D%3D</field>
+        <field name="Manufacturer_Name">onsemi</field>
+        <field name="Manufacturer_Part_Number">MAX809STRG</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_in"/>
+        <pin num="2" name="~{RESET}" type="passive"/>
+        <pin num="3" name="VCC" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="Transistor_FET" part="AO3400A">
+      <description>30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23</description>
+      <docs>http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">AO3400A</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">http://www.aosmd.com/pdfs/datasheet/AO3400A.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="G" type="input"/>
+        <pin num="2" name="S" type="passive"/>
+        <pin num="3" name="D" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Transistor_FET" part="AO3401A">
+      <description>-4.0A Id, -30V Vds, P-Channel MOSFET, SOT-23</description>
+      <docs>http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf</docs>
+      <footprints>
+        <fp>SOT?23*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">AO3401A</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="G" type="input"/>
+        <pin num="2" name="S" type="passive"/>
+        <pin num="3" name="D" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2" part="DPS310">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">DPS310</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="input"/>
+        <pin num="2" name="CSB" type="input"/>
+        <pin num="3" name="SDI" type="input"/>
+        <pin num="4" name="SCK" type="input"/>
+        <pin num="5" name="SDO" type="input"/>
+        <pin num="6" name="VDDIO" type="input"/>
+        <pin num="7" name="GND" type="input"/>
+        <pin num="8" name="VDD" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2" part="ESP32-S3-WROOM-1-SamacSys_Parts">
+      <docs>https://www.mouser.com/catalog/specsheets/Espressif_ESP32_S3_WROOM_1_1U_Preliminary.pdf</docs>
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">ESP32-S3-WROOM-1-SamacSys_Parts</field>
+        <field name="Footprint">ESP32S3WROOM1</field>
+        <field name="Datasheet">https://www.mouser.com/catalog/specsheets/Espressif_ESP32_S3_WROOM_1_1U_Preliminary.pdf</field>
+        <field name="Description">WiFi Modules - 802.11 (Engineering Samples Only) SMD Module, ESP32-S3, 8 MB SPI Flash, PCB Antenna</field>
+        <field name="Height">3.25</field>
+        <field name="Manufacturer_Name">Espressif Systems</field>
+        <field name="Manufacturer_Part_Number">ESP32-S3-WROOM-1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND_1" type="passive"/>
+        <pin num="2" name="3V3" type="passive"/>
+        <pin num="3" name="EN" type="passive"/>
+        <pin num="4" name="IO4" type="passive"/>
+        <pin num="5" name="IO5" type="passive"/>
+        <pin num="6" name="IO6" type="passive"/>
+        <pin num="7" name="IO7" type="passive"/>
+        <pin num="8" name="IO15" type="passive"/>
+        <pin num="9" name="IO16" type="passive"/>
+        <pin num="10" name="IO17" type="passive"/>
+        <pin num="11" name="IO18" type="passive"/>
+        <pin num="12" name="IO8" type="passive"/>
+        <pin num="13" name="IO19" type="passive"/>
+        <pin num="14" name="IO20" type="passive"/>
+        <pin num="15" name="IO3" type="passive"/>
+        <pin num="16" name="IO46" type="passive"/>
+        <pin num="17" name="IO9" type="passive"/>
+        <pin num="18" name="IO10" type="passive"/>
+        <pin num="19" name="IO11" type="passive"/>
+        <pin num="20" name="IO12" type="passive"/>
+        <pin num="21" name="IO13" type="passive"/>
+        <pin num="22" name="IO14" type="passive"/>
+        <pin num="23" name="IO21" type="passive"/>
+        <pin num="24" name="IO47" type="passive"/>
+        <pin num="25" name="IO48" type="passive"/>
+        <pin num="26" name="IO45" type="passive"/>
+        <pin num="27" name="IO0" type="passive"/>
+        <pin num="28" name="IO35" type="passive"/>
+        <pin num="29" name="IO36" type="passive"/>
+        <pin num="30" name="IO37" type="passive"/>
+        <pin num="31" name="IO38" type="passive"/>
+        <pin num="32" name="IO39" type="passive"/>
+        <pin num="33" name="IO40" type="passive"/>
+        <pin num="34" name="IO41" type="passive"/>
+        <pin num="35" name="IO42" type="passive"/>
+        <pin num="36" name="RXD0" type="passive"/>
+        <pin num="37" name="TXD0" type="passive"/>
+        <pin num="38" name="IO2" type="passive"/>
+        <pin num="39" name="IO1" type="passive"/>
+        <pin num="40" name="GND_2" type="passive"/>
+        <pin num="41" name="GND_3" type="passive"/>
+        <pin num="42" name="GND_4" type="passive"/>
+        <pin num="43" name="GND_5" type="passive"/>
+        <pin num="44" name="GND_6" type="passive"/>
+        <pin num="45" name="GND_7" type="passive"/>
+        <pin num="46" name="GND_8" type="passive"/>
+        <pin num="47" name="GND_9" type="passive"/>
+        <pin num="48" name="GND_10" type="passive"/>
+        <pin num="49" name="GND_11" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2" part="MAX98357A">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">MAX98357A</field>
+      </fields>
+      <pins>
+        <pin num="1" name="DIN" type="input"/>
+        <pin num="2" name="GAIN" type="output"/>
+        <pin num="3" name="GND" type="input"/>
+        <pin num="4" name="SD_MODE" type="input"/>
+        <pin num="5" name="N.C." type="input"/>
+        <pin num="6" name="N.C." type="input"/>
+        <pin num="7" name="VDD" type="input"/>
+        <pin num="8" name="VDD" type="input"/>
+        <pin num="9" name="OUTP" type="output"/>
+        <pin num="10" name="OUTN" type="output"/>
+        <pin num="11" name="GND" type="input"/>
+        <pin num="12" name="N.C." type="input"/>
+        <pin num="13" name="N.C." type="input"/>
+        <pin num="14" name="LRCLK" type="input"/>
+        <pin num="15" name="GND" type="input"/>
+        <pin num="16" name="BCLK" type="input"/>
+        <pin num="17" name="EP" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2" part="QMC5883L">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">QMC5883L</field>
+      </fields>
+      <pins>
+        <pin num="1" name="SCL" type="input"/>
+        <pin num="2" name="VDD" type="input"/>
+        <pin num="3" name="NC_1" type="input"/>
+        <pin num="4" name="S1" type="input"/>
+        <pin num="5" name="NC_2" type="input"/>
+        <pin num="6" name="NC_3" type="input"/>
+        <pin num="7" name="NC_4" type="input"/>
+        <pin num="8" name="SETP" type="input"/>
+        <pin num="9" name="GND" type="input"/>
+        <pin num="10" name="C1" type="input"/>
+        <pin num="11" name="GND" type="input"/>
+        <pin num="12" name="SETC" type="input"/>
+        <pin num="13" name="VDDIO" type="input"/>
+        <pin num="14" name="NC_5" type="input"/>
+        <pin num="15" name="DRDY" type="input"/>
+        <pin num="16" name="SDA" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2-rescue" part="5-1814832-1-5-1814832-1">
+      <docs>https://www.te.com/usa-en/product-518148321.html?te_bu=Cor&amp;te_type=disp&amp;te_campaign=seda_glo_cor-seda-global-disp-prtnr-fy19-seda-model-bom-cta_sma-317_1&amp;elqCampaignId=32493</docs>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">5-1814832-1-5-1814832-1</field>
+        <field name="Footprint">TE_5-1814832-1</field>
+        <field name="Datasheet">https://www.te.com/usa-en/product-518148321.html?te_bu=Cor&amp;te_type=disp&amp;te_campaign=seda_glo_cor-seda-global-disp-prtnr-fy19-seda-model-bom-cta_sma-317_1&amp;elqCampaignId=32493</field>
+        <field name="Field4">TE Connectivity</field>
+        <field name="Field5">SMA/QMA socket 50 Ohm | TE Connectivity 518148321 _SMA/QMA socket 50 Ohm RF Connectors_.</field>
+        <field name="Field6">518148321</field>
+        <field name="Field7">None</field>
+        <field name="Field8">Unavailable</field>
+        <field name="Field9">None</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="2" type="passive"/>
+        <pin num="4" name="2" type="passive"/>
+        <pin num="5" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2-rescue" part="ATGM336H-5N31-Vario2_Library">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">ATGM336H-5N31-Vario2_Library</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="input"/>
+        <pin num="2" name="TXD" type="input"/>
+        <pin num="3" name="RXD" type="input"/>
+        <pin num="4" name="1PPS" type="input"/>
+        <pin num="5" name="ON/OFF" type="input"/>
+        <pin num="6" name="VBAT" type="input"/>
+        <pin num="7" name="NC" type="input"/>
+        <pin num="8" name="VCC" type="input"/>
+        <pin num="9" name="nRESET" type="input"/>
+        <pin num="10" name="GND" type="input"/>
+        <pin num="11" name="RF_IN" type="input"/>
+        <pin num="12" name="GND" type="input"/>
+        <pin num="13" name="NC" type="input"/>
+        <pin num="14" name="VCC_RF" type="input"/>
+        <pin num="15" name="Reserved" type="input"/>
+        <pin num="16" name="SDA" type="input"/>
+        <pin num="17" name="SCL" type="input"/>
+        <pin num="18" name="Reserved" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2-rescue" part="BMI088-Vario2_Library">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">BMI088-Vario2_Library</field>
+      </fields>
+      <pins>
+        <pin num="1" name="INT2" type="input"/>
+        <pin num="2" name="NC" type="input"/>
+        <pin num="3" name="VDD" type="input"/>
+        <pin num="4" name="GNDA" type="input"/>
+        <pin num="5" name="CSB2" type="input"/>
+        <pin num="6" name="GNDIO" type="input"/>
+        <pin num="7" name="PS" type="input"/>
+        <pin num="8" name="SCK" type="input"/>
+        <pin num="9" name="SDI" type="input"/>
+        <pin num="10" name="SDO2" type="input"/>
+        <pin num="11" name="VDDIO" type="input"/>
+        <pin num="12" name="INT3" type="input"/>
+        <pin num="13" name="INT4" type="input"/>
+        <pin num="14" name="CSB1" type="input"/>
+        <pin num="15" name="SDO1" type="input"/>
+        <pin num="16" name="INT1" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2-rescue" part="Switch_SW_Push-VariometerV2-cache">
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">Switch_SW_Push-VariometerV2-cache</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="VariometerV2-rescue" part="TP4056-Vario2_Library">
+      <fields>
+        <field name="Reference">IC</field>
+        <field name="Value">TP4056-Vario2_Library</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Temp" type="input"/>
+        <pin num="2" name="PROG" type="input"/>
+        <pin num="3" name="GND" type="input"/>
+        <pin num="4" name="VCC" type="input"/>
+        <pin num="5" name="BAT" type="input"/>
+        <pin num="6" name="STDBY" type="input"/>
+        <pin num="7" name="CHRG" type="input"/>
+        <pin num="8" name="CE" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Connector.kicad_sym</uri>
+    </library>
+    <library logical="Connector_Generic">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Connector_Generic.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Device.kicad_sym</uri>
+    </library>
+    <library logical="Jumper">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Jumper.kicad_sym</uri>
+    </library>
+    <library logical="Mechanical">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Mechanical.kicad_sym</uri>
+    </library>
+    <library logical="Power_Protection">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Power_Protection.kicad_sym</uri>
+    </library>
+    <library logical="SamacSys_Parts">
+      <uri>C:/Users/Oliver/Documents/LibraryLoaderBibliothek/SamacSys_Parts.lib</uri>
+    </library>
+    <library logical="Transistor_FET">
+      <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Transistor_FET.kicad_sym</uri>
+    </library>
+    <library logical="VariometerV2">
+      <uri>C:/Users/Oliver/Documents/GitHub/Paula/VariometerV2/Hardware/Version 2.0/VariometerV2.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="+3.1V_SW">
+      <node ref="C19" pin="1" pintype="passive"/>
+      <node ref="C22" pin="1" pintype="passive"/>
+      <node ref="C25" pin="1" pintype="passive"/>
+      <node ref="C26" pin="1" pintype="passive"/>
+      <node ref="C27" pin="1" pintype="passive"/>
+      <node ref="C28" pin="1" pintype="passive"/>
+      <node ref="C29" pin="1" pintype="passive"/>
+      <node ref="C7" pin="1" pintype="passive"/>
+      <node ref="D2" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="D3" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="FB1" pin="2" pintype="passive"/>
+      <node ref="IC4" pin="A1" pinfunction="VOUT" pintype="power_out"/>
+      <node ref="J4" pin="8" pinfunction="Pin_8" pintype="passive"/>
+      <node ref="J7" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="JP1" pin="3" pinfunction="B" pintype="passive"/>
+      <node ref="R24" pin="1" pintype="passive"/>
+      <node ref="R25" pin="1" pintype="passive"/>
+      <node ref="R26" pin="1" pintype="passive"/>
+      <node ref="R27" pin="1" pintype="passive"/>
+      <node ref="R28" pin="1" pintype="passive"/>
+      <node ref="R30" pin="1" pintype="passive"/>
+      <node ref="R31" pin="1" pintype="passive"/>
+      <node ref="R34" pin="1" pintype="passive"/>
+      <node ref="R35" pin="1" pintype="passive"/>
+      <node ref="R36" pin="1" pintype="passive"/>
+      <node ref="R37" pin="1" pintype="passive"/>
+      <node ref="U5" pin="13" pinfunction="VDDIO" pintype="input"/>
+      <node ref="U5" pin="2" pinfunction="VDD" pintype="input"/>
+      <node ref="U5" pin="4" pinfunction="S1" pintype="input"/>
+      <node ref="U6" pin="11" pinfunction="VDDIO" pintype="input"/>
+      <node ref="U6" pin="14" pinfunction="CSB1" pintype="input"/>
+      <node ref="U6" pin="3" pinfunction="VDD" pintype="input"/>
+      <node ref="U6" pin="7" pinfunction="PS" pintype="input"/>
+      <node ref="U7" pin="8" pinfunction="VCC" pintype="input"/>
+      <node ref="U8" pin="6" pinfunction="VDDIO" pintype="input"/>
+      <node ref="U8" pin="8" pinfunction="VDD" pintype="input"/>
+    </net>
+    <net code="2" name="+3.1V_UNSW">
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="C8" pin="1" pintype="passive"/>
+      <node ref="C9" pin="1" pintype="passive"/>
+      <node ref="IC3" pin="2" pinfunction="Vout" pintype="power_out"/>
+      <node ref="IC4" pin="A2" pinfunction="VIN" pintype="input"/>
+      <node ref="IC5" pin="2" pinfunction="3V3" pintype="passive"/>
+      <node ref="JP1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+      <node ref="R16" pin="1" pintype="passive"/>
+      <node ref="R18" pin="1" pintype="passive"/>
+      <node ref="R20" pin="1" pintype="passive"/>
+      <node ref="R22" pin="1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="TP1" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="3" name="+5V">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="IC1" pin="4" pinfunction="VCC" pintype="input"/>
+      <node ref="IC1" pin="8" pinfunction="CE" pintype="input"/>
+      <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="VBUS" pintype="power_out"/>
+      <node ref="R15" pin="1" pintype="passive"/>
+    </net>
+    <net code="4" name="+BATT">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="IC1" pin="5" pinfunction="BAT" pintype="input"/>
+      <node ref="J5" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="D" pintype="passive"/>
+      <node ref="Q2" pin="2" pinfunction="S" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+    </net>
+    <net code="5" name="3.1V_SDCARD">
+      <node ref="C17" pin="1" pintype="passive"/>
+      <node ref="C18" pin="1" pintype="passive"/>
+      <node ref="FB1" pin="1" pintype="passive"/>
+      <node ref="J12" pin="4" pinfunction="VDD" pintype="passive"/>
+      <node ref="U2" pin="6" pinfunction="IO4" pintype="passive"/>
+    </net>
+    <net code="6" name="ACC_INT">
+      <node ref="JP4" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="U6" pin="16" pinfunction="INT1" pintype="input"/>
+    </net>
+    <net code="7" name="AUDIO_EN">
+      <node ref="IC5" pin="23" pinfunction="IO21" pintype="passive"/>
+      <node ref="R33" pin="1" pintype="passive"/>
+    </net>
+    <net code="8" name="AUDIO_GAIN">
+      <node ref="IC5" pin="24" pinfunction="IO47" pintype="passive"/>
+      <node ref="U4" pin="2" pinfunction="GAIN" pintype="output"/>
+    </net>
+    <net code="9" name="AUDIO_OUTN">
+      <node ref="J6" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="U4" pin="10" pinfunction="OUTN" pintype="output"/>
+    </net>
+    <net code="10" name="AUDIO_OUTP">
+      <node ref="J6" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="U4" pin="9" pinfunction="OUTP" pintype="output"/>
+    </net>
+    <net code="11" name="BAT_ADC">
+      <node ref="IC5" pin="12" pinfunction="IO8" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+      <node ref="TP2" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="12" name="BAT_MS">
+      <node ref="IC5" pin="15" pinfunction="IO3" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+    </net>
+    <net code="13" name="BUTTON_1">
+      <node ref="C13" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="39" pinfunction="IO1" pintype="passive"/>
+      <node ref="R17" pin="2" pintype="passive"/>
+    </net>
+    <net code="14" name="BUTTON_2">
+      <node ref="C14" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="38" pinfunction="IO2" pintype="passive"/>
+      <node ref="R19" pin="2" pintype="passive"/>
+    </net>
+    <net code="15" name="BUTTON_3">
+      <node ref="C15" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="17" pinfunction="IO9" pintype="passive"/>
+      <node ref="R21" pin="2" pintype="passive"/>
+    </net>
+    <net code="16" name="BUTTON_4">
+      <node ref="C16" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="25" pinfunction="IO48" pintype="passive"/>
+      <node ref="R23" pin="2" pintype="passive"/>
+    </net>
+    <net code="17" name="EN">
+      <node ref="C10" pin="1" pintype="passive"/>
+      <node ref="C11" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="3" pinfunction="EN" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="SW1" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="18" name="GND">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C10" pin="2" pintype="passive"/>
+      <node ref="C11" pin="2" pintype="passive"/>
+      <node ref="C12" pin="2" pintype="passive"/>
+      <node ref="C13" pin="2" pintype="passive"/>
+      <node ref="C14" pin="2" pintype="passive"/>
+      <node ref="C15" pin="2" pintype="passive"/>
+      <node ref="C16" pin="2" pintype="passive"/>
+      <node ref="C17" pin="2" pintype="passive"/>
+      <node ref="C18" pin="2" pintype="passive"/>
+      <node ref="C19" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C20" pin="2" pintype="passive"/>
+      <node ref="C21" pin="2" pintype="passive"/>
+      <node ref="C22" pin="2" pintype="passive"/>
+      <node ref="C24" pin="2" pintype="passive"/>
+      <node ref="C25" pin="2" pintype="passive"/>
+      <node ref="C26" pin="2" pintype="passive"/>
+      <node ref="C27" pin="2" pintype="passive"/>
+      <node ref="C28" pin="2" pintype="passive"/>
+      <node ref="C29" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="C7" pin="2" pintype="passive"/>
+      <node ref="C8" pin="2" pintype="passive"/>
+      <node ref="C9" pin="2" pintype="passive"/>
+      <node ref="H1" pin="1" pinfunction="1" pintype="input"/>
+      <node ref="H2" pin="1" pinfunction="1" pintype="input"/>
+      <node ref="H3" pin="1" pinfunction="1" pintype="input"/>
+      <node ref="H4" pin="1" pinfunction="1" pintype="input"/>
+      <node ref="IC1" pin="1" pinfunction="Temp" pintype="input"/>
+      <node ref="IC1" pin="3" pinfunction="GND" pintype="input"/>
+      <node ref="IC2" pin="1" pinfunction="GND" pintype="power_in"/>
+      <node ref="IC3" pin="3" pinfunction="GND_1" pintype="input"/>
+      <node ref="IC3" pin="6" pinfunction="GND_2" pintype="input"/>
+      <node ref="IC4" pin="B1" pinfunction="GND" pintype="input"/>
+      <node ref="IC5" pin="1" pinfunction="GND_1" pintype="passive"/>
+      <node ref="IC5" pin="40" pinfunction="GND_2" pintype="passive"/>
+      <node ref="IC5" pin="41" pinfunction="GND_3" pintype="passive"/>
+      <node ref="IC5" pin="42" pinfunction="GND_4" pintype="passive"/>
+      <node ref="IC5" pin="43" pinfunction="GND_5" pintype="passive"/>
+      <node ref="IC5" pin="44" pinfunction="GND_6" pintype="passive"/>
+      <node ref="IC5" pin="45" pinfunction="GND_7" pintype="passive"/>
+      <node ref="IC5" pin="46" pinfunction="GND_8" pintype="passive"/>
+      <node ref="IC5" pin="47" pinfunction="GND_9" pintype="passive"/>
+      <node ref="IC5" pin="48" pinfunction="GND_10" pintype="passive"/>
+      <node ref="IC5" pin="49" pinfunction="GND_11" pintype="passive"/>
+      <node ref="J10" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J11" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J12" pin="10" pinfunction="GND" pintype="passive"/>
+      <node ref="J12" pin="6" pinfunction="VSS" pintype="passive"/>
+      <node ref="J13" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="J13" pin="3" pinfunction="2" pintype="passive"/>
+      <node ref="J13" pin="4" pinfunction="2" pintype="passive"/>
+      <node ref="J13" pin="5" pinfunction="2" pintype="passive"/>
+      <node ref="J3" pin="5" pinfunction="GND" pintype="power_out"/>
+      <node ref="J4" pin="7" pinfunction="Pin_7" pintype="passive"/>
+      <node ref="J5" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J7" pin="5" pinfunction="Pin_5" pintype="passive"/>
+      <node ref="J8" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J9" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q1" pin="1" pinfunction="G" pintype="input"/>
+      <node ref="Q3" pin="2" pinfunction="S" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="R32" pin="2" pintype="passive"/>
+      <node ref="R39" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="SW1" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="SW2" pin="2" pinfunction="2" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="VN" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="VN" pintype="passive"/>
+      <node ref="U3" pin="2" pinfunction="VN" pintype="passive"/>
+      <node ref="U4" pin="11" pinfunction="GND" pintype="input"/>
+      <node ref="U4" pin="15" pinfunction="GND" pintype="input"/>
+      <node ref="U4" pin="17" pinfunction="EP" pintype="input"/>
+      <node ref="U4" pin="3" pinfunction="GND" pintype="input"/>
+      <node ref="U5" pin="11" pinfunction="GND" pintype="input"/>
+      <node ref="U5" pin="9" pinfunction="GND" pintype="input"/>
+      <node ref="U6" pin="10" pinfunction="SDO2" pintype="input"/>
+      <node ref="U6" pin="15" pinfunction="SDO1" pintype="input"/>
+      <node ref="U6" pin="2" pinfunction="NC" pintype="input"/>
+      <node ref="U6" pin="4" pinfunction="GNDA" pintype="input"/>
+      <node ref="U6" pin="6" pinfunction="GNDIO" pintype="input"/>
+      <node ref="U7" pin="1" pinfunction="GND" pintype="input"/>
+      <node ref="U7" pin="10" pinfunction="GND" pintype="input"/>
+      <node ref="U7" pin="12" pinfunction="GND" pintype="input"/>
+      <node ref="U8" pin="1" pinfunction="GND" pintype="input"/>
+      <node ref="U8" pin="7" pinfunction="GND" pintype="input"/>
+    </net>
+    <net code="19" name="GPIO35">
+      <node ref="IC5" pin="28" pinfunction="IO35" pintype="passive"/>
+      <node ref="JP4" pin="2" pinfunction="C" pintype="input"/>
+    </net>
+    <net code="20" name="GPIO35_OUT">
+      <node ref="J7" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="JP4" pin="3" pinfunction="B" pintype="passive"/>
+    </net>
+    <net code="21" name="GPIO43">
+      <node ref="IC5" pin="37" pinfunction="TXD0" pintype="passive"/>
+      <node ref="J7" pin="3" pinfunction="Pin_3" pintype="passive"/>
+    </net>
+    <net code="22" name="GPIO44">
+      <node ref="IC5" pin="36" pinfunction="RXD0" pintype="passive"/>
+      <node ref="J7" pin="4" pinfunction="Pin_4" pintype="passive"/>
+    </net>
+    <net code="23" name="GPS_I2C_SCL">
+      <node ref="JP3" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="R37" pin="2" pintype="passive"/>
+      <node ref="U7" pin="17" pinfunction="SCL" pintype="input"/>
+    </net>
+    <net code="24" name="GPS_I2C_SDA">
+      <node ref="JP2" pin="3" pinfunction="B" pintype="passive"/>
+      <node ref="R36" pin="2" pintype="passive"/>
+      <node ref="U7" pin="16" pinfunction="SDA" pintype="input"/>
+    </net>
+    <net code="25" name="GPS_PPS">
+      <node ref="R38" pin="2" pintype="passive"/>
+      <node ref="U7" pin="4" pinfunction="1PPS" pintype="input"/>
+    </net>
+    <net code="26" name="I2C_SCL">
+      <node ref="IC5" pin="29" pinfunction="IO36" pintype="passive"/>
+      <node ref="R35" pin="2" pintype="passive"/>
+      <node ref="TP15" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U5" pin="1" pinfunction="SCL" pintype="input"/>
+      <node ref="U6" pin="8" pinfunction="SCK" pintype="input"/>
+      <node ref="U8" pin="4" pinfunction="SCK" pintype="input"/>
+    </net>
+    <net code="27" name="I2C_SDA">
+      <node ref="IC5" pin="30" pinfunction="IO37" pintype="passive"/>
+      <node ref="R34" pin="2" pintype="passive"/>
+      <node ref="TP14" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U5" pin="16" pinfunction="SDA" pintype="input"/>
+      <node ref="U6" pin="9" pinfunction="SDI" pintype="input"/>
+      <node ref="U8" pin="3" pinfunction="SDI" pintype="input"/>
+    </net>
+    <net code="28" name="I2S_BCLK">
+      <node ref="IC5" pin="19" pinfunction="IO11" pintype="passive"/>
+      <node ref="TP11" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U4" pin="16" pinfunction="BCLK" pintype="input"/>
+    </net>
+    <net code="29" name="I2S_DIN">
+      <node ref="IC5" pin="18" pinfunction="IO10" pintype="passive"/>
+      <node ref="TP13" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U4" pin="1" pinfunction="DIN" pintype="input"/>
+    </net>
+    <net code="30" name="I2S_LRCLK">
+      <node ref="IC5" pin="20" pinfunction="IO12" pintype="passive"/>
+      <node ref="TP12" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U4" pin="14" pinfunction="LRCLK" pintype="input"/>
+    </net>
+    <net code="31" name="IO0">
+      <node ref="C12" pin="1" pintype="passive"/>
+      <node ref="IC5" pin="27" pinfunction="IO0" pintype="passive"/>
+      <node ref="SW2" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="32" name="LCD_BUSY">
+      <node ref="IC5" pin="33" pinfunction="IO40" pintype="passive"/>
+      <node ref="J4" pin="1" pinfunction="Pin_1" pintype="passive"/>
+    </net>
+    <net code="33" name="LCD_CLK">
+      <node ref="IC5" pin="16" pinfunction="IO46" pintype="passive"/>
+      <node ref="J4" pin="5" pinfunction="Pin_5" pintype="passive"/>
+    </net>
+    <net code="34" name="LCD_CS">
+      <node ref="IC5" pin="32" pinfunction="IO39" pintype="passive"/>
+      <node ref="J4" pin="4" pinfunction="Pin_4" pintype="passive"/>
+    </net>
+    <net code="35" name="LCD_DC">
+      <node ref="IC5" pin="35" pinfunction="IO42" pintype="passive"/>
+      <node ref="J4" pin="3" pinfunction="Pin_3" pintype="passive"/>
+    </net>
+    <net code="36" name="LCD_DIN">
+      <node ref="IC5" pin="34" pinfunction="IO41" pintype="passive"/>
+      <node ref="J4" pin="6" pinfunction="Pin_6" pintype="passive"/>
+    </net>
+    <net code="37" name="LCD_RST">
+      <node ref="IC5" pin="26" pinfunction="IO45" pintype="passive"/>
+      <node ref="J4" pin="2" pinfunction="Pin_2" pintype="passive"/>
+    </net>
+    <net code="38" name="Net-(C4-Pad2)">
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="IC3" pin="4" pinfunction="FB" pintype="input"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="39" name="Net-(C23-Pad1)">
+      <node ref="C23" pin="1" pintype="passive"/>
+      <node ref="U5" pin="8" pinfunction="SETP" pintype="input"/>
+    </net>
+    <net code="40" name="Net-(C23-Pad2)">
+      <node ref="C23" pin="2" pintype="passive"/>
+      <node ref="U5" pin="12" pinfunction="SETC" pintype="input"/>
+    </net>
+    <net code="41" name="Net-(C24-Pad1)">
+      <node ref="C24" pin="1" pintype="passive"/>
+      <node ref="U5" pin="10" pinfunction="C1" pintype="input"/>
+    </net>
+    <net code="42" name="Net-(D2-Pad1)">
+      <node ref="D2" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="43" name="Net-(D3-Pad1)">
+      <node ref="D3" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="R38" pin="1" pintype="passive"/>
+    </net>
+    <net code="44" name="Net-(IC1-Pad2)">
+      <node ref="IC1" pin="2" pinfunction="PROG" pintype="input"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="45" name="Net-(IC2-Pad2)">
+      <node ref="IC2" pin="2" pinfunction="~{RESET}" pintype="passive"/>
+      <node ref="IC3" pin="5" pinfunction="EN" pintype="input"/>
+    </net>
+    <net code="46" name="Net-(J1-Pad2)">
+      <node ref="J1" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="47" name="Net-(J2-Pad2)">
+      <node ref="J2" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="48" name="Net-(J8-Pad2)">
+      <node ref="J8" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R16" pin="2" pintype="passive"/>
+      <node ref="R17" pin="1" pintype="passive"/>
+    </net>
+    <net code="49" name="Net-(J9-Pad2)">
+      <node ref="J9" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R18" pin="2" pintype="passive"/>
+      <node ref="R19" pin="1" pintype="passive"/>
+    </net>
+    <net code="50" name="Net-(J10-Pad2)">
+      <node ref="J10" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R20" pin="2" pintype="passive"/>
+      <node ref="R21" pin="1" pintype="passive"/>
+    </net>
+    <net code="51" name="Net-(J11-Pad2)">
+      <node ref="J11" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R22" pin="2" pintype="passive"/>
+      <node ref="R23" pin="1" pintype="passive"/>
+    </net>
+    <net code="52" name="Net-(J12-Pad5)">
+      <node ref="J12" pin="5" pinfunction="CLK" pintype="passive"/>
+      <node ref="R29" pin="2" pintype="passive"/>
+      <node ref="TP7" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U3" pin="6" pinfunction="IO4" pintype="passive"/>
+    </net>
+    <net code="53" name="Net-(J13-Pad1)">
+      <node ref="J13" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="L1" pin="1" pintype="passive"/>
+      <node ref="U7" pin="11" pinfunction="RF_IN" pintype="input"/>
+    </net>
+    <net code="54" name="Net-(JP1-Pad2)">
+      <node ref="JP1" pin="2" pinfunction="C" pintype="input"/>
+      <node ref="U7" pin="6" pinfunction="VBAT" pintype="input"/>
+    </net>
+    <net code="55" name="Net-(JP2-Pad1)">
+      <node ref="JP2" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="U7" pin="3" pinfunction="RXD" pintype="input"/>
+    </net>
+    <net code="56" name="Net-(JP3-Pad3)">
+      <node ref="JP3" pin="3" pinfunction="B" pintype="passive"/>
+      <node ref="U7" pin="2" pinfunction="TXD" pintype="input"/>
+    </net>
+    <net code="57" name="Net-(L1-Pad2)">
+      <node ref="L1" pin="2" pintype="passive"/>
+      <node ref="U7" pin="14" pinfunction="VCC_RF" pintype="input"/>
+    </net>
+    <net code="58" name="Net-(Q2-Pad1)">
+      <node ref="Q2" pin="1" pinfunction="G" pintype="input"/>
+      <node ref="Q3" pin="3" pinfunction="D" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="59" name="Net-(Q2-Pad3)">
+      <node ref="Q2" pin="3" pinfunction="D" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+    <net code="60" name="Net-(Q3-Pad1)">
+      <node ref="Q3" pin="1" pinfunction="G" pintype="input"/>
+      <node ref="R11" pin="2" pintype="passive"/>
+    </net>
+    <net code="61" name="Net-(R5-Pad2)">
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+    </net>
+    <net code="62" name="Net-(R15-Pad2)">
+      <node ref="R15" pin="2" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="VP" pintype="passive"/>
+    </net>
+    <net code="63" name="Net-(R30-Pad2)">
+      <node ref="R30" pin="2" pintype="passive"/>
+      <node ref="U2" pin="5" pinfunction="VP" pintype="passive"/>
+    </net>
+    <net code="64" name="Net-(R31-Pad2)">
+      <node ref="R31" pin="2" pintype="passive"/>
+      <node ref="U3" pin="5" pinfunction="VP" pintype="passive"/>
+    </net>
+    <net code="65" name="Net-(R33-Pad2)">
+      <node ref="R33" pin="2" pintype="passive"/>
+      <node ref="U4" pin="4" pinfunction="SD_MODE" pintype="input"/>
+    </net>
+    <net code="66" name="POSW_EN">
+      <node ref="IC4" pin="B2" pinfunction="ON" pintype="input"/>
+      <node ref="IC5" pin="21" pinfunction="IO13" pintype="passive"/>
+    </net>
+    <net code="67" name="PrSen_INT">
+      <node ref="IC5" pin="31" pinfunction="IO38" pintype="passive"/>
+      <node ref="R39" pin="1" pintype="passive"/>
+      <node ref="U8" pin="5" pinfunction="SDO" pintype="input"/>
+    </net>
+    <net code="68" name="SD_CD">
+      <node ref="IC5" pin="22" pinfunction="IO14" pintype="passive"/>
+      <node ref="J12" pin="9" pinfunction="CARD_DETECTION" pintype="passive"/>
+      <node ref="R32" pin="1" pintype="passive"/>
+      <node ref="TP10" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U3" pin="4" pinfunction="IO3" pintype="passive"/>
+    </net>
+    <net code="69" name="SD_CLK">
+      <node ref="IC5" pin="4" pinfunction="IO4" pintype="passive"/>
+      <node ref="R29" pin="1" pintype="passive"/>
+    </net>
+    <net code="70" name="SD_CMD">
+      <node ref="IC5" pin="5" pinfunction="IO5" pintype="passive"/>
+      <node ref="J12" pin="3" pinfunction="CMD" pintype="passive"/>
+      <node ref="R26" pin="2" pintype="passive"/>
+      <node ref="TP5" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U2" pin="4" pinfunction="IO3" pintype="passive"/>
+    </net>
+    <net code="71" name="SD_DAT0">
+      <node ref="IC5" pin="6" pinfunction="IO6" pintype="passive"/>
+      <node ref="J12" pin="7" pinfunction="DAT0" pintype="passive"/>
+      <node ref="R27" pin="2" pintype="passive"/>
+      <node ref="TP8" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U3" pin="1" pinfunction="IO1" pintype="passive"/>
+    </net>
+    <net code="72" name="SD_DAT1">
+      <node ref="IC5" pin="7" pinfunction="IO7" pintype="passive"/>
+      <node ref="J12" pin="8" pinfunction="DAT1" pintype="passive"/>
+      <node ref="R28" pin="2" pintype="passive"/>
+      <node ref="TP9" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U3" pin="3" pinfunction="IO2" pintype="passive"/>
+    </net>
+    <net code="73" name="SD_DAT2">
+      <node ref="IC5" pin="8" pinfunction="IO15" pintype="passive"/>
+      <node ref="J12" pin="1" pinfunction="DAT2" pintype="passive"/>
+      <node ref="R24" pin="2" pintype="passive"/>
+      <node ref="TP3" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="IO2" pintype="passive"/>
+    </net>
+    <net code="74" name="SD_DAT3">
+      <node ref="IC5" pin="9" pinfunction="IO16" pintype="passive"/>
+      <node ref="J12" pin="2" pinfunction="CD/DAT3" pintype="passive"/>
+      <node ref="R25" pin="2" pintype="passive"/>
+      <node ref="TP4" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U2" pin="1" pinfunction="IO1" pintype="passive"/>
+    </net>
+    <net code="75" name="TP4056_CHRG">
+      <node ref="IC1" pin="7" pinfunction="CHRG" pintype="input"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+    </net>
+    <net code="76" name="TP4056_STBY">
+      <node ref="IC1" pin="6" pinfunction="STDBY" pintype="input"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="77" name="USART2_RX">
+      <node ref="IC5" pin="11" pinfunction="IO18" pintype="passive"/>
+      <node ref="JP3" pin="2" pinfunction="C" pintype="input"/>
+      <node ref="TP17" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="78" name="USART2_TX">
+      <node ref="IC5" pin="10" pinfunction="IO17" pintype="passive"/>
+      <node ref="JP2" pin="2" pinfunction="C" pintype="input"/>
+      <node ref="TP16" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="79" name="USB_D+">
+      <node ref="IC5" pin="14" pinfunction="IO20" pintype="passive"/>
+      <node ref="J3" pin="3" pinfunction="D+" pintype="bidirectional"/>
+      <node ref="TP18" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="IO1" pintype="passive"/>
+    </net>
+    <net code="80" name="USB_D-">
+      <node ref="IC5" pin="13" pinfunction="IO19" pintype="passive"/>
+      <node ref="J3" pin="2" pinfunction="D-" pintype="bidirectional"/>
+      <node ref="TP19" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="IO2" pintype="passive"/>
+    </net>
+    <net code="81" name="VCC">
+      <node ref="C20" pin="1" pintype="passive"/>
+      <node ref="C21" pin="1" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="IC2" pin="3" pinfunction="VCC" pintype="power_in"/>
+      <node ref="IC3" pin="1" pinfunction="Vin" pintype="input"/>
+      <node ref="Q1" pin="2" pinfunction="S" pintype="passive"/>
+      <node ref="U4" pin="7" pinfunction="VDD" pintype="input"/>
+      <node ref="U4" pin="8" pinfunction="VDD" pintype="input"/>
+    </net>
+    <net code="82" name="unconnected-(J3-Pad4)">
+      <node ref="J3" pin="4" pinfunction="ID" pintype="passive+no_connect"/>
+    </net>
+    <net code="83" name="unconnected-(J3-Pad6)">
+      <node ref="J3" pin="6" pinfunction="Shield" pintype="passive+no_connect"/>
+    </net>
+    <net code="84" name="unconnected-(J12-Pad11)">
+      <node ref="J12" pin="11" pinfunction="11" pintype="passive+no_connect"/>
+    </net>
+    <net code="85" name="unconnected-(J12-Pad12)">
+      <node ref="J12" pin="12" pinfunction="12" pintype="passive+no_connect"/>
+    </net>
+    <net code="86" name="unconnected-(J12-Pad13)">
+      <node ref="J12" pin="13" pinfunction="13" pintype="passive+no_connect"/>
+    </net>
+    <net code="87" name="unconnected-(U1-Pad4)">
+      <node ref="U1" pin="4" pinfunction="IO3" pintype="passive+no_connect"/>
+    </net>
+    <net code="88" name="unconnected-(U1-Pad6)">
+      <node ref="U1" pin="6" pinfunction="IO4" pintype="passive+no_connect"/>
+    </net>
+    <net code="89" name="unconnected-(U4-Pad5)">
+      <node ref="U4" pin="5" pinfunction="N.C." pintype="input+no_connect"/>
+    </net>
+    <net code="90" name="unconnected-(U4-Pad6)">
+      <node ref="U4" pin="6" pinfunction="N.C." pintype="input+no_connect"/>
+    </net>
+    <net code="91" name="unconnected-(U4-Pad12)">
+      <node ref="U4" pin="12" pinfunction="N.C." pintype="input+no_connect"/>
+    </net>
+    <net code="92" name="unconnected-(U4-Pad13)">
+      <node ref="U4" pin="13" pinfunction="N.C." pintype="input+no_connect"/>
+    </net>
+    <net code="93" name="unconnected-(U5-Pad3)">
+      <node ref="U5" pin="3" pinfunction="NC_1" pintype="input+no_connect"/>
+    </net>
+    <net code="94" name="unconnected-(U5-Pad5)">
+      <node ref="U5" pin="5" pinfunction="NC_2" pintype="input+no_connect"/>
+    </net>
+    <net code="95" name="unconnected-(U5-Pad6)">
+      <node ref="U5" pin="6" pinfunction="NC_3" pintype="input+no_connect"/>
+    </net>
+    <net code="96" name="unconnected-(U5-Pad7)">
+      <node ref="U5" pin="7" pinfunction="NC_4" pintype="input+no_connect"/>
+    </net>
+    <net code="97" name="unconnected-(U5-Pad14)">
+      <node ref="U5" pin="14" pinfunction="NC_5" pintype="input+no_connect"/>
+    </net>
+    <net code="98" name="unconnected-(U5-Pad15)">
+      <node ref="U5" pin="15" pinfunction="DRDY" pintype="input+no_connect"/>
+    </net>
+    <net code="99" name="unconnected-(U6-Pad1)">
+      <node ref="U6" pin="1" pinfunction="INT2" pintype="input+no_connect"/>
+    </net>
+    <net code="100" name="unconnected-(U6-Pad5)">
+      <node ref="U6" pin="5" pinfunction="CSB2" pintype="input+no_connect"/>
+    </net>
+    <net code="101" name="unconnected-(U6-Pad12)">
+      <node ref="U6" pin="12" pinfunction="INT3" pintype="input+no_connect"/>
+    </net>
+    <net code="102" name="unconnected-(U6-Pad13)">
+      <node ref="U6" pin="13" pinfunction="INT4" pintype="input+no_connect"/>
+    </net>
+    <net code="103" name="unconnected-(U7-Pad5)">
+      <node ref="U7" pin="5" pinfunction="ON/OFF" pintype="input+no_connect"/>
+    </net>
+    <net code="104" name="unconnected-(U7-Pad7)">
+      <node ref="U7" pin="7" pinfunction="NC" pintype="input+no_connect"/>
+    </net>
+    <net code="105" name="unconnected-(U7-Pad9)">
+      <node ref="U7" pin="9" pinfunction="nRESET" pintype="input+no_connect"/>
+    </net>
+    <net code="106" name="unconnected-(U7-Pad13)">
+      <node ref="U7" pin="13" pinfunction="NC" pintype="input+no_connect"/>
+    </net>
+    <net code="107" name="unconnected-(U7-Pad15)">
+      <node ref="U7" pin="15" pinfunction="Reserved" pintype="input+no_connect"/>
+    </net>
+    <net code="108" name="unconnected-(U7-Pad18)">
+      <node ref="U7" pin="18" pinfunction="Reserved" pintype="input+no_connect"/>
+    </net>
+    <net code="109" name="unconnected-(U8-Pad2)">
+      <node ref="U8" pin="2" pinfunction="CSB" pintype="input+no_connect"/>
+    </net>
+  </nets>
+</export>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <export version="E">
   <design>
-    <source>C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware\VariometerV2.kicad_sch</source>
-    <date>21/02/2022 15:42:43</date>
+    <source>C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware\Version 1.0\VariometerV2.kicad_sch</source>
+    <date>19/08/2022 17:06:44</date>
     <tool>Eeschema (6.0.1)</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -1392,7 +1392,7 @@
       <property name="Sheetname" value=""/>
       <property name="Sheetfile" value="VariometerV2.kicad_sch"/>
       <sheetpath names="/" tstamps="/"/>
-      <tstamps>6b97376a-d7c1-4412-b853-63c06d539300</tstamps>
+      <tstamps>6b97376a-d7c1-4412-b853-63c06d539301</tstamps>
     </comp>
     <comp ref="TP10">
       <value>TP_SPI1_MISO</value>
@@ -2121,6 +2121,9 @@
     <library logical="Power_Protection">
       <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Power_Protection.kicad_sym</uri>
     </library>
+    <library logical="SamacSys_Parts">
+      <uri>C:/Users/Oliver/Documents/LibraryLoaderBibliothek/SamacSys_Parts.lib</uri>
+    </library>
     <library logical="Sensor_Pressure">
       <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Sensor_Pressure.kicad_sym</uri>
     </library>
@@ -2131,7 +2134,7 @@
       <uri>D:\Programme\KiCad\6.0\share\kicad\symbols\/Transistor_FET.kicad_sym</uri>
     </library>
     <library logical="VariometerV2-rescue">
-      <uri>C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware/VariometerV2-rescue.lib</uri>
+      <uri>C:\Users\Oliver\Documents\GitHub\Paula\VariometerV2\Hardware\Version 1.0/VariometerV2-rescue.lib</uri>
     </library>
   </libraries>
   <nets>

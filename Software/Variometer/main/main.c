@@ -11,11 +11,16 @@
 #include "nmea_parser.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
-#include "esp_vfs_fat.h"
-#include "sdmmc_cmd.h"
 #include <sys/unistd.h>
-#include <sys/stat.h>
 #include <string.h>
+#include "SDCard.h"
+#include "Screen/EPD_3in7.h"
+#include "Screen/GUI_Paint.h"
+#include "Screen/VarioScreen.h"
+#include "Screen/Widget.h"
+#include "main.h"
+#include "BatteryManager.h"
+#include "QMC588L.h"
 
 #define BMI088_I2C
 
@@ -39,21 +44,14 @@
 #define I2C_ACC_INT 41
 #define i2c_master_port 0
 
-#define SPI2_MOSI 35
-#define SPI2_SCK 36
-#define SPI2_MISO 37
-
-#define SDCARD_CS 38
-#define SDCARD_DETECT 45
-#define SDCARD_MOUNT_POINT "/sdcard"
-
 #define LCD_CS 48
 #define LCD_DS 47
 #define LCD_RST 21
 #define LCD_TCH_CS 46
 
-#define BAT_MS 9
-#define BAT_ADC 14
+#define SPI2_MOSI 35
+#define SPI2_SCK 36
+#define SPI2_MISO 37
 
 #define USART2_TX 17
 #define USART2_RX 18
@@ -77,32 +75,23 @@ TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wi
 
 static const char *TAG = "main";
 
-typedef struct {
-    float height;
-    float velocity;
-    float accX;
-} vario_state_t;
-
 vario_state_t vario_state;
 SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
 
 float accSum;
 float accCount;
-SemaphoreHandle_t acc_Mutex = NULL;
+SemaphoreHandle_t acc_Mutex = NULL; //Sync von TaskMeasureAcc und KalmanFilter
 
 float startPressure;
 float startTemperature;
-float pressure; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
+float pressure;
 float temperature;
-SemaphoreHandle_t pressure_temperature_Mutex = NULL;
+SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
+
+int32_t magnOrientation[3];
+SemaphoreHandle_t magnOrientation_Mutex = NULL; //Gemessen von TaskMeasureMagn und gebraucht von TaskMeasureAcc
 
 volatile bool hasMeasuredStartPressure = false;
-
-/* Sensoren */
-spi_device_handle_t ms5611_spi_handle; //nur von TaskMeasureHeight benutzen!
-
-spi_device_handle_t acc_spi_handle; //nur von TaskMeasureAcc benutzen!
-spi_device_handle_t gyro_spi_handle; //nur von TaskMeasureAcc benutzen!
 
 void TaskMeasureHeight(void *parameters)
 {
@@ -120,6 +109,7 @@ void TaskMeasureHeight(void *parameters)
     startPressure /= 10;
     startTemperature /= 10;
     hasMeasuredStartPressure = true;
+    vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     while(1)
     {
@@ -150,11 +140,30 @@ IRAM_ATTR void bmiISR(TaskHandle_t taskHandle)
     if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
 }
 
+void TaskMeasureMagn(void *parameters)
+{   
+    qmc588l_t QMC588L_Data;
+    qmc588l_init(&QMC588L_Data, i2c_master_port, 0x0D, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_8G);
+    //qmc588l_calculateCalibration(&QMC588L_Data);
+    qmc588l_readMag(&QMC588L_Data);
+    ESP_LOGI(TAG, "Magn: x= %i, y=%i, z=%i", QMC588L_Data.magnValue[0], QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[2]);
+    xSemaphoreTake(magnOrientation_Mutex, portMAX_DELAY);
+    {
+        magnOrientation[0] = QMC588L_Data.magnValue[0];
+        magnOrientation[1] = QMC588L_Data.magnValue[1];
+        magnOrientation[2] = QMC588L_Data.magnValue[2];
+    }
+    xSemaphoreGive(magnOrientation_Mutex);
+    int azimuth = (int)(atan2(QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[0]) * 180.0 / M_PI);
+    azimuth = azimuth > 0 ? 360 + azimuth : azimuth;
+    //printf("%i \n", azimuth);
+}
+
 void TaskMeasureAcc(void *parameters)
 {
     //wait till StartPressure has read
     while(!hasMeasuredStartPressure){
-        vTaskDelay(2 / portTICK_PERIOD_MS);
+        vTaskDelay(2);
     }
     float rotation[4]; //Nur benutzen in TaskMeasureAcc
     bmi088_t BMI088_Data;
@@ -194,11 +203,17 @@ void TaskMeasureAcc(void *parameters)
         /*if (notificationValue > 1) {
             ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
         }*/
+        xSemaphoreTake(magnOrientation_Mutex, portMAX_DELAY);
+        int32_t magN = magnOrientation[1];
+        int32_t magE = -magnOrientation[0];
+        int32_t magD = magnOrientation[2];
+        xSemaphoreGive(magnOrientation_Mutex);
         bmi088_ReadAccelerometer(&BMI088_Data);
         bmi088_ReadGyroskop(&BMI088_Data);
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
+        //QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], magN, magE, magD, deltaT, rotation);
         QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
         //Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
         /* Calculate global Acc in X Direction */
@@ -329,7 +344,7 @@ void TaskKalmanFilter(void *parameters)
             vario_state.velocity = matrix_get(x, 1, 0);
         }
         xSemaphoreGive(vario_state_Mutex);
-        printf("%.2f\n", matrix_get(x, 1, 0));
+        //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
@@ -363,80 +378,21 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
     }
 }
 
-void TaskSDCard(void *pvParameters)
-{
-    sdmmc_card_t *card = (sdmmc_card_t *)pvParameters;
-    sdmmc_card_print_info(stdout, card);
-    vTaskDelete(NULL);
-}
-
-void PrintTask(void *params)
-{
-    while(1)
-    {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        ESP_LOGI(TAG, "TestLog");
-    }
-    vTaskDelete(NULL);
-}
-
 void app_main(void)
  {
+    // Battery_Manager_t battery_Manager;
+    // init_Battery_Manager(&battery_Manager, 1);
+    // vTaskDelay(30 / portTICK_PERIOD_MS);
+    // for (size_t i = 0; i < 100; i++)
+    // {
+    //     readPercentage_Battery(&battery_Manager);
+    //     vTaskDelay(500 / portTICK_PERIOD_MS);
+    // }
+    
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-    /* Initialize SPI for MS5611 and BMI088 */
-    // spi_bus_config_t spi1cfg={
-    //     .miso_io_num=SPI1_MISO,
-    //     .mosi_io_num=SPI1_MOSI,
-    //     .sclk_io_num=SPI1_SCK,
-    //     .quadwp_io_num=-1,
-    //     .quadhd_io_num=-1,
-    //     .max_transfer_sz=4092
-    // };
-    // ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST, &spi1cfg, SPI_DMA_CH_AUTO));
-    // ESP_LOGI(TAG, "Initialized SPI1");
-    // /* Add MS5611 to SPI */
-    // spi_device_interface_config_t ms5611_spi_cfg = {
-    //     .clock_speed_hz = 1*1000, //1 kHz
-    //     .mode = 0,
-    //     .queue_size = 7, 
-    //     .spics_io_num = PresSens_CS,
-    //     .address_bits = 8,
-    //     .command_bits = 8,
-    // };
-    // ESP_ERROR_CHECK(spi_bus_add_device(SPI3_HOST, &ms5611_spi_cfg, &ms5611_spi_handle));
-    // ms5611_t MS5611_Data;
-    // ms5611_init(&MS5611_Data, ms5611_spi_handle, MS5611_OSR_256, MS5611_OSR_256);
-    // while(1)
-    // {
-    //     ms5611_get_sensor_data(&MS5611_Data);
-    //     xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
-    //     {
-    //         pressure = MS5611_Data.Pressure;
-    //         temperature = MS5611_Data.Temperature;
-    //     }
-    //     xSemaphoreGive(pressure_temperature_Mutex);
-    // }
-    //xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 1, NULL);
-
-    // /* Add BMI088 to SPI */
-    // spi_device_interface_config_t bmi088_acc_spi_cfg = {
-    //     .clock_speed_hz = 10*1000*1000,
-    //     .mode = 0,
-    //     .queue_size = 7,
-    //     .spics_io_num = IMU_ACC_CS
-    // };
-    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_acc_spi_cfg, &acc_spi_handle));
-    // spi_device_interface_config_t bmi088_gyr_spi_cfg = {
-    //     .clock_speed_hz = 10*1000*1000,
-    //     .mode = 0,
-    //     .queue_size = 7,
-    //     .spics_io_num = IMU_GYR_CS
-    // };
-    // ESP_ERROR_CHECK(spi_bus_add_device(SPI1_HOST, &bmi088_gyr_spi_cfg, &gyro_spi_handle));
-    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-    // #else
+    magnOrientation_Mutex = xSemaphoreCreateMutex();
 
     i2c_config_t conf_MS5611 = {
         .mode = I2C_MODE_MASTER,
@@ -463,50 +419,7 @@ void app_main(void)
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-    // #endif
-    while(1)
-    {
-        vTaskDelay(100000 / portTICK_PERIOD_MS);
-    }
-    /* Configure GPS Reader Library */
-    nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    gps_config.uart.rx_pin = USART2_RX;
-    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
-    nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
-    ESP_LOGI(TAG, "GPS started");
-    // xTaskCreate(PrintTask, "Measure Height", 4 * 1024, NULL, 1, NULL);
-    // /* Start Kalman Filter Task (High Priority)*/
-    // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
-    // /* Configure SDCard */
-    // //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
-    /*gpio_config_t sdcard_detect_conf = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (uint64_t) 0x1 << SDCARD_DETECT,
-        .pull_down_en = 0,
-        .pull_up_en = 0
-    };
-    gpio_config(&sdcard_detect_conf);
-    int sdCardLevel = gpio_get_level(SDCARD_DETECT);
-    ESP_LOGI(TAG, "%i", sdCardLevel);
-    if(sdCardLevel != 1)
-    {
-        //TODO: Was nun machen?
-        ESP_LOGI(TAG, "No SD Card detected!");
-    }
-    else if(sdCardLevel == 1)
-    {
-        ESP_LOGI(TAG, "SD Card detected!");
-    }
-    esp_vfs_fat_sdmmc_mount_config_t sdcard_mount_config = {
-        .format_if_mount_failed = true,
-        .max_files = 5,
-        .allocation_unit_size = 16 * 1024
-    };
-    sdmmc_card_t *card;
-    ESP_LOGI(TAG, "Initialized SD Card");
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.slot = SPI2_HOST;
+
     spi_bus_config_t spi2cfg={
         .miso_io_num=SPI2_MISO,
         .mosi_io_num=SPI2_MOSI,
@@ -517,24 +430,36 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
     ESP_LOGI(TAG, "Initialized SPI2");
-    sdspi_device_config_t slot_config ={ 
-        .host_id   = SPI2_HOST, 
-        .gpio_cs   = SDCARD_CS, 
-        .gpio_cd   = SDSPI_SLOT_NO_CD, 
-        .gpio_wp   = SDSPI_SLOT_NO_WP, 
-        .gpio_int  = GPIO_NUM_NC};
-    ESP_LOGI(TAG, "Mounting filesystem");
-    //TODO: schlechte Funktion oder so da kein Error Handling
-    esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        } else {
-            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
-        }
+
+    UBYTE* Buffer = init_Screen(&vario_state, vario_state_Mutex);
+    VarioScreen_t varioScreen;
+    CreateScreen(&varioScreen, Buffer);
+    WidgetData widgetTest = {
+        .style = Widget_TextBox,
+        .type = WidgetContent_Vario_Active,
+        .extraStyle = WS_BORDER_LEFT | WS_BORDER_TOP | WS_BORDER_BOTTOM | WS_BORDER_RIGHT | WS_FONT_12_LABEL | WS_FONT_20_CONTENT,
+        .x = 100,
+        .y = 100,
+        .w = 100,
+        .h = 100,
+    };
+    VarioScreen_add_Widget(&widgetTest, &varioScreen);
+    selectScreen(&varioScreen);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    int64_t lastTime = esp_timer_get_time();
+    for (size_t i = 0; i < 20; i++)
+    {
+        VarioScreen_render(&varioScreen);
+        ESP_LOGI(TAG, "TIME: %lli", (esp_timer_get_time() - lastTime) / 1000);
+        lastTime = esp_timer_get_time();
     }
-    ESP_LOGI(TAG, "Filesystem mounted");
-    xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);*/
+    deinit_Screen(&varioScreen);
+    // init_buzzer(BUZZ_1, BUZZ_2);
+    // tone_buzzer(1000, 10);
+    // /* Configure GPS Reader Library */
+    // nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
+    // gps_config.uart.rx_pin = USART2_RX;
+    // nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
+    // nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
+    // ESP_LOGI(TAG, "GPS started");
 }

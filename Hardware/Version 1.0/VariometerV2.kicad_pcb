@@ -1499,7 +1499,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
     )
-    (model "${KIPRJMOD}/TP4056.stp"
+    (model "${KIPRJMOD}/../Komponenten/3D_Objects/TP4056.stp"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1562,7 +1562,7 @@
       (net 4 "Net-(C2-Pad2)") (pinfunction "VCC") (pintype "passive") (tstamp da6f4122-0ecc-496f-b0fd-e4abef534976))
     (pad "6" smd rect locked (at 1.25 -0.95) (size 0.65 1.2) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 3 "BATT_CONN-") (pinfunction "GND") (pintype "passive") (tstamp f1782535-55f4-4299-bd4f-6f51b0b7259c))
-    (model "DW01A-G.stp"
+    (model "${KIPRJMOD}/../Komponenten/3D_Objects/DW01A-G.stp"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1718,7 +1718,7 @@
       (net 1 "GND") (pinfunction "GND_10") (pintype "passive") (tstamp a6738794-75ae-48a6-8949-ed8717400d71))
     (pad "49" smd rect locked (at -0.1 1.06 180) (size 0.9 0.9) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 1 "GND") (pinfunction "GND_11") (pintype "passive") (tstamp 24b72b0d-63b8-4e06-89d0-e94dcf39a600))
-    (model "${KIPRJMOD}/ESP32-S3-WROOM-1.step"
+    (model "${KIPRJMOD}/../Komponenten/3D_Objects/ESP32-S3-WROOM-1.step"
       (offset (xyz -9 -12.75 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))

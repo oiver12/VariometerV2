@@ -1,5 +1,5 @@
-#ifndef MS5611_SPI_DRIVER_H
-#define MS5611_SPI_DRIVER_H
+#ifndef DPS310_SPI_DRIVER_H
+#define DPS310_SPI_DRIVER_H
 
 #include <esp_err.h>
 

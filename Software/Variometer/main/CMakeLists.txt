@@ -1,7 +1,7 @@
 # Edit following two lines to set component requirements (see docs)
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
-set(COMPONENT_SRCS "nmea_parser.c" "QuaternionFilter.c" "BMI088.c" "main.c" "DPS310.c" "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c")
+set(COMPONENT_SRCS "SoundManager.c" "QMC588L.c" "BatteryManager.c" "Screen/VarioScreen.c" "Screen/Widget.c" "Screen/font12.c" "Screen/font16.c" "Screen/font20.c" "Screen/font24.c" "Screen/font8.c" "Screen/GUI_Paint.c" "Screen/EPD_3in7.c" "SDCard.c" "nmea_parser.c" "QuaternionFilter.c" "BMI088.c" "main.c" "DPS310.c" "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c")
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 
 register_component()

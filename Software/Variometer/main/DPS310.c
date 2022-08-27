@@ -10,7 +10,7 @@
 
 const int32_t scaling_facts[8] = {524288, 1572864, 3670016, 7864320, 253952, 516096, 1040384, 2088960};
 
-static const char *TAG = "MS5611";
+static const char *TAG = "DPS310";
 
 static inline esp_err_t write_Bytes(dps310_t *dev, uint8_t addr, size_t length, const uint8_t* data)
 {
