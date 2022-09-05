@@ -1,23 +1,15 @@
 #include "SDCard.h"
 #include <sys/stat.h>
-#include "sdmmc_cmd.h"
 #include "esp_vfs_fat.h"
 #include <esp_log.h>
+#include <string.h>
 
 static const char *TAG = "SDCard";
 
 #define SDCARD_CS 38
 #define SDCARD_DETECT 45
-#define SDCARD_MOUNT_POINT "/sdcard"
 
-void TaskSDCard(void *pvParameters)
-{
-    sdmmc_card_t *card = (sdmmc_card_t *)pvParameters;
-    sdmmc_card_print_info(stdout, card);
-    vTaskDelete(NULL);
-}
-
-esp_err_t start_sdcard()
+esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
 {
     // /* Configure SDCard */
     // //TODO: Keine SPI Kommunikation, bevor die SD Karte init ist. https://github.com/espressif/esp-idf/issues/1597
@@ -57,7 +49,7 @@ esp_err_t start_sdcard()
         .gpio_int  = GPIO_NUM_NC};
     ESP_LOGI(TAG, "Mounting filesystem");
     //TODO: schlechte Funktion oder so da kein Error Handling
-    esp_err_t ret = esp_vfs_fat_sdspi_mount(SDCARD_MOUNT_POINT, &host, &slot_config, &sdcard_mount_config, &card);
+    esp_err_t ret = esp_vfs_fat_sdspi_mount(Mount_Point, &host, &slot_config, &sdcard_mount_config, &card);
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount filesystem. "
@@ -67,7 +59,59 @@ esp_err_t start_sdcard()
                      "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
         }
     }
-    ESP_LOGI(TAG, "Filesystem mounted");
-    xTaskCreate(TaskSDCard, "TaskSDCard", 4 * 1024, card, 1, NULL);
+    else
+    {
+        ESP_LOGI(TAG, "Filesystem mounted");
+        sdcard->cardInit = true;
+    }
+    sdcard->card = card;
+    sdcard->Mount_Point = malloc(strlen(Mount_Point) + 1);
+    strcpy(sdcard->Mount_Point, Mount_Point);
     return ESP_OK;
+}
+
+esp_err_t deinit_sdcard(sdcard_t *sdcard)
+{
+    esp_vfs_fat_sdcard_unmount(sdcard->Mount_Point, sdcard->card);
+    spi_bus_free(SPI2_HOST);
+    free(sdcard->Mount_Point);
+    return ESP_OK;
+}
+
+FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName)
+{
+    char buffer[strlen(sdcard->Mount_Point) + strlen(directory) + strlen(fileName) + 2];
+    strcpy(buffer, sdcard->Mount_Point);
+    struct stat st = {0};   
+    if(directory != NULL)
+    {
+        strcat(buffer, directory);
+        ESP_LOGI(TAG, "Directory: %s", buffer);
+        if(stat(buffer, &st) == -1)
+        {
+            mkdir(buffer, 0700);
+            ESP_LOGI(TAG, "Createt Directory");
+        }
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Direactory already exists");
+    }
+    strcat(buffer, "/");
+    strcat(buffer, fileName);
+    ESP_LOGI(TAG, "File Destination: %s", buffer);
+    if(stat(buffer, &st) != -1)
+    {
+        ESP_LOGE(TAG, "File already exists");
+    }
+    return fopen(buffer, "w");
+}
+
+bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName)
+{
+    char buffer[strlen(sdcard->Mount_Point) + strlen(fileName) + 1];
+    strcpy(buffer, sdcard->Mount_Point);
+    strcat(buffer, fileName);
+    struct stat st = {0};   
+    return stat(buffer, &st) != -1;
 }

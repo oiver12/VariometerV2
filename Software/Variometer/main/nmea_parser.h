@@ -15,6 +15,8 @@ extern "C" {
 #include "esp_err.h"
 #include "driver/uart.h"
 
+#define NotifyNMEASentence
+
 #define GPS_MAX_SATELLITES_IN_USE (12)
 #define GPS_MAX_SATELLITES_IN_VIEW (16)
 #define NMEA_MAX_STATEMENT_ITEM_LENGTH (16)
@@ -164,6 +166,9 @@ typedef void *nmea_parser_handle_t;
  */
 typedef enum {
     GPS_UPDATE, /*!< GPS information has been updated */
+    #ifdef NotifyNMEASentence
+    GPS_NMEA_SENTECE,
+    #endif
     GPS_UNKNOWN /*!< Unknown statements detected */
 } nmea_event_id_t;
 

@@ -606,6 +606,10 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
                 esp_event_post_to(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, GPS_UNKNOWN,
                                   esp_gps->buffer, len, 100 / portTICK_PERIOD_MS);
             }
+            #ifdef NotifyNMEASentence
+            esp_event_post_to(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, GPS_NMEA_SENTECE,
+                                  esp_gps->buffer, len, 100 / portTICK_PERIOD_MS);
+            #endif
         }
         /* Other non-space character */
         else {

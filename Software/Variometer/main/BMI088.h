@@ -1,7 +1,7 @@
 #ifndef BMI088_SPI_DRIVER_H
 #define BMI088_SPI_DRIVER_H
 
-#include <driver/spi_master.h>
+#include <freertos/FreeRTOS.h>
 #include <esp_err.h>
 #include "driver/gpio.h"
 #include "freertos/semphr.h"

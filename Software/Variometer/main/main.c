@@ -21,26 +21,21 @@
 #include "main.h"
 #include "BatteryManager.h"
 #include "QMC588L.h"
+#include "SoundManager.h"
+#include "IGCLogger.h"
+#include <time.h>
 
 #define BMI088_I2C
 
 #define DEG_TO_RAD  0.017453292519943295769236907684886
 
 #define Button_Input 4
-#define SPI1_MOSI 11
-#define SPI1_SCK 12
-#define SPI1_MISO 13
 
-#define IMU_ACC_CS 6
-#define ACC_INT 16
-#define IMU_GYR_CS 15
-#define GYR_INT 7
-
-#define PresSens_CS 10
+#define POWSW_ENABLE 13
 
 #define I2C_MASTER_FREQ_HZ 400000     
-#define I2C_SDA 39
-#define I2C_SCL 42
+#define I2C_SDA 37
+#define I2C_SCL 36
 #define I2C_ACC_INT 41
 #define i2c_master_port 0
 
@@ -91,9 +86,11 @@ SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureH
 int32_t magnOrientation[3];
 SemaphoreHandle_t magnOrientation_Mutex = NULL; //Gemessen von TaskMeasureMagn und gebraucht von TaskMeasureAcc
 
+SoundManager_t soundManager;
+
 volatile bool hasMeasuredStartPressure = false;
 
-void TaskMeasureHeight(void *parameters)
+static void TaskMeasureHeight(void *parameters)
 {
     startPressure = 0;
     startTemperature = 0;
@@ -105,6 +102,7 @@ void TaskMeasureHeight(void *parameters)
         dps310_get_Temperature(&DPS310_Data);
         startPressure += DPS310_Data.Pressure;
         startTemperature += DPS310_Data.Temperature;
+        vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     startPressure /= 10;
     startTemperature /= 10;
@@ -125,22 +123,22 @@ void TaskMeasureHeight(void *parameters)
             temperature = DPS310_Data.Temperature;
         }
         xSemaphoreGive(pressure_temperature_Mutex);
-        vTaskDelay(30 / portTICK_PERIOD_MS);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
+        vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
 
-IRAM_ATTR void bmiISR(TaskHandle_t taskHandle)
-{
-    BaseType_t HPTaskWoken = pdFALSE;
-    //unblock TaskMeasureAcc
-    vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-    if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
-}
+// IRAM_ATTR void bmiISR(TaskHandle_t taskHandle)
+// {
+//     BaseType_t HPTaskWoken = pdFALSE;
+//     //unblock TaskMeasureAcc
+//     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
+//     if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
+// }
 
-void TaskMeasureMagn(void *parameters)
+static void TaskMeasureMagn(void *parameters)
 {   
     qmc588l_t QMC588L_Data;
     qmc588l_init(&QMC588L_Data, i2c_master_port, 0x0D, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_8G);
@@ -159,7 +157,7 @@ void TaskMeasureMagn(void *parameters)
     //printf("%i \n", azimuth);
 }
 
-void TaskMeasureAcc(void *parameters)
+static void TaskMeasureAcc(void *parameters)
 {
     //wait till StartPressure has read
     while(!hasMeasuredStartPressure){
@@ -229,7 +227,7 @@ void TaskMeasureAcc(void *parameters)
     vTaskDelete(NULL);
 }
 
-void TaskKalmanFilter(void *parameters)
+static void TaskKalmanFilter(void *parameters)
 {
     //wait till StartPressure has read
     while(!hasMeasuredStartPressure){
@@ -344,6 +342,7 @@ void TaskKalmanFilter(void *parameters)
             vario_state.velocity = matrix_get(x, 1, 0);
         }
         xSemaphoreGive(vario_state_Mutex);
+        SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
         //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
@@ -388,22 +387,63 @@ void app_main(void)
     //     readPercentage_Battery(&battery_Manager);
     //     vTaskDelay(500 / portTICK_PERIOD_MS);
     // }
-    
+
+    gpio_config_t enableGPIOOutput = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = 1ULL << POWSW_ENABLE,
+        .pull_down_en = 0,
+        .pull_up_en = 0
+    };
+
+    gpio_config(&enableGPIOOutput);
+    gpio_set_level(POWSW_ENABLE, 1);
+
+    i2c_config_t conf_I2C = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = I2C_SDA,
+        .scl_io_num = I2C_SCL,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    };
+    i2c_param_config(i2c_master_port, &conf_I2C);
+    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_I2C.mode, 0, 0, 0));
+    // spi_bus_config_t spi2cfg={
+    //     .miso_io_num=SPI2_MISO,
+    //     .mosi_io_num=SPI2_MOSI,
+    //     .sclk_io_num=SPI2_SCK,
+    //     .quadwp_io_num=-1,
+    //     .quadhd_io_num=-1,
+    //     .max_transfer_sz=4000
+    // };
+    // ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
+    // ESP_LOGI(TAG, "Initialized SPI2");
+
+    // /* Configure GPS Reader Library */
+    nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
+    gps_config.uart.rx_pin = USART2_RX;
+    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
+    //nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
+    ESP_LOGI(TAG, "GPS started");
+    sdcard_t sdcard;
+    start_IGCLogger(&sdcard, gps_nmea_hdl);
+    //init_SoundManager(&soundManager);
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
     magnOrientation_Mutex = xSemaphoreCreateMutex();
 
-    i2c_config_t conf_MS5611 = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = SPI1_MOSI,
-        .scl_io_num = SPI1_SCK,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-    i2c_param_config(I2C_NUM_1, &conf_MS5611);
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, conf_MS5611.mode, 0, 0, 0));
+    // i2c_config_t conf_MS5611 = {
+    //     .mode = I2C_MODE_MASTER,
+    //     .sda_io_num = SPI1_MOSI,
+    //     .scl_io_num = SPI1_SCK,
+    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .master.clk_speed = I2C_MASTER_FREQ_HZ,
+    // };
+    // i2c_param_config(I2C_NUM_1, &conf_MS5611);
+    // ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, conf_MS5611.mode, 0, 0, 0));
 
     i2c_config_t conf_BMI088 = {
         .mode = I2C_MODE_MASTER,
@@ -419,17 +459,6 @@ void app_main(void)
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-
-    spi_bus_config_t spi2cfg={
-        .miso_io_num=SPI2_MISO,
-        .mosi_io_num=SPI2_MOSI,
-        .sclk_io_num=SPI2_SCK,
-        .quadwp_io_num=-1,
-        .quadhd_io_num=-1,
-        .max_transfer_sz=4000
-    };
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
-    ESP_LOGI(TAG, "Initialized SPI2");
 
     UBYTE* Buffer = init_Screen(&vario_state, vario_state_Mutex);
     VarioScreen_t varioScreen;
@@ -456,10 +485,4 @@ void app_main(void)
     deinit_Screen(&varioScreen);
     // init_buzzer(BUZZ_1, BUZZ_2);
     // tone_buzzer(1000, 10);
-    // /* Configure GPS Reader Library */
-    // nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    // gps_config.uart.rx_pin = USART2_RX;
-    // nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
-    // nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
-    // ESP_LOGI(TAG, "GPS started");
 }

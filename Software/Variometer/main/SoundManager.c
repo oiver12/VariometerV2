@@ -1,9 +1,12 @@
 #include "SoundManager.h"
 #include "driver/i2s.h"
+#include <math.h>
+#include <string.h>
 
-#define EXAMPLE_PDM_TX_FREQ_HZ          44100           // I2S PDM TX frequency
-#define SAMPLE_RATE     (36000)
+#define BUFF_SIZE   2048
+#define PDM_TX_FREQ_HZ          44100           // I2S PDM TX frequency
 #define I2S_NUM         (0)
+#define VELOCITY_THRESHOLD 0.2
 
 #define I2S_BCLK 11
 #define I2S_LRCLK 12
@@ -11,18 +14,107 @@
 #define AUDIO_EN 21
 #define AUDIO_GAIN 47
 
-esp_err_t start_SoundManager()
+#define WAVE_AMPTITUDE          (1000.0)        // 1~32767
+#define SINE_WAVE_LEN(tone)     (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
+#define BYTE_NUM_EVERY_TONE(duration)     (duration * PDM_TX_FREQ_HZ / 1000)
+
+int16_t *buffer;
+
+void SoundManager_Task(void *parameters)
+{
+    //TODO: evtl. volatile
+    SoundManager_t *sM = (SoundManager_t *)parameters;
+    float lastFreqeuncy = sM->frequencyNow-1;
+    size_t w_bytes = 0;
+    int64_t lastTime = esp_timer_get_time();
+    bool isPlaying = true;
+    int tone_point = 0;
+    while(true)
+    {
+        if(sM->ToneArray[sM->indexCurrentToneArray].state == no_Sound)
+        {
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+            continue;
+        }
+        if(lastFreqeuncy != sM->frequencyNow)
+        {
+            tone_point = SINE_WAVE_LEN(sM->frequencyNow);
+            /* Generate the tone buffer */
+            for (int i = 0; i < tone_point; i++) {
+                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * WAVE_AMPTITUDE);
+            }
+            lastFreqeuncy = sM->frequencyNow;
+        }
+        if(isPlaying)
+        {
+            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(sM->durationNow / 2); tot_bytes += w_bytes) 
+            {
+                lastTime = esp_timer_get_time();
+                if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK)
+                {
+                    printf("Write Task: i2s write failed\n");
+                }
+            }
+            if(sM->ToneArray[sM->indexCurrentToneArray].state != constant_Deep)
+                isPlaying = false;  
+        }
+        else if(esp_timer_get_time() - lastTime >= sM->durationNow)
+        {
+            isPlaying = true;
+        }
+        else
+        {
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+        }
+    }
+    vTaskDelete(NULL);
+}
+
+void SoundManager_calculateNewBiep(SoundManager_t *sM, float newVelocity)
+{
+    //in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
+  for (size_t i = 0; i < sM->sizeToneArray; i++)
+  {
+    if(newVelocity >= sM->ToneArray[i].lowerVelocity && newVelocity <= sM->ToneArray[i].upVelocity)
+    {
+      float difference = sM->lastBeepVelocity - newVelocity;
+      //Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
+      if(fabs(difference) < VELOCITY_THRESHOLD && !(sM->indexCurrentToneArray > 1 && i == 1) && !(sM->indexCurrentToneArray  <= 1 && i > 1))
+      {
+          return;
+      }
+      sM->lastBeepVelocity = newVelocity;
+      sM->indexCurrentToneArray = i;
+      //wenn letzter Ton, dann einfach Geschwindigkeit nehemn
+      if((sM->sizeToneArray - 1) == i)
+      {
+        sM->frequencyNow = sM->ToneArray[i].frequency;
+        sM->durationNow = sM->ToneArray[i].duration;
+      }
+      //sonst linear Interplorieren
+      else
+      {
+		//linear zwischen zwei States machen
+        float factor = (newVelocity - sM->ToneArray[i].lowerVelocity)/(sM->ToneArray[i].upVelocity-sM->ToneArray[i].lowerVelocity);
+        sM->frequencyNow = factor * (sM->ToneArray[i+1].frequency - sM->ToneArray[i].frequency) + sM->ToneArray[i].frequency;
+        sM->durationNow = factor * (sM->ToneArray[i+1].duration - sM->ToneArray[i].duration) + sM->ToneArray[i].duration;
+      }
+    }
+  }
+}
+
+esp_err_t init_SoundManager(SoundManager_t *sM)
 {
     i2s_config_t i2s_config = {
         .mode = I2S_MODE_MASTER | I2S_MODE_TX,
-        .sample_rate = SAMPLE_RATE,
+        .sample_rate = PDM_TX_FREQ_HZ,
         .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
         .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
         .communication_format = I2S_COMM_FORMAT_STAND_MSB,
         .dma_buf_count = 6,
-        .dma_buf_len = 60,
+        .dma_buf_len = 240,
         .use_apll = false,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                               //Interrupt level 1
     };
     i2s_pin_config_t pin_config = {
         .mck_io_num = I2S_PIN_NO_CHANGE,
@@ -33,5 +125,47 @@ esp_err_t start_SoundManager()
     };
     i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
     i2s_set_pin(I2S_NUM, &pin_config);
+    buffer = (int16_t *)calloc(1, BUFF_SIZE);
+    assert(buffer);
+    
+    sM->ToneArray = calloc(6, sizeof(Tonestate_t));
+    sM->sizeToneArray = 6;
+    Tonestate_t stateBeep[6] = {
+        {.state = constant_Deep, .frequency = 120, .duration = 500, .lowerVelocity = -999, .upVelocity = -2.5f},
+        {.state = no_Sound, .frequency = 0, .duration = 0, .lowerVelocity = -2.5f, .upVelocity = 0.1f},
+        {.state = Biepen, .frequency = 700, .duration = 750, .lowerVelocity = 0.1f, .upVelocity = 1.5f},
+        {.state = Biepen, .frequency = 850, .duration = 540, .lowerVelocity = 1.5f, .upVelocity = 3.5f},
+        {.state = Biepen, .frequency = 1000, .duration = 300, .lowerVelocity = 3.5f, .upVelocity = 10},
+        {.state = Biepen, .frequency = 1600, .duration = 90, .lowerVelocity = 10, .upVelocity = 999}
+    };
+    memcpy(sM->ToneArray, stateBeep, 6);
+    sM->indexCurrentToneArray = 1;
+    xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, sM, 1, NULL);
+    return ESP_OK;
+}
+
+esp_err_t deinit_SoundManager(SoundManager_t *sM)
+{
+    free(sM->ToneArray);
+    free(buffer);
+    return ESP_OK;
+}
+
+esp_err_t SoundManager_playSinWave(int frequency, int duration)
+{
+    size_t w_bytes = 0;
+    int tone_point = SINE_WAVE_LEN(100);
+    /* Generate the tone buffer */
+    for (int i = 0; i < tone_point; i++) {
+        buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * WAVE_AMPTITUDE);
+        printf("%i \n", buffer[i]);
+    }
+    
+    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration); tot_bytes += w_bytes) {
+        if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK)
+        {
+            printf("Write Task: i2s write failed\n");
+        }
+    }
     return ESP_OK;
 }

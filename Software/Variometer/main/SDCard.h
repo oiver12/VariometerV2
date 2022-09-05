@@ -2,7 +2,22 @@
 #define SDCARD_VARIO_H
 
 #include <esp_err.h>
+#include "sdmmc_cmd.h"
+#include <stdbool.h>
 
-esp_err_t start_sdcard();
+//https://stackoverflow.com/questions/7430248/creating-a-new-directory-in-c
+
+typedef struct {
+    bool cardInit;
+    char *Mount_Point;
+    sdmmc_card_t *card;
+} sdcard_t ;
+
+
+esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point);
+esp_err_t deinit_sdcard(sdcard_t *sdcard);
+FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName);
+bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName);
+esp_err_t writeToFile_sdcard(sdcard_t *sdcard);
 
 #endif
