@@ -76,6 +76,7 @@ SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen au
 
 float accSum;
 float accCount;
+float rotationVario[4];
 SemaphoreHandle_t acc_Mutex = NULL; //Sync von TaskMeasureAcc und KalmanFilter
 
 float startPressure;
@@ -178,9 +179,9 @@ static void TaskMeasureAcc(void *parameters)
     rotation[3] = 0.0f;
 
     float lastTime = esp_timer_get_time();
-    volatile float roll = 0;
-    volatile float pitch = 0;
-    volatile float yaw = 0;
+    // volatile float roll = 0;
+    // volatile float pitch = 0;
+    // volatile float yaw = 0;
     int count = 0;
     while(1)
     {
@@ -197,7 +198,7 @@ static void TaskMeasureAcc(void *parameters)
         //TODO: wahrscheinlich ein Vorzeichen oder sonstiges falsch mit Mag.
         QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], magN, magE, magD, deltaT, rotation);
         //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
-        Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
+        //Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
         // if(count % 10 == 0)
         //     printf("%.2f \n", yaw);
         count++;
@@ -208,6 +209,7 @@ static void TaskMeasureAcc(void *parameters)
         {
             accSum += accX;
             accCount++;
+            memcpy(rotationVario, rotation, sizeof(rotationVario));
         }
         xSemaphoreGive(acc_Mutex);
     }
@@ -290,16 +292,21 @@ static void TaskKalmanFilter(void *parameters)
         float acc = 0;
         //TODO: ist Mean am besten?
         //read Acc Queue till its empty and compute mean from Acc
+        float rotation[4];
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
-            acc = accSum / accCount;
             if(accCount == 0)
             {
                 ESP_LOGI(TAG, "Had no Acc Readings");
                 acc = 9.81f;
             }
+            else
+            {
+                acc = accSum / accCount;
+            }
             accSum = 0;
             accCount = 0;
+            memcpy(rotation, rotationVario, sizeof(rotationVario));
         }
         xSemaphoreGive(acc_Mutex);
         deltaT = (esp_timer_get_time() - lastTime) / 1000000;
@@ -329,8 +336,9 @@ static void TaskKalmanFilter(void *parameters)
             vario_state.velocity = matrix_get(x, 1, 0);
         }
         xSemaphoreGive(vario_state_Mutex);
+        logVarioData(vario_state, rotation);
         SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
-        printf("%.2f\n", matrix_get(x, 1, 0));
+        //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
@@ -374,7 +382,6 @@ void app_main(void)
     //     readPercentage_Battery(&battery_Manager);
     //     vTaskDelay(500 / portTICK_PERIOD_MS);
     // }
-
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -410,13 +417,12 @@ void app_main(void)
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-    sdcard_t sdcard;
-    memset(&sdcard, 0, sizeof(sdcard));
-    startLogging(&sdcard);
-    //init_SoundManager(&soundManager);
-    // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
-    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
-    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 2, NULL);
+    sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
+    startLogging(sdcard);
+    init_SoundManager(&soundManager);
+    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
+    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
+    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 2, NULL);
     return;
     UBYTE* Buffer = init_Screen(&vario_state, vario_state_Mutex);
     VarioScreen_t varioScreen;

@@ -144,7 +144,7 @@ esp_err_t start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_handler)
 	init_sdcard(card, sdcard_Mount_Point);
 	const char* FileName = makeFileName(buffer, 26 + strlen(directory), card);
 	ESP_LOGI(TAG, "File Name: %s", FileName);
-	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName);
+	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, true);
 	logger.sdcard = card;
 	logger.file = f;
 	if(f)

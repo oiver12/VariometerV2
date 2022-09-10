@@ -4,6 +4,7 @@
 #include <esp_log.h>
 #include <string.h>
 #include "driver/sdmmc_host.h"
+#include <errno.h>
 
 static const char *TAG = "SDCard";
 
@@ -70,9 +71,9 @@ esp_err_t deinit_sdcard(sdcard_t *sdcard)
     return ESP_OK;
 }
 
-FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName)
+FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool createNew)
 {
-    char buffer[strlen(sdcard->Mount_Point) + strlen(directory) + strlen(fileName) + 2];
+    char buffer[100];
     strcpy(buffer, sdcard->Mount_Point);
     struct stat st = {0};   
     if(directory != NULL)
@@ -84,19 +85,24 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
             mkdir(buffer, 0700);
             ESP_LOGI(TAG, "Createt Directory");
         }
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Direactory already exists");
+        else
+        {
+            ESP_LOGI(TAG, "Direactory already exists");
+        }
     }
     strcat(buffer, "/");
     strcat(buffer, fileName);
-    ESP_LOGI(TAG, "File Destination: %s", buffer);
-    if(stat(buffer, &st) != -1)
+    //ESP_LOGI(TAG, "File Destination: %s", buffer);
+    volatile size_t Length4 = strlen(buffer);
+    volatile char *test = buffer;
+    if(stat(buffer, &st) != -1 && createNew)
     {
         ESP_LOGE(TAG, "File already exists");
     }
-    return fopen(buffer, "w");
+    if(createNew)
+        return fopen(buffer, "w");
+    else
+        return fopen(buffer, "a");
 }
 
 bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName)
@@ -106,4 +112,9 @@ bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName)
     strcat(buffer, fileName);
     struct stat st = {0};   
     return stat(buffer, &st) != -1;
+}
+
+uint64_t remainingSpaceBytes_sdcard(sdcard_t *sdcard)
+{
+    return (uint64_t)(sdcard->card->csd.capacity * sdcard->card->csd.sector_size);
 }
