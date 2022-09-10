@@ -2,7 +2,7 @@
 #include "driver/i2c.h"
 #include <esp_log.h>
 
-#define I2C_MASTER_TIMEOUT_MS       1000
+#define I2C_MASTER_TIMEOUT_MS       100
 
 #define DPS310__BUSYTIME_FAILSAFE   10U
 #define DPS__BUSYTIME_SCALING       10U
@@ -151,7 +151,15 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
 esp_err_t dsp310_get_Pressure(dps310_t *dev)
 {
     uint8_t buffer[3] = {0};
-    ESP_ERROR_CHECK(read_Bytes(dev, 0x00, 3, buffer));
+    esp_err_t err =  read_Bytes(dev, 0x00, 3, buffer);
+    static int64_t lastTime;
+    if(err != ESP_OK)
+    {   
+        //ESP_ERROR_CHECK(err);
+        ESP_LOGI(TAG, "Pressure Reading falied %lli", (esp_timer_get_time() - lastTime) / 1000);
+        lastTime = esp_timer_get_time();
+        return ESP_FAIL;
+    }
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
 	getTwosComplement(&raw, 24);
     float prs = raw;
@@ -164,7 +172,12 @@ esp_err_t dsp310_get_Pressure(dps310_t *dev)
 esp_err_t dps310_get_Temperature(dps310_t *dev)
 {
     uint8_t buffer[3] = {0};
-    ESP_ERROR_CHECK(read_Bytes(dev, 0x03, 3, buffer));
+    esp_err_t err = read_Bytes(dev, 0x03, 3, buffer);
+    if(err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Temp Reading falied");
+        return ESP_FAIL;
+    }
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
 	getTwosComplement(&raw, 24);
     float temp = raw;

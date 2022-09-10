@@ -183,10 +183,11 @@ esp_err_t bmi088_init(bmi088_t *dev, int I2C_Master_Num, uint8_t acc_i2c_addr, u
 
     /* Turn on Acc */
     ESP_ERROR_CHECK(writeAccByte(dev, BMI_ACC_PWR_CTRL, 0x04));
-    vTaskDelay(10 / portTICK_PERIOD_MS);
 
-    /* Gyro soft reset */
-    ESP_ERROR_CHECK(writeGyrByte(dev, BMI_GYR_SOFTRESET, 0xB6));
+    //TODO: why Soft Reset Not working?
+    // /* Gyro soft reset */
+    // volatile esp_err_t errer = writeGyrByte(dev, BMI_GYR_SOFTRESET, 0xB6);
+    // ESP_LOGI(TAG, "%s", esp_err_to_name(errer));
     vTaskDelay(250 / portTICK_PERIOD_MS);
 
     /* Check chip ID */

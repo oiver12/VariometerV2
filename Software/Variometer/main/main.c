@@ -24,6 +24,7 @@
 #include "SoundManager.h"
 #include "IGCLogger.h"
 #include <time.h>
+#include "TestTools/FlightLogger.h"
 
 #define BMI088_I2C
 
@@ -33,7 +34,7 @@
 
 #define POWSW_ENABLE 13
 
-#define I2C_MASTER_FREQ_HZ 400000     
+#define I2C_MASTER_FREQ_HZ 100000     
 #define I2C_SDA 37
 #define I2C_SCL 36
 #define I2C_ACC_INT 41
@@ -83,19 +84,29 @@ float pressure;
 float temperature;
 SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
 
-int32_t magnOrientation[3];
-SemaphoreHandle_t magnOrientation_Mutex = NULL; //Gemessen von TaskMeasureMagn und gebraucht von TaskMeasureAcc
-
 SoundManager_t soundManager;
 
 volatile bool hasMeasuredStartPressure = false;
 
 static void TaskMeasureHeight(void *parameters)
 {
+    // Setup Interrupt
+    // gpio_config_t gpio_config_int_bmi = {
+    //     .pin_bit_mask = 1ULL << I2C_ACC_INT,
+    //     .mode         = GPIO_MODE_INPUT,
+    //     .pull_up_en   = GPIO_PULLUP_DISABLE,
+    //     .pull_down_en = GPIO_PULLDOWN_ENABLE,
+    //     .intr_type    = GPIO_INTR_NEGEDGE  //
+    // };
+    // //set Acc Pin as Interrupt 
+    // gpio_config(&gpio_config_int_bmi);
+    // gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    // //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
+    // gpio_isr_handler_add((gpio_num_t)I2C_ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
     startPressure = 0;
     startTemperature = 0;
     dps310_t DPS310_Data;
-    dps310_init(&DPS310_Data, I2C_NUM_1, 0x77);
+    dps310_init(&DPS310_Data, i2c_master_port, 0x76);
     for (size_t i = 0; i < 10; i++)
     {
         dsp310_get_Pressure(&DPS310_Data);
@@ -111,6 +122,11 @@ static void TaskMeasureHeight(void *parameters)
     int count = 0;
     while(1)
     {
+        //wait till unblocked from Interrupt
+        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        /*if (notificationValue > 1) {
+            ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
+        }*/
         dsp310_get_Pressure(&DPS310_Data);
         if(count % 34 == 0)
         {
@@ -123,6 +139,7 @@ static void TaskMeasureHeight(void *parameters)
             temperature = DPS310_Data.Temperature;
         }
         xSemaphoreGive(pressure_temperature_Mutex);
+        //printf("%.2f \n", DPS310_Data.Pressure);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
         vTaskDelay(30 / portTICK_PERIOD_MS);
@@ -138,85 +155,55 @@ static void TaskMeasureHeight(void *parameters)
 //     if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
 // }
 
-static void TaskMeasureMagn(void *parameters)
-{   
-    qmc588l_t QMC588L_Data;
-    qmc588l_init(&QMC588L_Data, i2c_master_port, 0x0D, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_8G);
-    //qmc588l_calculateCalibration(&QMC588L_Data);
-    qmc588l_readMag(&QMC588L_Data);
-    ESP_LOGI(TAG, "Magn: x= %i, y=%i, z=%i", QMC588L_Data.magnValue[0], QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[2]);
-    xSemaphoreTake(magnOrientation_Mutex, portMAX_DELAY);
-    {
-        magnOrientation[0] = QMC588L_Data.magnValue[0];
-        magnOrientation[1] = QMC588L_Data.magnValue[1];
-        magnOrientation[2] = QMC588L_Data.magnValue[2];
-    }
-    xSemaphoreGive(magnOrientation_Mutex);
-    int azimuth = (int)(atan2(QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[0]) * 180.0 / M_PI);
-    azimuth = azimuth > 0 ? 360 + azimuth : azimuth;
-    //printf("%i \n", azimuth);
-}
-
 static void TaskMeasureAcc(void *parameters)
 {
     //wait till StartPressure has read
     while(!hasMeasuredStartPressure){
         vTaskDelay(2);
     }
-    float rotation[4]; //Nur benutzen in TaskMeasureAcc
+    float rotation[4];
+    /* Init BMI088 */
     bmi088_t BMI088_Data;
-    #ifndef BMI088_I2C
-    bmi088_init(&BMI088_Data, acc_spi_handle, IMU_ACC_CS, gyro_spi_handle, IMU_GYR_CS);
-    #else
-    bmi088_init(&BMI088_Data, i2c_master_port, 0x19, 0x69);
-    #endif
+    bmi088_init(&BMI088_Data, i2c_master_port, 0x18, 0x68);
+
+    /* Init QMC588L */
+    qmc588l_t QMC588L_Data;
+    qmc588l_init(&QMC588L_Data, i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_8G);
+
     QuaternionFilter_init();
     //reset Rotation
     rotation[0] = 1.0f;
     rotation[1] = 0.0f;
     rotation[2] = 0.0f;
     rotation[3] = 0.0f;
-    // Setup Interrupt
-    // gpio_config_t gpio_config_int_bmi = {
-    //     .pin_bit_mask = 1ULL << I2C_ACC_INT,
-    //     .mode         = GPIO_MODE_INPUT,
-    //     .pull_up_en   = GPIO_PULLUP_DISABLE,
-    //     .pull_down_en = GPIO_PULLDOWN_ENABLE,
-    //     .intr_type    = GPIO_INTR_NEGEDGE  //
-    // };
-    // //set Acc Pin as Interrupt 
-    // //TODO: nur AccelPin wir als Interrupt benutzt. Vielleicht auch Gyro benutzen?
-    // gpio_config(&gpio_config_int_bmi);
-    // gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    // //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    // gpio_isr_handler_add((gpio_num_t)I2C_ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
+
     float lastTime = esp_timer_get_time();
-    // volatile float roll = 0;
-    // volatile float pitch = 0;
-    // volatile float yaw = 0;
+    volatile float roll = 0;
+    volatile float pitch = 0;
+    volatile float yaw = 0;
+    int count = 0;
     while(1)
     {
-        //wait till unblocked from Interrupt
-        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        /*if (notificationValue > 1) {
-            ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
-        }*/
-        xSemaphoreTake(magnOrientation_Mutex, portMAX_DELAY);
-        int32_t magN = magnOrientation[1];
-        int32_t magE = -magnOrientation[0];
-        int32_t magD = magnOrientation[2];
-        xSemaphoreGive(magnOrientation_Mutex);
+        qmc588l_readMag(&QMC588L_Data);
+        int32_t magN =  -QMC588L_Data.magnValue[0];
+        int32_t magE = QMC588L_Data.magnValue[1];
+        int32_t magD = QMC588L_Data.magnValue[2];
+
         bmi088_ReadAccelerometer(&BMI088_Data);
         bmi088_ReadGyroskop(&BMI088_Data);
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
-        //QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], magN, magE, magD, deltaT, rotation);
-        QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
-        //Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
+        //TODO: wahrscheinlich ein Vorzeichen oder sonstiges falsch mit Mag.
+        QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], magN, magE, magD, deltaT, rotation);
+        //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
+        Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
+        // if(count % 10 == 0)
+        //     printf("%.2f \n", yaw);
+        count++;
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
-        //printf("%.2f \n\r", accX);
+        //printf("%.2f \n", accX);
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
             accSum += accX;
@@ -343,7 +330,7 @@ static void TaskKalmanFilter(void *parameters)
         }
         xSemaphoreGive(vario_state_Mutex);
         SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
-        //printf("%.2f\n", matrix_get(x, 1, 0));
+        printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
@@ -399,6 +386,8 @@ void app_main(void)
     gpio_config(&enableGPIOOutput);
     gpio_set_level(POWSW_ENABLE, 1);
 
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
     i2c_config_t conf_I2C = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_SDA,
@@ -409,57 +398,26 @@ void app_main(void)
     };
     i2c_param_config(i2c_master_port, &conf_I2C);
     ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_I2C.mode, 0, 0, 0));
-    // spi_bus_config_t spi2cfg={
-    //     .miso_io_num=SPI2_MISO,
-    //     .mosi_io_num=SPI2_MOSI,
-    //     .sclk_io_num=SPI2_SCK,
-    //     .quadwp_io_num=-1,
-    //     .quadhd_io_num=-1,
-    //     .max_transfer_sz=4000
-    // };
-    // ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
-    // ESP_LOGI(TAG, "Initialized SPI2");
 
-    // /* Configure GPS Reader Library */
-    nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    gps_config.uart.rx_pin = USART2_RX;
-    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
-    //nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
-    ESP_LOGI(TAG, "GPS started");
-    sdcard_t sdcard;
-    start_IGCLogger(&sdcard, gps_nmea_hdl);
-    //init_SoundManager(&soundManager);
+    // // /* Configure GPS Reader Library */
+    // nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
+    // gps_config.uart.rx_pin = USART2_RX;
+    // nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
+    // //nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
+    // ESP_LOGI(TAG, "GPS started");
+    // sdcard_t sdcard;
+    // start_IGCLogger(&sdcard, gps_nmea_hdl);
     vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-    magnOrientation_Mutex = xSemaphoreCreateMutex();
-
-    // i2c_config_t conf_MS5611 = {
-    //     .mode = I2C_MODE_MASTER,
-    //     .sda_io_num = SPI1_MOSI,
-    //     .scl_io_num = SPI1_SCK,
-    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    // };
-    // i2c_param_config(I2C_NUM_1, &conf_MS5611);
-    // ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, conf_MS5611.mode, 0, 0, 0));
-
-    i2c_config_t conf_BMI088 = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_SDA,
-        .scl_io_num = I2C_SCL,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-    i2c_param_config(i2c_master_port, &conf_BMI088);
-    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_BMI088.mode, 0, 0, 0));
-
-    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
-    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
-    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 1, NULL);
-
+    sdcard_t sdcard;
+    memset(&sdcard, 0, sizeof(sdcard));
+    startLogging(&sdcard);
+    //init_SoundManager(&soundManager);
+    // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
+    // xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
+    // xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 2, NULL);
+    return;
     UBYTE* Buffer = init_Screen(&vario_state, vario_state_Mutex);
     VarioScreen_t varioScreen;
     CreateScreen(&varioScreen, Buffer);
