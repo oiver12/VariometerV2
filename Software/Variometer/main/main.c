@@ -26,18 +26,12 @@
 #include <time.h>
 #include "TestTools/FlightLogger.h"
 
-#define BMI088_I2C
-
-#define DEG_TO_RAD  0.017453292519943295769236907684886
-
-#define Button_Input 4
-
 #define POWSW_ENABLE 13
 
 #define I2C_MASTER_FREQ_HZ 100000     
 #define I2C_SDA 37
 #define I2C_SCL 36
-#define I2C_ACC_INT 41
+#define PresSens_INT 38
 #define i2c_master_port 0
 
 #define LCD_CS 48
@@ -45,16 +39,8 @@
 #define LCD_RST 21
 #define LCD_TCH_CS 46
 
-#define SPI2_MOSI 35
-#define SPI2_SCK 36
-#define SPI2_MISO 37
-
 #define USART2_TX 17
 #define USART2_RX 18
-#define GSP_ON 8
-
-#define BUZZ_1 1
-#define BUZZ_2 2
 
 #define R_SPECIFIC 287.053
 #define GRAVITY_G 9.80665
@@ -89,21 +75,16 @@ SoundManager_t soundManager;
 
 volatile bool hasMeasuredStartPressure = false;
 
+IRAM_ATTR void dps310ISR(TaskHandle_t taskHandle)
+{
+    BaseType_t HPTaskWoken = pdFALSE;
+    //unblock TaskMeasureAcc
+    vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
+    if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
+}
+
 static void TaskMeasureHeight(void *parameters)
 {
-    // Setup Interrupt
-    // gpio_config_t gpio_config_int_bmi = {
-    //     .pin_bit_mask = 1ULL << I2C_ACC_INT,
-    //     .mode         = GPIO_MODE_INPUT,
-    //     .pull_up_en   = GPIO_PULLUP_DISABLE,
-    //     .pull_down_en = GPIO_PULLDOWN_ENABLE,
-    //     .intr_type    = GPIO_INTR_NEGEDGE  //
-    // };
-    // //set Acc Pin as Interrupt 
-    // gpio_config(&gpio_config_int_bmi);
-    // gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    // //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    // gpio_isr_handler_add((gpio_num_t)I2C_ACC_INT, bmiISR, xTaskGetCurrentTaskHandle());
     startPressure = 0;
     startTemperature = 0;
     dps310_t DPS310_Data;
@@ -119,15 +100,28 @@ static void TaskMeasureHeight(void *parameters)
     startPressure /= 10;
     startTemperature /= 10;
     hasMeasuredStartPressure = true;
+    // Setup Interrupt
+    gpio_config_t gpio_config_INT_DPS310 = {
+        .pin_bit_mask = 1ULL << PresSens_INT,
+        .mode         = GPIO_MODE_INPUT,
+        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_POSEDGE 
+    };
+    //set PresSens Pin as Interrupt 
+    gpio_config(&gpio_config_INT_DPS310);
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
+    gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     while(1)
     {
         //wait till unblocked from Interrupt
-        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        /*if (notificationValue > 1) {
-            ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
-        }*/
+        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 50 / portTICK_PERIOD_MS);
+        if (notificationValue == 0) {
+            ESP_LOGW(TAG, "Interrupt didn't fire");
+        }
         dsp310_get_Pressure(&DPS310_Data);
         if(count % 34 == 0)
         {
@@ -147,14 +141,6 @@ static void TaskMeasureHeight(void *parameters)
     }
     vTaskDelete(NULL);
 }
-
-// IRAM_ATTR void bmiISR(TaskHandle_t taskHandle)
-// {
-//     BaseType_t HPTaskWoken = pdFALSE;
-//     //unblock TaskMeasureAcc
-//     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-//     if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
-// }
 
 static void TaskMeasureAcc(void *parameters)
 {

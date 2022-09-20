@@ -14,8 +14,7 @@ extern "C" {
 #include "esp_event.h"
 #include "esp_err.h"
 #include "driver/uart.h"
-
-#define NotifyNMEASentence
+#include "vario_config.h"
 
 #define GPS_MAX_SATELLITES_IN_USE (12)
 #define GPS_MAX_SATELLITES_IN_VIEW (16)

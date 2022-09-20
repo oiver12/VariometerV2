@@ -12,7 +12,7 @@ FILE *fileVario;
 FILE *fileNMEA;
 int countVarioFile;
 sdcard_t *sdcard;
-const char *directoryLogs = NULL;
+const char *directoryLogs = "/Trackloggs";
 
 static void NMEASentenceLogger(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
@@ -42,7 +42,7 @@ void startLogging(sdcard_t *card)
         if(directoryLogs == NULL)
             snprintf(fileNameVario, sizeof(fileNameVario), "/Vario%02d.txt", count++);
         else
-            snprintf(fileNameVario, sizeof(fileNameVario), "/%s/Vario%02d.txt", directoryLogs, count++);
+            snprintf(fileNameVario, sizeof(fileNameVario), "%s/Vario%02d.txt", directoryLogs, count++);
     }while(fileExists_sdcard(card, fileNameVario));
     ESP_LOGI(TAG, "Found file: %s", fileNameVario);
     snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", --count);
@@ -73,11 +73,10 @@ void logVarioData(vario_state_t state, float rotation[4])
     int64_t time = esp_timer_get_time(); 
     fwrite(&time, sizeof(int64_t), 1, fileVario); //write Time since startup to file
     fprintf(fileVario, "\n"); //new line
-    if(countVarioFile % 10 == 0)
+    if(countVarioFile % 10 == 0) //save File all 10th time ==> all 300 ms
     {
         fclose(fileVario);
         fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, false);
-        //printf("State: %.2f, %.2f, %.2f, %lli\n", state.height, state.velocity, state.accX, time);
     }
     countVarioFile++;
 }

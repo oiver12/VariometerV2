@@ -5,8 +5,7 @@
 #include <esp_err.h>
 #include "driver/gpio.h"
 #include "freertos/semphr.h"
-
-#define BMI088_I2C
+#include "vario_config.h"
 
 typedef enum {
     ACCEL_RANGE_3G,

@@ -71,6 +71,7 @@ esp_err_t deinit_sdcard(sdcard_t *sdcard)
     return ESP_OK;
 }
 
+//TODO: directory not working
 FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool createNew)
 {
     char buffer[100];
@@ -82,7 +83,8 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
         ESP_LOGI(TAG, "Directory: %s", buffer);
         if(stat(buffer, &st) == -1)
         {
-            mkdir(buffer, 0700);
+            volatile int returnValue = mkdir(buffer, 0700);
+            volatile char *testValue = strerror(errno);
             ESP_LOGI(TAG, "Createt Directory");
         }
         else
@@ -93,8 +95,6 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
     strcat(buffer, "/");
     strcat(buffer, fileName);
     //ESP_LOGI(TAG, "File Destination: %s", buffer);
-    volatile size_t Length4 = strlen(buffer);
-    volatile char *test = buffer;
     if(stat(buffer, &st) != -1 && createNew)
     {
         ESP_LOGE(TAG, "File already exists");

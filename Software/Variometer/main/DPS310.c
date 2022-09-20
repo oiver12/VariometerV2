@@ -99,6 +99,8 @@ esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
     ESP_ERROR_CHECK(writeBitByteField(dev, 0x08, 0x07, 0x07, 0));
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     dps310_get_Temperature(dev);
+    /*  Enable Interrupt on Pressure Reading (active high) */
+    ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0x90, 0x90, 0));
 
     uint8_t temp = 0xA5;
     write_Bytes(dev, 0x0E, 1, &temp);
@@ -125,7 +127,7 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
     ESP_ERROR_CHECK(write_Bytes(dev, 0x07, 1, &temp_cfg));
     uint8_t prs_cfg = (prs_mr << 4) | prs_osr;
     ESP_ERROR_CHECK(write_Bytes(dev, 0x06, 1, &prs_cfg));
-    if(temp_osr > DPS310_OSR_8)
+    if(prs_osr > DPS310_OSR_8)
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x04, 2));
     }
@@ -133,7 +135,7 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0UL, 0x04, 2));
     }
-    if(prs_osr > DPS310_OSR_8)
+    if(temp_osr > DPS310_OSR_8)
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x08, 3));
     }
