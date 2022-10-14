@@ -85,6 +85,7 @@ IRAM_ATTR void dps310ISR(TaskHandle_t taskHandle)
 
 static void TaskMeasureHeight(void *parameters)
 {
+
     startPressure = 0;
     startTemperature = 0;
     dps310_t DPS310_Data;

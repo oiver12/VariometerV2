@@ -1,3 +1,4 @@
-idf_component_register(SRCS "lv_demo_benchmark.c" "Screen_Test.c" "lvgl_demo_ui.c" "assets/img_cogwheel_alpha16.c" "assets/img_cogwheel_argb.c" "assets/img_cogwheel_chroma_keyed.c" "assets/img_cogwheel_indexed16.c"
-                            "assets/img_cogwheel_rgb" "assets/lv_font_montserrat_12_compr_az.c" "assets/lv_font_montserrat_16_compr_az.c" "assets/lv_font_montserrat_28_compr_az.c"
+idf_component_register(SRCS "Widget_Vario.c" "UI_Demo.c" "FIFO.c" "DeviceContext.c" "Screen_Test.c" "Vario_Screen.c"
+                            "assets/arrow.c" "assets/gps_an.c" "assets/gps_aus.c" "assets/Kompass.c" "assets/lautsprecher_an.c"
+                            "assets/lautsprecher_stumm.c" "assets/sd_card_good.c"
                     INCLUDE_DIRS ".")

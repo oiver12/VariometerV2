@@ -15,8 +15,7 @@
 
 #define POWSW_ENABLE 13
 
-extern void example_lvgl_demo_ui(void *param);
-extern void lv_demo_benchmark(void);
+extern void example_lvgl_demo_ui();
 
 static void lv_tick_task(void *arg) {
     (void) arg;
@@ -67,8 +66,7 @@ void app_main(void)
     esp_timer_handle_t periodic_timer;
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
-    //xTaskCreate(example_lvgl_demo_ui, "TestTask", 1024 * 3, scr, 5, NULL);
-    lv_demo_benchmark();
+    example_lvgl_demo_ui();
 
     while (1) {
         /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
