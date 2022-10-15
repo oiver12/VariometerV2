@@ -1,16 +1,36 @@
 ﻿#include "Widget_Vario.h"
 #include "DeviceContext.h"
 #include <stdio.h>
+#include <math.h>
 
 #define BUFFER_TEXT_SIZE 20
 
+#define COMPASS_1METHOD
+#define DEGREE_TO_RADIAN 0.01745329251
+#define COMPASS_PLACE_SIDE 15
+
 LV_IMG_DECLARE(Kompass);
+LV_IMG_DECLARE(Kreis_4px);
 LV_IMG_DECLARE(arrow);
 
 static lv_style_t frame_Widget_Base_Style;
 static lv_style_t infoText_Widget_Base_Style;
 static lv_style_t value_Widget_Base_Style;
 static lv_style_t unit_Widget_Base_Style;
+
+lv_font_t* __FontStack[] =
+{
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+    &lv_font_montserrat_16,
+};
 
 void init_WidgetHandler()
 {
@@ -44,7 +64,7 @@ static const char* get_Info_Text(WidgetContentType contentType)
     }
 }
 
-void get_Value_Text(WidgetContentType contentType, char* const buffer, bool shouldRender)
+float get_Value_Text(WidgetContentType contentType, char* const buffer, bool shouldRender)
 {
     float temp;
     bool returnValue = false;
@@ -72,6 +92,7 @@ void get_Value_Text(WidgetContentType contentType, char* const buffer, bool shou
         snprintf(buffer, BUFFER_TEXT_SIZE, "%.1f", temp);
     else
         buffer[0] = 0;
+    return temp;
 }
 
 static const char* get_Unit_Text(WidgetContentType contentType)
@@ -87,7 +108,7 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
-        return "C°";
+        return 'C°';
     default:
         return "";
     }
@@ -105,10 +126,13 @@ static void add_TextBox_Widget(WidgetData *widget, lv_obj_t *screen)
     lv_label_set_text(information_text, get_Info_Text(widget->type));
     lv_obj_align(information_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 2);
 
+    lv_style_init(&widget->lvgl_styles[0]);
+    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     char tempBuffer[10];
     get_Value_Text(widget->type, tempBuffer, true);
     lv_obj_t* value_Text = lv_label_create(frame, NULL);
     lv_obj_add_style(value_Text, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
+    lv_obj_add_style(value_Text, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
     lv_label_set_text(value_Text, tempBuffer);
     lv_obj_align(value_Text, NULL, LV_ALIGN_IN_LEFT_MID, 10, 5);
     widget->obj_to_change = value_Text;
@@ -126,48 +150,133 @@ static void add_Compass_widget(WidgetData* widget, lv_obj_t* screen)
     lv_obj_align(frame, NULL, widget->alignement, widget->x, widget->y);
     lv_obj_set_size(frame, widget->w, widget->h);
     widget->obj_to_change = frame;
-
+#ifdef COMPASS_1METHOD
     lv_obj_t* img = lv_img_create(frame, NULL);
     lv_img_set_src(img, &Kompass);
-    uint16_t zoomFactor = (uint16_t)(((float)((float)widget->w / (float)lv_obj_get_width(img))) * 256);
+    float width = lv_obj_get_width(img) + COMPASS_PLACE_SIDE;
+    uint16_t zoomFactor = (uint16_t)(((float)((float)widget->w / width)) * 256);
     lv_img_set_zoom(img, zoomFactor);
     lv_obj_t* imgArrow = lv_img_create(frame, NULL);
     lv_img_set_src(imgArrow, &arrow);
     lv_coord_t yOffset = (lv_obj_get_height(img) * ((float)zoomFactor / (float)256));
-    lv_obj_align(imgArrow, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset + 2);
+    lv_obj_align(imgArrow, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - COMPASS_PLACE_SIDE * 0.6 + 2);
     yOffset = (lv_obj_get_height(img) * (((float)zoomFactor / (float)256) - 1)) / 2;
-    lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset);
+    lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - COMPASS_PLACE_SIDE * 0.6);
 
+    lv_style_init(&widget->lvgl_styles[0]);
+    //lv_style_set_margin_right(&widget->lvgl_styles[0], LV_STATE_DEFAULT, 10);
+    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     lv_obj_t* labelText = lv_label_create(frame, NULL);
     lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
+    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
+    lv_obj_align(labelText, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 0);
+#else
+    lv_obj_t* img = lv_img_create(frame, NULL);
+    lv_img_set_src(img, &Kreis_4px);
+    uint16_t zoomFactor = (uint16_t)(((float)((float)widget->w / ((float)lv_obj_get_width(img) + 10))) * 256);
+    lv_img_set_zoom(img, zoomFactor);
+    lv_coord_t yOffset = (lv_obj_get_height(img) * (((float)zoomFactor / (float)256) - 1)) / 2;
+    lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - 5);
+
+    lv_obj_t* imgArrow = lv_img_create(frame, NULL);
+    lv_img_set_src(imgArrow, &arrow);
+    yOffset = (lv_obj_get_height(img) * ((float)zoomFactor / (float)256));
+    lv_obj_align(imgArrow, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - 7);
+
+    lv_style_init(&widget->lvgl_styles[0]);
+    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
+    lv_obj_t* labelText = lv_label_create(frame, NULL);
+    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
+    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
     lv_obj_align(labelText, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
 
-    //lv_img_set_angle(img, 450);
+    float angle = 0 * DEGREE_TO_RADIAN;
+    float widgetWidth = lv_obj_get_height(img) * ((float)zoomFactor / (float)256) / 2 - 17;
+    lv_obj_t* label_N = lv_label_create(img, NULL);
+    lv_label_set_text(label_N, "N");
+    lv_obj_align(label_N, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * -cos(angle)); //PI im Gegenuhrzeigersinn
+    lv_obj_t* label_E = lv_label_create(img, NULL);
+    lv_label_set_text(label_E, "E");
+    lv_obj_align(label_E, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle+1.5707963), widgetWidth * cos(angle + 1.5707963)); //PI / 2 im Gegenuhrzeigersinn
+    lv_obj_t* label_S = lv_label_create(img, NULL);
+    lv_label_set_text(label_S, "S");
+    lv_obj_align(label_S, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * cos(angle));
+    lv_obj_t* label_W = lv_label_create(img, NULL);
+    lv_label_set_text(label_W, "W");
+    lv_obj_align(label_W, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle - 1.5707963), widgetWidth * cos(angle - 1.5707963)); //PI / 2 im Uhrzeigersinn
+#endif // COMPASS_1METHOD
 }
 
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    get_Value_Text(widget->type, tempBuffer, false);
+    float tempValue =  get_Value_Text(widget->type, tempBuffer, false);
     if (tempBuffer[0] != '\0')
     {
         lv_label_set_text(widget->obj_to_change, tempBuffer);
+        if (widget->type == WidgetContent_Vario_Active || widget->type == WidgetContent_Vario_Lazy)
+        {
+            if (tempValue >= 0)
+                lv_style_set_text_color(&widget->lvgl_styles[0], LV_STATE_DEFAULT, COLOR_GREEN);
+            else
+                lv_style_set_text_color(&widget->lvgl_styles[0], LV_STATE_DEFAULT, COLOR_RED);
+        }
     }
 }
 
 static void update_Compass_Widget(WidgetData* widget)
 {
+#ifdef COMPASS_1METHOD
     float heading;
     if (vario_state_get_heading(&heading))
     {
         lv_obj_t* label = lv_obj_get_child(widget->obj_to_change, NULL);
         lv_obj_t* temp = lv_obj_get_child(widget->obj_to_change, label);
         lv_obj_t* img = lv_obj_get_child(widget->obj_to_change, temp);
-        char tempBuffer[6];
-        snprintf(tempBuffer, 6, "%.0f°", heading);
+        char tempBuffer[9];
+        if (heading > 337 || heading < 23)
+            snprintf(tempBuffer, 9, "%.0f° N", heading);
+        else if(heading >= 23 && heading <= 67)
+            snprintf(tempBuffer, 9, "%.0f° NE", heading);
+        else if(heading > 67 && heading < 113)
+            snprintf(tempBuffer, 9, "%.0f° E", heading);
+        else if(heading >= 113 && heading < 157)
+            snprintf(tempBuffer, 9, "%.0f° SE", heading);
+        else if(heading >= 157 && heading <= 201)
+            snprintf(tempBuffer, 9, "%.0f° S", heading);
+        else if(heading > 201 && heading < 247)
+            snprintf(tempBuffer, 9, "%.0f° SW", heading);
+        else if(heading >= 247 && heading < 293)
+            snprintf(tempBuffer, 9, "%.0f° W", heading);
+        else
+            snprintf(tempBuffer, 9, "%.0f° NW", heading);
         lv_label_set_text(label, tempBuffer);
         lv_img_set_angle(img, -heading * 10);
     }
+#else
+    float heading;
+    if (vario_state_get_heading(&heading))
+    {
+        lv_obj_t* label = lv_obj_get_child(widget->obj_to_change, NULL);
+        char tempBuffer[6];
+        snprintf(tempBuffer, 6, "%.0f°", heading);
+        lv_label_set_text(label, tempBuffer);
+        lv_obj_t* arrow_img = lv_obj_get_child(widget->obj_to_change, label);
+        lv_obj_t* circle_img = lv_obj_get_child(widget->obj_to_change, arrow_img);
+        lv_obj_t* label_W = lv_obj_get_child(circle_img, NULL);
+        lv_obj_t* label_S = lv_obj_get_child(circle_img, label_W);
+        lv_obj_t* label_E = lv_obj_get_child(circle_img, label_S);
+        lv_obj_t* label_N = lv_obj_get_child(circle_img, label_E);
+        lv_obj_invalidate(circle_img);
+
+        float angle = heading * DEGREE_TO_RADIAN;
+        float widgetWidth = lv_obj_get_height(circle_img) * ((float)lv_img_get_zoom(circle_img) / (float)256) / 2 - 17;
+        lv_obj_align(label_N, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle + 3.141592654), widgetWidth * cos(angle + 3.141592654)); //PI im Gegenuhrzeigersinn
+        lv_obj_align(label_E, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle + 1.5707963), widgetWidth * cos(angle + 1.5707963)); //PI / 2 im Gegenuhrzeigersinn
+        lv_obj_align(label_S, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * cos(angle));
+        lv_obj_align(label_W, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle - 1.5707963), widgetWidth * cos(angle - 1.5707963)); //PI / 2 im Uhrzeigersinn
+    }
+#endif // COMPASS_1METHOD
 }
 
 void vario_add_widget(WidgetData* widget, lv_obj_t* screen)

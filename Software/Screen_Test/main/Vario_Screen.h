@@ -7,6 +7,7 @@ LV_IMG_DECLARE(gps_aus);
 LV_IMG_DECLARE(lautsprecher_an);
 LV_IMG_DECLARE(lautsprecher_stumm);
 LV_IMG_DECLARE(sd_card_good);
+LV_IMG_DECLARE(sd_card_error);
 
 #define MAX_SCREENS 5
 #define MAX_WIDGETS_SCREEN 10
@@ -27,6 +28,10 @@ void ScreenManager_init(Vario_Screen_Manager_t* screenManager);
 void ScreenManager_deinit(VarioScreen_t* screenManager);
 void ScreenManager_add_init_Screen(Vario_Screen_Manager_t* screenManager, VarioScreen_t* screen);
 void ScreenManager_show_Screen(Vario_Screen_Manager_t* screenManager, size_t screenIndex);
+void ScreenManager_set_gps(bool enabled);
+void ScreenManager_set_volume(float value);
+void ScreenManager_set_sdcard(bool enabled);
+void Screen_redraw_Screen();
 void Screen_add_widgets(VarioScreen_t *screen, WidgetData *widgets, size_t size);
 void Screen_update_widgets(VarioScreen_t* screen);
 

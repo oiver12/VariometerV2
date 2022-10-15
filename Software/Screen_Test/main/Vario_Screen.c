@@ -1,6 +1,10 @@
 ﻿#include "Vario_Screen.h"
 #include <stdio.h>
 
+lv_obj_t* gps_obj;
+lv_obj_t* lautsprecher_obj;
+lv_obj_t* sdcard_obj;
+
 void ScreenManager_init(Vario_Screen_Manager_t* screenManager)
 {
     memset(screenManager->screens, 0, sizeof(screenManager->screens));
@@ -8,19 +12,34 @@ void ScreenManager_init(Vario_Screen_Manager_t* screenManager)
     screenManager->screensAdded = 0;
 
 
-    lv_obj_t* gps_img = lv_img_create(lv_layer_top(), NULL);
-    lv_img_set_src(gps_img, &gps_an);
-    lv_obj_align(gps_img, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    gps_obj = lv_img_create(lv_layer_top(), NULL);
+    lv_img_set_src(gps_obj, &gps_an);
+    lv_obj_align(gps_obj, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
-    lv_obj_t* lautsprecher_img = lv_img_create(lv_layer_top(), NULL);
-    lv_img_set_src(lautsprecher_img, &lautsprecher_stumm);
-    lv_obj_align(lautsprecher_img, NULL, LV_ALIGN_IN_TOP_LEFT, 20, 0);
+    lautsprecher_obj = lv_img_create(lv_layer_top(), NULL);
+    lv_img_set_src(lautsprecher_obj, &lautsprecher_stumm);
+    lv_obj_align(lautsprecher_obj, NULL, LV_ALIGN_IN_TOP_LEFT, 30, 0);
 
-    lv_obj_t* sd_card_img = lv_img_create(lv_layer_top(), NULL);
-    lv_img_set_src(sd_card_img, &sd_card_good);
-    lv_obj_align(sd_card_img, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+    sdcard_obj = lv_img_create(lv_layer_top(), NULL);
+    lv_img_set_src(sdcard_obj, &sd_card_good);
+    lv_obj_align(sdcard_obj, NULL, LV_ALIGN_IN_TOP_LEFT, 60, 0);
 
     init_WidgetHandler();
+}
+
+void ScreenManager_set_gps(bool enabled)
+{
+    lv_img_set_src(gps_obj, enabled ? &gps_an : &gps_aus);
+}
+
+void ScreenManager_set_volume(float value)
+{
+    lv_img_set_src(lautsprecher_obj, value == 0 ? &lautsprecher_stumm : &lautsprecher_an);
+}
+
+void ScreenManager_set_sdcard(bool enabled)
+{
+    lv_img_set_src(sdcard_obj, enabled ? &sd_card_good : &sd_card_error);
 }
 
 void ScreenManager_deinit(VarioScreen_t* screenManager)
@@ -64,4 +83,9 @@ void Screen_update_widgets(VarioScreen_t* screen)
     {
         vario_update_widget(&screen->widgets[i]);
     }
+}
+
+void Screen_redraw_Screen()
+{
+    lv_obj_invalidate(lv_scr_act());
 }
