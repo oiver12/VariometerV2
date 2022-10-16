@@ -2,16 +2,19 @@
 #include "DeviceContext.h"
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #define BUFFER_TEXT_SIZE 20
 
 #define COMPASS_1METHOD
 #define DEGREE_TO_RADIAN 0.01745329251
 #define COMPASS_PLACE_SIDE 15
+#define CHART_POINT_COUNT 20
 
 LV_IMG_DECLARE(Kompass);
 LV_IMG_DECLARE(Kreis_4px);
 LV_IMG_DECLARE(arrow);
+LV_IMG_DECLARE(Doppelpfeil_Vario)
 
 static lv_style_t frame_Widget_Base_Style;
 static lv_style_t infoText_Widget_Base_Style;
@@ -58,7 +61,17 @@ static const char* get_Info_Text(WidgetContentType contentType)
     case WidgetContent_Speed_Ground:
         return "Ground Speed";
     case WidgetContent_Vario_Active:
-        return "Vertikal Speed";
+        return "Instant Vario";
+    case WidgetContent_Vario_Lazy:
+        return "Vario integrated";
+    case WidgetContent_VertAcc:
+        return "Vertical Acceleration";
+    case WidgetContent_Pressure:
+        return "Pressure";
+    case WidgetContent_Temperature:
+        return "Temperature";
+    case WidgetContent_AltitudeBaroChart:
+        return "Barometer Altitude";
     default:
         return "";
     }
@@ -78,6 +91,9 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, bool sho
         break;
     case WidgetContent_Vario_Lazy:
         returnValue = vario_state_get_vertLazy(&temp);
+        break;
+    case WidgetContent_VertAcc:
+        returnValue = vario_state_get_vertAcc(&temp);
         break;
     case WidgetContent_Pressure:
         returnValue = vario_state_get_pressure(&temp);
@@ -105,6 +121,8 @@ static const char* get_Unit_Text(WidgetContentType contentType)
         return "m/s";
     case WidgetContent_Vario_Lazy:
         return "m/s";
+    case WidgetContent_VertAcc:
+        return "m/s2";
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
@@ -126,15 +144,13 @@ static void add_TextBox_Widget(WidgetData *widget, lv_obj_t *screen)
     lv_label_set_text(information_text, get_Info_Text(widget->type));
     lv_obj_align(information_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 2);
 
-    lv_style_init(&widget->lvgl_styles[0]);
-    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     char tempBuffer[10];
     get_Value_Text(widget->type, tempBuffer, true);
     lv_obj_t* value_Text = lv_label_create(frame, NULL);
     lv_obj_add_style(value_Text, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
-    lv_obj_add_style(value_Text, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
+    lv_obj_set_style_local_text_font(value_Text, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     lv_label_set_text(value_Text, tempBuffer);
-    lv_obj_align(value_Text, NULL, LV_ALIGN_IN_LEFT_MID, 10, 5);
+    lv_obj_align(value_Text, NULL, LV_ALIGN_CENTER, -30, 10);
     widget->obj_to_change = value_Text;
 
     lv_obj_t* unit_Text = lv_label_create(frame, NULL);
@@ -163,12 +179,9 @@ static void add_Compass_widget(WidgetData* widget, lv_obj_t* screen)
     yOffset = (lv_obj_get_height(img) * (((float)zoomFactor / (float)256) - 1)) / 2;
     lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - COMPASS_PLACE_SIDE * 0.6);
 
-    lv_style_init(&widget->lvgl_styles[0]);
-    //lv_style_set_margin_right(&widget->lvgl_styles[0], LV_STATE_DEFAULT, 10);
-    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     lv_obj_t* labelText = lv_label_create(frame, NULL);
     lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
-    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
+    lv_obj_set_style_local_text_font(labelText, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     lv_obj_align(labelText, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 0);
 #else
     lv_obj_t* img = lv_img_create(frame, NULL);
@@ -207,19 +220,66 @@ static void add_Compass_widget(WidgetData* widget, lv_obj_t* screen)
 #endif // COMPASS_1METHOD
 }
 
+static void add_Chart_Widget(WidgetData* widget, lv_obj_t* screen)
+{
+    lv_obj_t* frame = lv_obj_create(screen, NULL);
+    lv_obj_add_style(frame, LV_OBJ_PART_MAIN, &frame_Widget_Base_Style);
+    lv_obj_align(frame, NULL, widget->alignement, widget->x, widget->y);
+    lv_obj_set_size(frame, widget->w, widget->h);
+
+    Chart_Widget_Data* extr_data = malloc(sizeof(Chart_Widget_Data));
+    widget->extr_data = (void*)extr_data;
+
+    lv_obj_t* information_text = lv_label_create(frame, NULL);
+    lv_obj_add_style(information_text, LV_OBJ_PART_MAIN, &infoText_Widget_Base_Style);
+    lv_label_set_text(information_text, get_Info_Text(widget->type));
+    lv_obj_align(information_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 2);
+
+    lv_obj_t* chart = lv_chart_create(frame, NULL);
+    lv_obj_set_size(chart, lv_obj_get_width(frame) - 10, lv_obj_get_height(frame) - lv_obj_get_height(information_text) - 20);
+    lv_obj_align(chart, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -15);
+    lv_obj_set_style_local_size(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, 0);
+    widget->obj_to_change = chart;
+
+    //lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+    lv_chart_series_t* ser1 = lv_chart_add_series(chart, COLOR_BLACK);
+    lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+    lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_SHIFT);
+    lv_chart_set_point_count(chart, CHART_POINT_COUNT);
+    extr_data->y_Range = 50;
+    lv_chart_set_range(chart, 0, extr_data->y_Range);
+    extr_data->lastMax = 50;
+    extr_data->series = ser1;
+    extr_data->lastPointTime = 0;
+    extr_data->timePeriod = 20;
+    extr_data->lastMax = 50;
+
+    lv_obj_t* img_arrow = lv_img_create(frame, NULL);
+    lv_img_set_src(img_arrow, &Doppelpfeil_Vario);
+    float height_Arrow = lv_obj_get_height(img_arrow) + 5;
+    uint16_t zoomFactor = (uint16_t)((float)((float)lv_obj_get_height(chart) / height_Arrow) * 256);
+    lv_img_set_zoom(img_arrow, zoomFactor);
+    lv_obj_align(img_arrow, NULL, LV_ALIGN_IN_LEFT_MID, 0, 2);
+
+    lv_obj_t* height_Text = lv_label_create(frame, NULL);
+    lv_obj_add_style(height_Text, LV_OBJ_PART_MAIN, &infoText_Widget_Base_Style);
+    lv_label_set_text(height_Text, "50");
+    lv_obj_align(height_Text, NULL, LV_ALIGN_IN_LEFT_MID, 15, 0);
+}
+
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    float tempValue =  get_Value_Text(widget->type, tempBuffer, false);
+    float tempValue = get_Value_Text(widget->type, tempBuffer, false);
     if (tempBuffer[0] != '\0')
     {
         lv_label_set_text(widget->obj_to_change, tempBuffer);
         if (widget->type == WidgetContent_Vario_Active || widget->type == WidgetContent_Vario_Lazy)
         {
             if (tempValue >= 0)
-                lv_style_set_text_color(&widget->lvgl_styles[0], LV_STATE_DEFAULT, COLOR_GREEN);
+                lv_obj_set_style_local_text_color(widget->obj_to_change, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, COLOR_GREEN);
             else
-                lv_style_set_text_color(&widget->lvgl_styles[0], LV_STATE_DEFAULT, COLOR_RED);
+                lv_obj_set_style_local_text_color(widget->obj_to_change, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, COLOR_RED);
         }
     }
 }
@@ -236,17 +296,17 @@ static void update_Compass_Widget(WidgetData* widget)
         char tempBuffer[9];
         if (heading > 337 || heading < 23)
             snprintf(tempBuffer, 9, "%.0f° N", heading);
-        else if(heading >= 23 && heading <= 67)
+        else if (heading >= 23 && heading <= 67)
             snprintf(tempBuffer, 9, "%.0f° NE", heading);
-        else if(heading > 67 && heading < 113)
+        else if (heading > 67 && heading < 113)
             snprintf(tempBuffer, 9, "%.0f° E", heading);
-        else if(heading >= 113 && heading < 157)
+        else if (heading >= 113 && heading < 157)
             snprintf(tempBuffer, 9, "%.0f° SE", heading);
-        else if(heading >= 157 && heading <= 201)
+        else if (heading >= 157 && heading <= 201)
             snprintf(tempBuffer, 9, "%.0f° S", heading);
-        else if(heading > 201 && heading < 247)
+        else if (heading > 201 && heading < 247)
             snprintf(tempBuffer, 9, "%.0f° SW", heading);
-        else if(heading >= 247 && heading < 293)
+        else if (heading >= 247 && heading < 293)
             snprintf(tempBuffer, 9, "%.0f° W", heading);
         else
             snprintf(tempBuffer, 9, "%.0f° NW", heading);
@@ -279,6 +339,29 @@ static void update_Compass_Widget(WidgetData* widget)
 #endif // COMPASS_1METHOD
 }
 
+static void update_Chart_Widget(WidgetData* widget)
+{
+    float t1 = (float)clock() / CLOCKS_PER_SEC; //in seconds
+    Chart_Widget_Data* chart_data = (Chart_Widget_Data*)widget->extr_data;
+    if (chart_data->timePeriod / CHART_POINT_COUNT <= t1 - chart_data->lastPointTime)
+    {
+        float height;
+        vario_state_get_altitudeBaro(&height, false);
+        lv_chart_set_next(widget->obj_to_change, ((Chart_Widget_Data*)widget->extr_data)->series, height);
+        chart_data->lastPointTime = t1;
+        if (chart_data->lastMax < (lv_coord_t)height)
+        {
+            lv_chart_set_range(widget->obj_to_change, (lv_coord_t)height - chart_data->y_Range, (lv_coord_t)height);
+            chart_data->lastMax = (lv_coord_t)height;
+        }
+        else if (chart_data->lastMax - chart_data->y_Range > (lv_coord_t)height)
+        {
+            lv_chart_set_range(widget->obj_to_change, (lv_coord_t)height, (lv_coord_t)height + chart_data->y_Range);
+            chart_data->lastMax = (lv_coord_t)height + chart_data->y_Range;
+        }
+    }
+}
+
 void vario_add_widget(WidgetData* widget, lv_obj_t* screen)
 {
     switch (widget->style)
@@ -291,6 +374,8 @@ void vario_add_widget(WidgetData* widget, lv_obj_t* screen)
     case Widget_Compass:
         add_Compass_widget(widget, screen);
         break;
+    case Widget_Chart:
+        add_Chart_Widget(widget, screen);
     default:
         break;
     }
@@ -308,6 +393,8 @@ void vario_update_widget(WidgetData* widget)
     case Widget_Compass:
         update_Compass_Widget(widget);
         break;
+    case Widget_Chart:
+        update_Chart_Widget(widget);
     default:
         break;
     }

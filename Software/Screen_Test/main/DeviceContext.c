@@ -136,6 +136,25 @@ void vario_state_set_heading(float value)
     //xSemaphoreGive(semaphore_vario_state);
 }
 
+bool vario_state_get_altitudeBaro(float* value, bool stateChange)
+{
+    //xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
+    *value = vario_state.altitudeBaro;
+    bool returnValue = vario_state.stateChange & 0x80;
+    if(stateChange)
+        vario_state.stateChange &= 0xFFFF - 0x80;
+    //xSemaphoreGive(semaphore_vario_state);
+    return returnValue;
+}
+
+void vario_state_set_altitudeBaro(float value)
+{
+    //xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
+    vario_state.altitudeBaro = value;
+    vario_state.stateChange |= 0x80;
+    //xSemaphoreGive(semaphore_vario_state);
+}
+
 
 vario_settings_t* take_vario_settings()
 {

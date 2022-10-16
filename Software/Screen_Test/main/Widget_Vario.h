@@ -38,6 +38,7 @@ typedef enum
     Widget_Empty,
     Widget_TextBox,
     Widget_Compass,
+    Widget_Chart,
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -59,6 +60,9 @@ typedef enum
 
     /* Compass Widgets */
     WidgetContent_CompassSensor,
+
+    /* Chart Widgets */
+    WidgetContent_AltitudeBaroChart,
 } WidgetContentType;
 
 typedef struct
@@ -69,8 +73,17 @@ typedef struct
     WidgetContentType	type;
     uint16_t			x, y, w, h;
     lv_obj_t*           obj_to_change;
-    lv_style_t          lvgl_styles[3];
+    void*               extr_data; //Widget_specific_data
 } WidgetData;
+
+typedef struct
+{
+    lv_chart_series_t* series;
+    uint32_t timePeriod; //In Seconds
+    uint64_t lastPointTime;
+    int16_t y_Range;
+    lv_coord_t lastMax;
+} Chart_Widget_Data;
 
 void init_WidgetHandler();
 void vario_add_widget(WidgetData* widget, lv_obj_t *screen);

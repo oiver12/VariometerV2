@@ -14,10 +14,6 @@
 #include <sys/unistd.h>
 #include <string.h>
 #include "SDCard.h"
-#include "Screen/EPD_3in7.h"
-#include "Screen/GUI_Paint.h"
-#include "Screen/VarioScreen.h"
-#include "Screen/Widget.h"
 #include "main.h"
 #include "BatteryManager.h"
 #include "QMC588L.h"

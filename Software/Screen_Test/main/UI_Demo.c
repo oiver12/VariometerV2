@@ -24,9 +24,9 @@ void my_task(lv_task_t* task)
 {
     vario_state_set_heading(countS);
     vario_state_set_vertVelocity(countS);
+    vario_state_set_altitudeBaro(countS / 360 * 100);
+    vario_state_set_vertAcc(countS);
     countS += 1;
-    if (((int)countS) % 20 == 0)
-        ScreenManager_set_sdcard(false);
     if (countS >= 360)
         countS = 0;
     Screen_update_widgets((VarioScreen_t*)task->user_data);
@@ -44,12 +44,14 @@ void example_lvgl_demo_ui(lv_group_t* group)
 
     ScreenManager_show_Screen(&screenManager, 0);
 
-    static WidgetData widgetData[2] = {
+    static WidgetData widgetData[4] = {
         {.alignement = LV_ALIGN_IN_TOP_LEFT, .extraStyle = WS_FONT_30_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 25},
-        {.alignement = LV_ALIGN_IN_TOP_LEFT, .extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 100},
+        {.alignement = LV_ALIGN_IN_TOP_LEFT, .extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 103},
+        {.alignement = LV_ALIGN_IN_TOP_LEFT, .extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 150, .style = Widget_Chart, .type = WidgetContent_AltitudeBaroChart, .x = 98, .y = 103},
+        {.alignement = LV_ALIGN_IN_TOP_LEFT, .extraStyle = WS_FONT_30_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 148, .y = 25},
     };
-    Screen_add_widgets(&screen, widgetData, 2);
+    Screen_add_widgets(&screen, widgetData, 4);
     vario_state_set_heading(90);
-    lv_task_t* task = lv_task_create(my_task, 50, LV_TASK_PRIO_MID, &screen);
+    lv_task_t* task = lv_task_create(my_task, 250, LV_TASK_PRIO_MID, &screen);
     //lv_group_add_obj(group, frame);
 }
