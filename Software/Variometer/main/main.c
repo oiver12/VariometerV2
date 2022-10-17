@@ -53,8 +53,8 @@ TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wi
 
 static const char *TAG = "main";
 
-vario_state_t vario_state;
-SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
+//vario_state_t vario_state;
+//SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
 
 float accSum;
 float accCount;
@@ -312,14 +312,20 @@ static void TaskKalmanFilter(void *parameters)
         matrix_set(u, 0, 0, acc - 9.81);
         kalman_update(&kf);
         kalman_predict(&kf);
-        xSemaphoreTake(vario_state_Mutex, portMAX_DELAY);
-        {
-            vario_state.accX = acc;
-            vario_state.height = heightDifferenz; //TODO: add startHeight
-            vario_state.velocity = matrix_get(x, 1, 0);
-        }
-        xSemaphoreGive(vario_state_Mutex);
-        logVarioData(vario_state, rotation);
+        // xSemaphoreTake(vario_state_Mutex, portMAX_DELAY);
+        // {
+        //     vario_state.accX = acc;
+        //     vario_state.height = heightDifferenz; //TODO: add startHeight
+        //     vario_state.velocity = matrix_get(x, 1, 0);
+        // }
+        // xSemaphoreGive(vario_state_Mutex);
+        FlightLogger_t flight_state = {
+            .height = heightDifferenz,
+            .accX = acc,
+            .velocity = matrix_get(x, 1, 0),
+            .rotation = rotation,
+        };
+        logVarioData(flight_state);
         SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
         //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
@@ -397,7 +403,7 @@ void app_main(void)
     // ESP_LOGI(TAG, "GPS started");
     // sdcard_t sdcard;
     // start_IGCLogger(&sdcard, gps_nmea_hdl);
-    vario_state_Mutex = xSemaphoreCreateMutex();
+    //vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
@@ -407,29 +413,4 @@ void app_main(void)
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 2, NULL);
     return;
-    UBYTE* Buffer = init_Screen(&vario_state, vario_state_Mutex);
-    VarioScreen_t varioScreen;
-    CreateScreen(&varioScreen, Buffer);
-    WidgetData widgetTest = {
-        .style = Widget_TextBox,
-        .type = WidgetContent_Vario_Active,
-        .extraStyle = WS_BORDER_LEFT | WS_BORDER_TOP | WS_BORDER_BOTTOM | WS_BORDER_RIGHT | WS_FONT_12_LABEL | WS_FONT_20_CONTENT,
-        .x = 100,
-        .y = 100,
-        .w = 100,
-        .h = 100,
-    };
-    VarioScreen_add_Widget(&widgetTest, &varioScreen);
-    selectScreen(&varioScreen);
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-    int64_t lastTime = esp_timer_get_time();
-    for (size_t i = 0; i < 20; i++)
-    {
-        VarioScreen_render(&varioScreen);
-        ESP_LOGI(TAG, "TIME: %lli", (esp_timer_get_time() - lastTime) / 1000);
-        lastTime = esp_timer_get_time();
-    }
-    deinit_Screen(&varioScreen);
-    // init_buzzer(BUZZ_1, BUZZ_2);
-    // tone_buzzer(1000, 10);
 }

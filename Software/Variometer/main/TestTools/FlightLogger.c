@@ -66,10 +66,9 @@ void endLogging()
 
 }
 
-void logVarioData(vario_state_t state, float rotation[4])
+void logVarioData(FlightLogger_t state)
 {
-    fwrite(&state, sizeof(vario_state_t), 1, fileVario); //write vario_state to file
-    fwrite(rotation, sizeof(float), 4, fileVario); //write roation of Vario to file
+    fwrite(&state, sizeof(FlightLogger_t), 1, fileVario); //write vario_state to file
     int64_t time = esp_timer_get_time(); 
     fwrite(&time, sizeof(int64_t), 1, fileVario); //write Time since startup to file
     fprintf(fileVario, "\n"); //new line

@@ -5,11 +5,18 @@
 
 ESP_EVENT_DECLARE_BASE(VARIO_STATE_EVENT);
 
+// typedef struct {
+//     float height;
+//     float velocity;
+//     float accX;
+// } vario_state_t;
+
 typedef struct {
     float height;
     float velocity;
     float accX;
-} vario_state_t;
+    float rotation[4];
+} FlightLogger_t;
 
 typedef enum {
     Vert_Velocity_Update,
