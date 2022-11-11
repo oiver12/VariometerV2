@@ -5,6 +5,7 @@
 #include <string.h>
 #include "driver/sdmmc_host.h"
 #include <errno.h>
+#include "DeviceContext.h"
 
 static const char *TAG = "SDCard";
 
@@ -54,6 +55,7 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
                      "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
         }
+        device_state_set_sdcard(0);
         return ret;
     }
     ESP_LOGI(TAG, "Filesystem mounted");
@@ -61,6 +63,7 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     sdcard->card = card;
     sdcard->Mount_Point = malloc(strlen(Mount_Point) + 1);
     strcpy(sdcard->Mount_Point, Mount_Point);
+    device_state_set_sdcard(1);
     return ret;
 }
 
@@ -83,9 +86,13 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
         ESP_LOGI(TAG, "Directory: %s", buffer);
         if(stat(buffer, &st) == -1)
         {
-            volatile int returnValue = mkdir(buffer, 0700);
-            volatile char *testValue = strerror(errno);
-            ESP_LOGI(TAG, "Createt Directory");
+            if(mkdir(buffer, 0700) != 0)
+            {
+                volatile char *testValue = strerror(errno);
+                ESP_LOGE(TAG, "Could not create Directory: %s", testValue);
+            }
+            else
+                ESP_LOGI(TAG, "Createt Directory");
         }
         else
         {

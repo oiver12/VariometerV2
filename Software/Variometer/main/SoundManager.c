@@ -133,8 +133,8 @@ esp_err_t init_SoundManager(SoundManager_t *sM)
         .data_out_num = I2S_DIN,
         .data_in_num = I2S_PIN_NO_CHANGE
     };
-    volatile esp_err_t err = i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
-    volatile esp_err_t err1 = i2s_set_pin(I2S_NUM, &pin_config);
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL));
+    ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM, &pin_config));
     buffer = (int16_t *)calloc(1, BUFF_SIZE);
     assert(buffer);
     

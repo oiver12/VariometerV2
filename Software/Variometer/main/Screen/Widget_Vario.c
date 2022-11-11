@@ -126,7 +126,7 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
-        return 'C°';
+        return "C°";
     default:
         return "";
     }

@@ -5,6 +5,7 @@
 #include "nmea_parser.h"
 #include <string.h>
 
+bool sdCard_init = false;
 static const char *TAG = "FlightLogger";
 char fileNameVario[40];
 char fileNameNMEA[40];
@@ -34,9 +35,10 @@ void startLogging(sdcard_t *card)
 {
     if(!(card->cardInit))
     {
-        init_sdcard(card, "/sdcard");
+        if(init_sdcard(card, "/sdcard") != ESP_OK)
+            return;
     }
-
+    sdCard_init = true;
     int count = 0;
     do{
         if(directoryLogs == NULL)
@@ -68,6 +70,8 @@ void endLogging()
 
 void logVarioData(FlightLogger_t state)
 {
+    if(!sdCard_init)
+        return;
     fwrite(&state, sizeof(FlightLogger_t), 1, fileVario); //write vario_state to file
     int64_t time = esp_timer_get_time(); 
     fwrite(&time, sizeof(int64_t), 1, fileVario); //write Time since startup to file

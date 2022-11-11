@@ -182,7 +182,7 @@ void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, f
 
 void Quaternion_get_RPY(float qw, float qx, float qy, float qz, float* roll, float* pitch, float* yaw)
 {
-    float magnetic_declination = -7.51;
+    float magnetic_declination = 3;
     float a12, a22, a31, a32, a33;  // rotation matrix coefficients for Euler angles and gravity components
     a12 = 2.0f * (qx * qy + qw * qz);
     a22 = qw * qw + qx * qx - qy * qy - qz * qz;

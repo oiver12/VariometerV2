@@ -1,0 +1,2 @@
+#define E_INK_DISPLAY
+//#define ILI9488_DISPLAY

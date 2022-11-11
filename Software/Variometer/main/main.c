@@ -6,8 +6,8 @@
 #include "driver/i2c.h"
 #include <esp_log.h>
 #include <math.h>
-#include "BMI088.h"
-#include "DPS310.h"
+#include "Sensor/BMI088.h"
+#include "Sensor/DPS310.h"
 #include "nmea_parser.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
@@ -16,11 +16,13 @@
 #include "SDCard.h"
 #include "main.h"
 #include "BatteryManager.h"
-#include "QMC588L.h"
+#include "Sensor/QMC588L.h"
 #include "SoundManager.h"
 #include "IGCLogger.h"
 #include <time.h>
 #include "TestTools/FlightLogger.h"
+#include "DeviceContext.h"
+#include "Screen/Display_Vario.h"
 
 #define POWSW_ENABLE 13
 
@@ -131,6 +133,7 @@ static void TaskMeasureHeight(void *parameters)
             temperature = DPS310_Data.Temperature;
         }
         xSemaphoreGive(pressure_temperature_Mutex);
+        vario_state_set_pressure(DPS310_Data.Pressure);
         //printf("%.2f \n", DPS310_Data.Pressure);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
@@ -258,6 +261,7 @@ static void TaskKalmanFilter(void *parameters)
     kalman_predict(&kf);
     matrix_t *z = &kf.z;
     float lastTime = esp_timer_get_time();
+    int countHeading =  0;
     while(1)
     {
         //wait for new Result from Pressure Sensor
@@ -323,8 +327,18 @@ static void TaskKalmanFilter(void *parameters)
             .height = heightDifferenz,
             .accX = acc,
             .velocity = matrix_get(x, 1, 0),
-            .rotation = rotation,
+            .rotation = {rotation[0], rotation[1], rotation[2], rotation[3]},
         };
+
+        vario_state_set_vertVelocity(matrix_get(x, 1, 0));
+        vario_state_set_vertAcc(acc - 9.81);
+        vario_state_set_altitudeBaro(heightDifferenz);
+        if(countHeading % 10 == 0)
+        {
+            float roll, pitch, yaw;
+            Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
+            vario_state_set_heading(yaw);
+        }
         logVarioData(flight_state);
         SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
         //printf("%.2f\n", matrix_get(x, 1, 0));
@@ -406,11 +420,14 @@ void app_main(void)
     //vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
+    init_DeviceContext();
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     startLogging(sdcard);
     init_SoundManager(&soundManager);
-    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, 10, &TaskKalmanFilter_Handle);
-    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, 5, NULL);
-    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, 2, NULL);
+    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
+    xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
+    xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
+
+    init_Display_LVGL();
     return;
 }
