@@ -8,8 +8,11 @@
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "lvgl.h"
-#include "lvgl_helpers.h"
 #include "vario_config.h"
+#include "math.h"
+#include <inttypes.h>
+#include <esp_log.h>
+#include "Display_Vario.h"
 #ifdef E_INK_DISPLAY
 #include "E_Ink/EPD_3in7.h"
 #include "E_Ink/GUI_Paint.h"
@@ -20,6 +23,9 @@
 #define EPD_CS_PIN      39
 #define EPD_BUSY_PIN    40
 #define EPD_MOSI_PIN    41
+#define EPD_CLK_PIN     46
+
+#define DISP_BUF_SIZE 33600
 
 #define TAG "demo"
 #define LV_TICK_PERIOD_MS 3
@@ -31,6 +37,50 @@ extern void example_lvgl_demo_ui();
 static void lv_tick_task(void *arg) {
     (void) arg;
     lv_tick_inc(LV_TICK_PERIOD_MS);
+}
+
+void powerOffScreen()
+{
+    EPD_3IN7_4Gray_Init();
+    EPD_3IN7_4Gray_Clear();
+    
+    // Sleep & close 5V
+    printf("Goto Sleep...\r\n");
+    EPD_3IN7_Sleep();
+
+    printf("close 5V, Module enters 0 power consumption ...\r\n");
+    DEV_Module_Exit();
+}
+
+void LVGL_TaskHandle_Task(void *arg)
+{
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+        lv_task_handler();
+        //printf("Time to run: %i\n", time);
+    }
+    vTaskDelete(NULL);
+}
+
+void TaskScreenRefresher(void *param)
+{
+    lv_obj_t* information_text = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(information_text, "Test");
+    // int i = 0;
+    // char buffer[20];
+    // while(true)
+    // {
+    //     i++;
+    //     snprintf(buffer, 20, "%i", i);
+    //     lv_label_set_text(information_text, buffer);
+    //     vTaskDelay(20 / portTICK_PERIOD_MS);
+    // }
+    vTaskDelete(NULL);
+}
+
+void my_monitor_cb(lv_disp_drv_t * disp_drv, uint32_t time, uint32_t px)
+{
+  printf("%d px refreshed in %d ms\n", px, time);
 }
 
 void app_main(void)
@@ -87,68 +137,54 @@ void app_main(void)
     #endif
     #ifdef E_INK_DISPLAY
 
-    // gpio_config_t io_conf_output = {
-    //     .intr_type = GPIO_INTR_DISABLE,
-    //     .mode = GPIO_MODE_OUTPUT,
-    //     .pin_bit_mask = (1ULL << EPD_DC_PIN) | (1ULL << EPD_RST_PIN) | (1ULL << EPD_CS_PIN) | (1ULL << EPD_BUSY_PIN) | (1ULL << EPD_MOSI_PIN),
-    //     .pull_down_en = 0,
-    //     .pull_up_en = 0
-    // };
-    // gpio_config(&io_conf_output);
-
-    // gpio_set_level(EPD_RST_PIN, 1);
-    // while(true)
-    // {
-    //     vTaskDelay(pdMS_TO_TICKS(10));
-    // }
-    // return;
     spi_bus_config_t spi2cfg={
         .miso_io_num= -1,
-        .mosi_io_num=41,
-        .sclk_io_num=46,
+        .mosi_io_num=EPD_MOSI_PIN,
+        .sclk_io_num=EPD_CLK_PIN,
         .quadwp_io_num=-1,
         .quadhd_io_num=-1,
-        .max_transfer_sz=4000
+        .max_transfer_sz=4092
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
-
-    //Create a new image cache
-    UBYTE *BlackImage;
-    /* you have to edit the startup_stm32fxxx.s file and set a big enough heap size */
-    UWORD Imagesize = ((EPD_3IN7_WIDTH % 4 == 0)? (EPD_3IN7_WIDTH / 4 ): (EPD_3IN7_WIDTH / 4 + 1)) * EPD_3IN7_HEIGHT;
-    if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-        printf("Failed to apply for black memory...\r\n");
-        return -1;
-    }
+    ESP_LOGI(TAG, "SPI initialized");
 
     DEV_Module_Init();
+    EPD_3IN7_1Gray_Init();       //init 1 Gray mode
+    EPD_3IN7_1Gray_Clear();
+    ESP_LOGI(TAG, "Screen initialized");
 
-    printf("Paint_NewImage\r\n");
-    Paint_NewImage(BlackImage, EPD_3IN7_WIDTH, EPD_3IN7_HEIGHT, 270, WHITE);
-    Paint_SetScale(4);
-    Paint_Clear(WHITE);
+    lv_init();
+    lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(buf1 != NULL);
+    //lv_color_t* buf2 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    //assert(buf2 != NULL);
 
-    printf("SelectImage:BlackImage\r\n");
-    Paint_SelectImage(BlackImage);
-    Paint_SetScale(4);
-    Paint_Clear(BLACK);
+    static lv_disp_buf_t disp_buf;
+    //uint32_t size_in_px = DISP_BUF_SIZE;
+    uint32_t size_in_px = 480 * 280;
 
-    EPD_3IN7_1Gray_Init();
-    printf("Clear...\r\n");
-    Paint_DrawPoint(10, 10, WHITE, DOT_PIXEL_3X3, DOT_STYLE_DFT);
-    EPD_3IN7_1Gray_Display(BlackImage);
-    DEV_Delay_ms(1000);
-    EPD_3IN7_4Gray_Init();
-    EPD_3IN7_4Gray_Clear();
-    
-    // Sleep & close 5V
-    printf("Goto Sleep...\r\n");
-    EPD_3IN7_Sleep();
+    /* Initialize the working buffer depending on the selected display.
+     * NOTE: buf2 == NULL when using monochrome displays. */
+    lv_disp_buf_init(&disp_buf, buf1, NULL, size_in_px);
 
-    free(BlackImage);
-    BlackImage = NULL;
+    lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.flush_cb = EPD_3in7_display_flush;
+    disp_drv.set_px_cb = EPD_3IN7_set_px_cb;
+    //disp_drv.monitor_cb = my_monitor_cb;
+    disp_drv.buffer = &disp_buf;
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 
-    printf("close 5V, Module enters 0 power consumption ...\r\n");
-    DEV_Module_Exit();
+    /* Create and start a periodic timer interrupt to call lv_tick_inc */
+    const esp_timer_create_args_t periodic_timer_args = {
+        .callback = &lv_tick_task,
+        .name = "periodic_gui"
+    };
+    esp_timer_handle_t periodic_timer;
+    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
+    xTaskCreatePinnedToCore(LVGL_TaskHandle_Task, "LVGL TaskHandler", 4 * 1024, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(TaskScreenRefresher, "Refresh Screen", 4 * 1024, NULL, 8, NULL, 0);
+    powerOffScreen();
     #endif
 }

@@ -106,14 +106,13 @@ void EPD_3IN7_SPI_Init()
     dev_config.duty_cycle_pos = 128;  // default 128 = 50%/50% duty
     dev_config.cs_ena_pretrans = 0;  // 0 not used
     dev_config.cs_ena_posttrans = 0;  // 0 not used
-    dev_config.clock_speed_hz = 1 * 1000 * 1000;
+    dev_config.clock_speed_hz = 20 * 1000 * 1000;
     dev_config.spics_io_num = EPD_CS_PIN;
     dev_config.flags = 0;  // 0 not used
     dev_config.queue_size = 1;
     dev_config.pre_cb = NULL;
     dev_config.post_cb = NULL;
-    volatile esp_err_t err = spi_bus_add_device(SPI2_HOST, &dev_config, &screen_spi_handle);
-    int i = 0;
+    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &dev_config, &screen_spi_handle));
 }
 
 void DEV_SPI_WriteByte(UBYTE value)
@@ -126,9 +125,7 @@ void DEV_SPI_WriteByte(UBYTE value)
     transaction.user = NULL;
     transaction.tx_buffer = &value;
     transaction.rx_buffer = NULL;
-    volatile esp_err_t err = spi_device_transmit(screen_spi_handle, &transaction);
-    volatile char* test = esp_err_to_name(err);
-    value++;
+    ESP_ERROR_CHECK(spi_device_transmit(screen_spi_handle, &transaction));
 }
 
 void DEV_SPI_WriteBytes(const UBYTE *value, size_t length)
@@ -238,19 +235,23 @@ static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
 
 static void EPD_3IN7_ReadBusy_HIGH(void)
 {
-    printf("e-Paper busy\r\n");
+    //printf("e-Paper busy\r\n");
     UBYTE busy;
     do {
         busy = DEV_Digital_Read(EPD_BUSY_PIN);
         DEV_Delay_ms(10);
     } while(busy);
     //DEV_Delay_ms(100);
-    printf("e-Paper busy release\r\n");
+    //printf("e-Paper busy release\r\n");
 }
 
 /******************************************************************************
 function :	set the look-up tables
-parameter:
+parameter: //https://www.waveshare.net/w/upload/c/c4/E-paper-mode-declaration.pdf
+LUT0 (4Gray_GC): Full Screen 4 Gray Scale Refresh (= 3.04s)
+LUT1 (1Gray_GC): Full Screen 1 Gray Scale Refresh (=0.997s)
+LUT2 (1Gray_DU): Part Dispaly Update from GS to B/W (=0.797s)
+LUT3 (1Gray_A2): Part Display Update from B/W to B/W (=0.397s)
 ******************************************************************************/
 void EPD_3IN7_Load_LUT(UBYTE lut)
 {
@@ -288,17 +289,17 @@ parameter:
 void EPD_3IN7_4Gray_Init(void)
 {
     EPD_3IN7_Reset();
-    
+
     EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
-    
+
     EPD_3IN7_SendCommand(0x46); 
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH();
     EPD_3IN7_SendCommand(0x47);
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH(); 
-    
+
     EPD_3IN7_SendCommand(0x01); // setting gaet number
     EPD_3IN7_SendData(0xDF);
     EPD_3IN7_SendData(0x01);
@@ -327,10 +328,10 @@ void EPD_3IN7_4Gray_Init(void)
 
     EPD_3IN7_SendCommand(0x18); // set internal sensor on
     EPD_3IN7_SendData(0x80);
-     
+
     EPD_3IN7_SendCommand(0x2C); // set vcom value
     EPD_3IN7_SendData(0x44);
-    
+
     EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
@@ -366,17 +367,17 @@ parameter:
 void EPD_3IN7_1Gray_Init(void)
 {
     EPD_3IN7_Reset();
-    
+
     EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
-    
+
     EPD_3IN7_SendCommand(0x46); 
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH();
     EPD_3IN7_SendCommand(0x47);
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH(); 
-    
+
     EPD_3IN7_SendCommand(0x01); // setting gaet number
     EPD_3IN7_SendData(0xDF);
     EPD_3IN7_SendData(0x01);
@@ -405,10 +406,10 @@ void EPD_3IN7_1Gray_Init(void)
 
     EPD_3IN7_SendCommand(0x18); // set internal sensor on
     EPD_3IN7_SendData(0x80);
-     
+
     EPD_3IN7_SendCommand(0x2C); // set vcom value
     EPD_3IN7_SendData(0x44);
-    
+
     EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
     EPD_3IN7_SendData(0x00);     //can switch 1 gray or 4 gray
     EPD_3IN7_SendData(0xFF);
@@ -456,29 +457,29 @@ void EPD_3IN7_4Gray_Clear(void)
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    
+
     EPD_3IN7_SendCommand(0x24);
     for (UWORD j = 0; j < Height; j++) {
        for (UWORD i = 0; i < Width; i++) {
            EPD_3IN7_SendData(0xff);
        }
     }
-    
+
     EPD_3IN7_SendCommand(0x4E);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-     
+
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    
+
     EPD_3IN7_SendCommand(0x26);
     for (UWORD j = 0; j < Height; j++) {
        for (UWORD i = 0; i < Width; i++) {
            EPD_3IN7_SendData(0xff);
        }
     }
-      
+
     EPD_3IN7_Load_LUT(0);
     EPD_3IN7_SendCommand(0x22);
     EPD_3IN7_SendData(0xC7);
@@ -509,9 +510,9 @@ void EPD_3IN7_1Gray_Clear(void)
     {
         EPD_3IN7_SendData(0xff);
     }
-    
+
     EPD_3IN7_Load_LUT(2);
-    
+
     EPD_3IN7_SendCommand(0x20);
     EPD_3IN7_ReadBusy_HIGH();    
 }
@@ -524,20 +525,20 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
 {
     UDOUBLE i,j,k;
     UBYTE temp1,temp2,temp3;
-    
+
     EPD_3IN7_SendCommand(0x49);
     EPD_3IN7_SendData(0x00);
 
-    
+
     EPD_3IN7_SendCommand(0x4E);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    
-    
+
+
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    
+
     EPD_3IN7_SendCommand(0x24);
     for(i=0;i<16800;i++){
         temp3=0;
@@ -578,12 +579,12 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
     EPD_3IN7_SendCommand(0x4E);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-     
-    
+
+
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    
+
     EPD_3IN7_SendCommand(0x26);
     for(i=0; i<16800; i++) {
         temp3=0;
@@ -621,12 +622,12 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
     }
 
     EPD_3IN7_Load_LUT(0);
-    
+
     EPD_3IN7_SendCommand(0x22);
     EPD_3IN7_SendData(0xC7);
-    
+
     EPD_3IN7_SendCommand(0x20);
-    
+
     EPD_3IN7_ReadBusy_HIGH(); 
 }
 
@@ -634,63 +635,81 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
 function :  Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Display(const UBYTE *Image)
+void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
-    uint64_t startTime = esp_timer_get_time();
-  UWORD i;
-  UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
+    UWORD i;
+    UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
-  EPD_3IN7_SendCommand(0x4E);
-  EPD_3IN7_SendData(0x00);
-  EPD_3IN7_SendData(0x00);
-  EPD_3IN7_SendCommand(0x4F);
-  EPD_3IN7_SendData(0x00);
-  EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendCommand(0x4E);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendCommand(0x4F);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendData(0x00);
 
-  EPD_3IN7_SendCommand(0x24);
-  //EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
-  for (i = 0; i < IMAGE_COUNTER; i++)
-  {
-    EPD_3IN7_SendData(Image[i]);
-  }
-
-  EPD_3IN7_Load_LUT(2);
-  EPD_3IN7_SendCommand(0x20);
-  EPD_3IN7_ReadBusy_HIGH();  
-    printf("Update Time: %llu \n\r", (esp_timer_get_time() - startTime) / 1000);
+    EPD_3IN7_SendCommand(0x24);
+    EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
+    //   for (i = 0; i < IMAGE_COUNTER; i++)
+    //   {
+    //     EPD_3IN7_SendData(Image[i]);
+    //   }
+    EPD_3IN7_Load_LUT(refreshMode);
+    EPD_3IN7_SendCommand(0x20);
+    EPD_3IN7_ReadBusy_HIGH();  
 }
 
 /******************************************************************************
 function :  Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Display_Part(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
+void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
-  UWORD i, Width;
-  Width = (Xend-Xstart)%8 == 0 ? (Xend-Xstart)/8 : (Xend-Xstart)/8+1;
-  UWORD IMAGE_COUNTER = Width * (Yend-Ystart);
+    UWORD i, Width;
+    //1 bit per Pixel. Pro Byte 8 Pixel. Muss ganzes Byte senden darum 8+1
+    Width = (Xend-Xstart)%8 == 0 ? (Xend-Xstart)/8 : (Xend-Xstart)/8+1;
+    UWORD IMAGE_COUNTER = Width * (Yend-Ystart);
 
-  EPD_3IN7_SendCommand(0x44);
-  EPD_3IN7_SendData(Xstart & 0xff);
-  EPD_3IN7_SendData((Xstart>>8) & 0x03);
-  EPD_3IN7_SendData(Xend & 0xff);
-  EPD_3IN7_SendData((Xend>>8) & 0x03);
-  EPD_3IN7_SendCommand(0x45);
-  EPD_3IN7_SendData(Ystart & 0xff);
-  EPD_3IN7_SendData((Ystart>>8) & 0x03);
-  EPD_3IN7_SendData(Yend & 0xff);
-  EPD_3IN7_SendData((Yend>>8) & 0x03);
+    Xend -= 1;
+	Yend -= 1;
 
-  EPD_3IN7_SendCommand(0x24);
-//   for (i = 0; i < IMAGE_COUNTER; i++)
-//   {
-//     EPD_3IN7_SendData(Image[i]);
-//   }
-  EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
-  
-  EPD_3IN7_Load_LUT(2);
-  EPD_3IN7_SendCommand(0x20);
-  EPD_3IN7_ReadBusy_HIGH();    
+    //Sendet start Adresse von X und Endadresse von X
+    EPD_3IN7_SendCommand(0x44);
+    EPD_3IN7_SendData(Xstart & 0xff);
+    EPD_3IN7_SendData((Xstart>>8) & 0x03);
+    EPD_3IN7_SendData(Xend & 0xff);
+    EPD_3IN7_SendData((Xend>>8) & 0x03);
+    //Sendet start Adresse von Y und Endadresse von Y
+    EPD_3IN7_SendCommand(0x45);
+    EPD_3IN7_SendData(Ystart & 0xff);
+    EPD_3IN7_SendData((Ystart>>8) & 0x03);
+    EPD_3IN7_SendData(Yend & 0xff);
+    EPD_3IN7_SendData((Yend>>8) & 0x03);
+
+    EPD_3IN7_SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
+    EPD_3IN7_SendData(Xstart & 0xFF);
+
+    EPD_3IN7_SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
+    EPD_3IN7_SendData(Ystart & 0xFF);
+    EPD_3IN7_SendData((Ystart >> 8) & 0xFF);
+
+    //Starte senden von Daten in den RAM
+    EPD_3IN7_SendCommand(0x24);
+    //   for (i = 0; i < IMAGE_COUNTER; i++)
+    //   {
+    //     EPD_3IN7_SendData(Image[i]);
+    //   }
+    EPD_3IN7_SendDataStream(PartBuffer, IMAGE_COUNTER);
+
+    EPD_3IN7_Load_LUT(refreshMode);
+    EPD_3IN7_SendCommand(0x20);
+    EPD_3IN7_ReadBusy_HIGH();    
+}
+
+void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
+{
+    //35 = Paint.WidthByte
+    UDOUBLE Addr = Xstart / 8 + Ystart * 35;
+    EPD_3IN7_1Gray_Display_Part(&Image[Addr], Xstart, Ystart, Xend, Yend, refreshMode);
 }
 
 /******************************************************************************

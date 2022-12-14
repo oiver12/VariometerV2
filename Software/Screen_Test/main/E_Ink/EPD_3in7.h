@@ -43,6 +43,13 @@
 #define UWORD   uint16_t
 #define UDOUBLE uint32_t
 
+typedef enum {
+    FULL_G_T_G, //LUT0 (4Gray_GC): Full Screen 4 Gray Scale Refresh (= 3.04s)
+    FULL_G_T_BW, //LUT1 (1Gray_GC): Full Screen 1 Gray Scale Refresh (=0.997s)
+    PART_G_T_BW, //LUT2 (1Gray_DU): Part Dispaly Update from GS to B/W (=0.797s)
+    PART_BW_T_BW //LUT3 (1Gray_A2): Part Display Update from B/W to B/W (=0.397s)
+} Display_RefreshMode;
+
 /**
  * e-Paper GPIO
 **/
@@ -51,6 +58,7 @@
 #define EPD_CS_PIN      39
 #define EPD_BUSY_PIN    40
 #define EPD_MOSI_PIN    41
+#define EPD_CLK_PIN     46
 
 /**
  * GPIO read and write
@@ -77,8 +85,9 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image);
 
 void EPD_3IN7_1Gray_Clear(void);
 void EPD_3IN7_1Gray_Init(void);
-void EPD_3IN7_1Gray_Display(const UBYTE *Image);
-void EPD_3IN7_1Gray_Display_Part(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
+void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode);
+void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode);
+void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode);
 
 void EPD_3IN7_Sleep(void);
 

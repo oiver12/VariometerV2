@@ -53,6 +53,7 @@ esp_err_t init_Display_LVGL()
 
     /* Initialize SPI or I2C bus used by the drivers */
     lvgl_driver_init();
+    printf("TestSize: %i", DISP_BUF_SIZE);
     lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
     lv_color_t* buf2 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
