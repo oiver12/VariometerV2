@@ -4,7 +4,7 @@
 #include "driver/spi_master.h"
 #include <inttypes.h>
 
-void testFunction()
+void testFunction_EPD3IN7()
 {
     DEV_Module_Init();
     //Create a new image cache

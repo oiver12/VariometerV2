@@ -83,6 +83,8 @@ void my_monitor_cb(lv_disp_drv_t * disp_drv, uint32_t time, uint32_t px)
   printf("%d px refreshed in %d ms\n", px, time);
 }
 
+extern void testFunction_EPD3IN7();
+
 void app_main(void)
 {
     gpio_config_t enableGPIOOutput = {
@@ -147,7 +149,8 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
     ESP_LOGI(TAG, "SPI initialized");
-
+    // testFunction_EPD3IN7();
+    // return;
     DEV_Module_Init();
     EPD_3IN7_1Gray_Init();       //init 1 Gray mode
     EPD_3IN7_1Gray_Clear();
@@ -171,7 +174,7 @@ void app_main(void)
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = EPD_3in7_display_flush;
     disp_drv.set_px_cb = EPD_3IN7_set_px_cb;
-    //disp_drv.monitor_cb = my_monitor_cb;
+    disp_drv.monitor_cb = my_monitor_cb;
     disp_drv.buffer = &disp_buf;
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 
@@ -183,8 +186,13 @@ void app_main(void)
     esp_timer_handle_t periodic_timer;
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
-    xTaskCreatePinnedToCore(LVGL_TaskHandle_Task, "LVGL TaskHandler", 4 * 1024, NULL, 2, NULL, 0);
-    xTaskCreatePinnedToCore(TaskScreenRefresher, "Refresh Screen", 4 * 1024, NULL, 8, NULL, 0);
+    TaskHandle_t lvglTaskHandler, RefreshScreen;
+    xTaskCreatePinnedToCore(LVGL_TaskHandle_Task, "LVGL TaskHandler", 4 * 1024, NULL, 2, &lvglTaskHandler, 0);
+    xTaskCreatePinnedToCore(TaskScreenRefresher, "Refresh Screen", 4 * 1024, NULL, 8, &RefreshScreen, 0);
+    vTaskDelay(20000 / portTICK_PERIOD_MS);
+    vTaskDelete(lvglTaskHandler);
+    //vTaskDelete(RefreshScreen);
+    lv_deinit();
     powerOffScreen();
     #endif
 }

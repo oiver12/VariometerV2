@@ -22,7 +22,7 @@ void EPD_3IN7_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_
     uint32_t addr = x / 8 + y * 60;
     uint8_t rdata = buf[addr];
     if(color.full == 0)
-        buf[addr] = rdata & ~(0x80 >> (x & 8));
-    else
         buf[addr] = rdata | (0x80 >> (x % 8));
+    else
+        buf[addr] = rdata & ~(0x80 >> (x % 8));
 }
