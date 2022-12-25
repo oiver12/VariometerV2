@@ -32,11 +32,6 @@
 #define PresSens_INT 38
 #define i2c_master_port 0
 
-#define LCD_CS 48
-#define LCD_DS 47
-#define LCD_RST 21
-#define LCD_TCH_CS 46
-
 #define USART2_TX 17
 #define USART2_RX 18
 

@@ -65,16 +65,16 @@ void LVGL_TaskHandle_Task(void *arg)
 void TaskScreenRefresher(void *param)
 {
     lv_obj_t* information_text = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(information_text, "Test");
-    // int i = 0;
-    // char buffer[20];
-    // while(true)
-    // {
-    //     i++;
-    //     snprintf(buffer, 20, "%i", i);
-    //     lv_label_set_text(information_text, buffer);
-    //     vTaskDelay(20 / portTICK_PERIOD_MS);
-    // }
+    int i = 0;
+    char buffer[20];
+    while(true)
+    {
+        i++;
+        snprintf(buffer, 20, "%i", i);
+        printf("%s \n", buffer);
+        lv_label_set_text(information_text, buffer);
+        vTaskDelay(900 / portTICK_PERIOD_MS);
+    }
     vTaskDelete(NULL);
 }
 
@@ -191,7 +191,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(TaskScreenRefresher, "Refresh Screen", 4 * 1024, NULL, 8, &RefreshScreen, 0);
     vTaskDelay(20000 / portTICK_PERIOD_MS);
     vTaskDelete(lvglTaskHandler);
-    //vTaskDelete(RefreshScreen);
+    vTaskDelete(RefreshScreen);
     lv_deinit();
     powerOffScreen();
     #endif
