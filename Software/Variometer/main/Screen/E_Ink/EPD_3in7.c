@@ -30,6 +30,7 @@
 ******************************************************************************/
 #include "EPD_3in7.h"
 #include "driver/spi_master.h"
+#include <esp_log.h>
 
 #define SPIBUS_READ     (0x80)  /*!< addr | SPIBUS_READ  */
 #define SPIBUS_WRITE    (0x7F)  /*!< addr & SPIBUS_WRITE */
@@ -152,7 +153,7 @@ int DEV_Module_Init(void)
     };
     gpio_config(&io_conf_output);
     gpio_config_t io_conf_input = {
-        .intr_type = GPIO_INTR_DISABLE,
+        .intr_type = GPIO_INTR_NEGEDGE,
         .mode = GPIO_MODE_INPUT,
         .pin_bit_mask = (1ULL << EPD_BUSY_PIN),
         .pull_down_en = 0,
@@ -233,14 +234,31 @@ static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
     }
 }
 
+static void IRAM_ATTR gpio_busy_isr_handler(void* arg)
+{
+    TaskHandle_t taskHandle = (TaskHandle_t)arg;
+    BaseType_t HPTaskWoken = pdFALSE;
+    //unblock TaskMeasureAcc
+    vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
+    if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
+}
+
 static void EPD_3IN7_ReadBusy_HIGH(void)
 {
     //printf("e-Paper busy\r\n");
-    UBYTE busy;
-    do {
-        busy = DEV_Digital_Read(EPD_BUSY_PIN);
-        DEV_Delay_ms(10);
-    } while(busy);
+    // UBYTE busy;
+    // do {
+    //     busy = DEV_Digital_Read(EPD_BUSY_PIN);
+    //     DEV_Delay_ms(10);
+    // } while(busy);
+    uint64_t startTime = esp_timer_get_time();
+    gpio_isr_handler_add((gpio_num_t)EPD_BUSY_PIN, gpio_busy_isr_handler, xTaskGetCurrentTaskHandle());
+    uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 5000 / portTICK_PERIOD_MS);
+    if (notificationValue == 0) {
+        ESP_LOGW("EPD", "Interrupt didn't fire");
+    }
+    //printf("Busy high after: %i ms\n", (int)((esp_timer_get_time() - startTime) / 1000));
+    gpio_isr_handler_remove(EPD_BUSY_PIN);
     //DEV_Delay_ms(100);
     //printf("e-Paper busy release\r\n");
 }

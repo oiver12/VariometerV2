@@ -3,6 +3,7 @@
 #include "esp_heap_caps.h"
 #include "driver/spi_master.h"
 #include <inttypes.h>
+#include <string.h>
 
 void testFunction_EPD3IN7()
 {
@@ -17,7 +18,7 @@ void testFunction_EPD3IN7()
     }
 
     printf("Paint_NewImage \r\n");
-    Paint_NewImage(ScreenBuffer, EPD_3IN7_WIDTH, EPD_3IN7_HEIGHT, 0, WHITE);
+    Paint_NewImage(ScreenBuffer, EPD_3IN7_WIDTH, EPD_3IN7_HEIGHT, 90, WHITE);
     EPD_3IN7_1Gray_Init();       //init 1 Gray mode
     EPD_3IN7_1Gray_Clear();
     
@@ -25,19 +26,21 @@ void testFunction_EPD3IN7()
     Paint_SelectImage(ScreenBuffer);
     Paint_SetScale(2);
 
-    Paint_Clear(BLACK);
+    Paint_Clear(WHITE);
     uint64_t startTime = esp_timer_get_time();
-    EPD_3IN7_1Gray_Display_Part(ScreenBuffer, 0, 0, 100, 100, false);
-    printf("Time: %" PRId64 "\n",(esp_timer_get_time()-startTime) / 1000);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    Paint_Clear(WHITE);
-    EPD_3IN7_1Gray_Display(ScreenBuffer, true);   
+    Paint_DrawRectangle(2, 2, 100, 100, BLACK, DOT_PIXEL_2X2, DRAW_FILL_FULL);
+    EPD_3IN7_1Gray_Display(ScreenBuffer, PART_BW_T_BW);
 
-    Paint_DrawRectangle(1, 1, 100, 100, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    startTime = esp_timer_get_time();
-    EPD_3IN7_1Gray_Display(ScreenBuffer, false);  
-    printf("Time: %" PRId64 "\n",(esp_timer_get_time()-startTime) / 1000);
-    Paint_Clear(WHITE);
+    // printf("Time: %" PRId64 "\n",(esp_timer_get_time()-startTime) / 1000);
+    // vTaskDelay(5000 / portTICK_PERIOD_MS);
+    // Paint_Clear(WHITE);
+    // EPD_3IN7_1Gray_Display(ScreenBuffer, true);   
+
+    // Paint_DrawRectangle(1, 1, 100, 100, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    // startTime = esp_timer_get_time();
+    // EPD_3IN7_1Gray_Display(ScreenBuffer, FULL_G_T_BW);  
+    // printf("Time: %" PRId64 "\n",(esp_timer_get_time()-startTime) / 1000);
+    // Paint_Clear(WHITE);
 
     vTaskDelay(10000 / portTICK_PERIOD_MS);
     EPD_3IN7_4Gray_Init();

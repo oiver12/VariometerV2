@@ -67,7 +67,10 @@
 
 //#include "DEV_Config.h"
 #include "fonts.h"
-#include "EPD_3in7.h"
+
+#define UBYTE   uint8_t
+#define UWORD   uint16_t
+#define UDOUBLE uint32_t
 
 /**
  * Image attributes
@@ -203,9 +206,11 @@ void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius, UWORD Color,
 void Paint_DrawNormalHLine(UWORD Xpoint, UWORD Ypoint, UWORD width);
 void Paint_DrawNormalVLine(UWORD Xpoint, UWORD Ypoint, UWORD height);
 
+void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color);
+
 //Display string
-void Paint_DrawChar(UWORD Xstart, UWORD Ystart, const char Acsii_Char, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
-void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
+void Paint_DrawChar(UWORD Xstart, UWORD Ystart, const char Acsii_Char, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, UBYTE backgroundRedraw);
+void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, UBYTE backgroundRedraw);
 //void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart, const char * pString, cFONT* font, UWORD Color_Foreground, UWORD Color_Background);
 void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
 void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
@@ -213,6 +218,8 @@ void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, 
 //pic
 void Paint_DrawBitMap(const unsigned char* image_buffer);
 void Paint_DrawBitMap_Paste(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD imageWidth, UWORD imageHeight, UBYTE flipColor);
+void Paint_DrawBitMap_Paste_Rotated(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD imageWidth, UWORD imageHeight, int angle);
+void Paint_DrawBitMap_Paste_Rotated_Circle(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD imageWidth, UWORD imageHeight, int angle, int radius);
 //void Paint_DrawBitMap_Half(const unsigned char* image_buffer, UBYTE Region);
 //void Paint_DrawBitMap_OneQuarter(const unsigned char* image_buffer, UBYTE Region);
 //void Paint_DrawBitMap_OneEighth(const unsigned char* image_buffer, UBYTE Region);

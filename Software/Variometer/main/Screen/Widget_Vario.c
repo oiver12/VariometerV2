@@ -3,55 +3,44 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include "E_Ink/GUI_Paint.h"
 
 #define BUFFER_TEXT_SIZE 20
+//#define Compass_Method1
 
-#define COMPASS_1METHOD
 #define DEGREE_TO_RADIAN 0.01745329251
 #define COMPASS_PLACE_SIDE 15
 #define CHART_POINT_COUNT 20
 
-LV_IMG_DECLARE(Kompass);
-LV_IMG_DECLARE(Kreis_4px);
-LV_IMG_DECLARE(arrow);
-LV_IMG_DECLARE(Doppelpfeil_Vario)
+#ifdef Compass_Method1
+const unsigned char gImage_Compass[800] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x0, 0x7F, 0xFF, 0x0, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0x3, 0xFF, 0xFF, 0xE0, 0x3, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x1F, 0xFF, 0xFF, 0xFC, 0x1, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x7F, 0xFF, 0xFF, 0xFF, 0x0, 0xFF, 0xFF, 0xFF, 0xFE, 0x1, 0xFF, 0xE7, 0x8F, 0xFF, 0xC0, 0x3F, 0xFF, 0xFF, 0xFC, 0x3, 0xFF, 0xF3, 0xDF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xF8, 0xF, 0xFF, 0xF5, 0xDF, 0xFF, 0xF8, 0xF, 0xFF, 0xFF, 0xF0, 0x1F, 0xFF, 0xF5, 0xDF, 0xFF, 0xFC, 0x7, 0xFF, 0xFF, 0xE0, 0x3F, 0xFF, 0xF6, 0xDF, 0xFF, 0xFE, 0x3, 0xFF, 0xFF, 0xC0, 0x7F, 0xFF, 0xF7, 0x5F, 0xFF, 0xFF, 0x1, 0xFF, 0xFF, 0xC0, 0xFF, 0xFF, 0xF7, 0x9F, 0xFF, 0xFF, 0x81, 0xFF, 0xFF, 0x81, 0xFF, 0xFF, 0xF7, 0x9F, 0xFF, 0xFF, 0xC0, 0xFF, 0xFF, 0x3, 0xFF, 0xFF, 0xE3, 0xDF, 0xFF, 0xFF, 0xE0, 0x7F, 0xFE, 0x7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0x3F, 0xFE, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x3F, 0xFC, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x1F, 0xFC, 0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x1F, 0xF8, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF, 0xF8, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x87, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x83, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x83, 0xE1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0xC1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC1, 0xC1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC3, 0x8D, 0xC7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x3, 0xE1, 0xC3, 0xDC, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7B, 0xE1, 0xC3, 0xDA, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xE1, 0xC3, 0xEA, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x77, 0xE1, 0xC3, 0xEB, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7, 0xE1, 0xC3, 0xEB, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x77, 0xE1, 0xC3, 0xE7, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xE1, 0xC3, 0xF7, 0xBF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7B, 0xE1, 0xC3, 0xF7, 0xBF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x3, 0xE1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE1, 0xC1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC1, 0xC1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC1, 0xE1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x83, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x83, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x87, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7, 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7, 0xF8, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF, 0xF8, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF, 0xFC, 0x1F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x1F, 0xFC, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x1F, 0xFE, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x3F, 0xFE, 0x7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0x3F, 0xFF, 0x3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0x7F, 0xFF, 0x81, 0xFF, 0xFF, 0xFC, 0x3F, 0xFF, 0xFF, 0xC0, 0xFF, 0xFF, 0xC0, 0xFF, 0xFF, 0xFB, 0xDF, 0xFF, 0xFF, 0x81, 0xFF, 0xFF, 0xC0, 0x7F, 0xFF, 0xFB, 0xFF, 0xFF, 0xFF, 0x1, 0xFF, 0xFF, 0xE0, 0x3F, 0xFF, 0xF8, 0xFF, 0xFF, 0xFE, 0x3, 0xFF, 0xFF, 0xF0, 0x1F, 0xFF, 0xFE, 0x3F, 0xFF, 0xFC, 0x7, 0xFF, 0xFF, 0xF8, 0xF, 0xFF, 0xFF, 0x9F, 0xFF, 0xF8, 0xF, 0xFF, 0xFF, 0xFC, 0x3, 0xFF, 0xFF, 0xDF, 0xFF, 0xE0, 0x1F, 0xFF, 0xFF, 0xFE, 0x1, 0xFF, 0xFB, 0xDF, 0xFF, 0xC0, 0x3F, 0xFF, 0xFF, 0xFF, 0x80, 0x7F, 0xFC, 0x3F, 0xFF, 0x0, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x1F, 0xFF, 0xFF, 0xFC, 0x1, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0x3, 0xFF, 0xFF, 0xE0, 0x3, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x0, 0x7F, 0xFF, 0x0, 0xF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0x0, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+#else
+const unsigned char gImage_Compass_Zahlen[512] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xCF, 0x8F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEB, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xED, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xED, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEE, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x9F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0x78, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3, 0xEF, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFB, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF7, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x7, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF7, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF9, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFD, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFB, 0xFD, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x9F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF3, 0xBF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+#endif
+const unsigned char gImage_Arrow_down[20] = { 0x0, 0x3F, 0x0, 0x3F, 0x0, 0x3F, 0x80, 0x7F, 0x80, 0x7F, 0xC0, 0xFF, 0xC0, 0xFF, 0xE1, 0xFF, 0xE1, 0xFF, 0xF3, 0xFF };
 
-static lv_style_t frame_Widget_Base_Style;
-static lv_style_t infoText_Widget_Base_Style;
-static lv_style_t value_Widget_Base_Style;
-static lv_style_t unit_Widget_Base_Style;
-
-lv_font_t* __FontStack[] =
+sFONT* __FontStack[] =
 {
-    &lv_font_montserrat_8,
-    &lv_font_montserrat_12,
-    &lv_font_montserrat_16,
-    &lv_font_montserrat_20,
-    &lv_font_montserrat_22,
-    &lv_font_montserrat_24,
-    &lv_font_montserrat_26,
-    &lv_font_montserrat_28,
-    &lv_font_montserrat_30,
-    &lv_font_montserrat_32,
+    &Font12, //8px
+    &Font12, //12px
+    &Font16,//16px
+    &Font20,//20px
+    &Font20,//22px
+    &Font24,//24px
+    &Font24,//26px
+    &Font24,//28px
+    &Font24,//30px
+    &Font24//32px
 };
 
 void init_WidgetHandler()
 {
-    lv_style_init(&frame_Widget_Base_Style);
-    lv_style_set_radius(&frame_Widget_Base_Style, LV_STATE_DEFAULT, 8);
-    lv_style_set_border_color(&frame_Widget_Base_Style, LV_STATE_DEFAULT, COLOR_BLACK);
+   
+}
 
-    lv_style_init(&infoText_Widget_Base_Style);
-    lv_style_set_text_color(&infoText_Widget_Base_Style, LV_STATE_DEFAULT, COLOR_BLACK);
-    lv_style_set_text_font(&infoText_Widget_Base_Style, LV_STATE_DEFAULT, &lv_font_montserrat_12);
-
-    lv_style_init(&value_Widget_Base_Style);
-    lv_style_set_text_color(&value_Widget_Base_Style, LV_STATE_DEFAULT, COLOR_MAGENTA);
-    lv_style_set_text_font(&value_Widget_Base_Style, LV_STATE_DEFAULT, &lv_font_montserrat_32);
-
-    lv_style_init(&unit_Widget_Base_Style);
-    lv_style_set_text_color(&unit_Widget_Base_Style, LV_STATE_DEFAULT, COLOR_BLACK);
-    lv_style_set_text_font(&unit_Widget_Base_Style, LV_STATE_DEFAULT, &lv_font_montserrat_16);
+static uint16_t getTextWidth(const char* pString, sFONT* font)
+{
+    return font->Width * strlen(pString);
 }
 
 static const char* get_Info_Text(WidgetContentType contentType)
@@ -105,7 +94,12 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, bool sho
         return;
     }
     if (returnValue | shouldRender)
+    {
+        //Wenn zwischen -0.1f und 0.0f, setzte auf 0.0f, weil sonst -0.0 angezeigt wird
+        if (temp > -0.05f && temp < 0.0f)
+            temp = 0.0f;
         snprintf(buffer, BUFFER_TEXT_SIZE, "%.1f", temp);
+    }
     else
         buffer[0] = 0;
     return temp;
@@ -126,261 +120,259 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
-        return "C°";
+        return 'C°';
     default:
         return "";
     }
 }
 
-static void add_TextBox_Widget(WidgetData *widget, lv_obj_t *screen)
+static void add_TextBox_Widget(WidgetData* widget)
 {
-    lv_obj_t* frame = lv_obj_create(screen, NULL);
-    lv_obj_add_style(frame, LV_OBJ_PART_MAIN, &frame_Widget_Base_Style);
-    lv_obj_align(frame, NULL, widget->alignement, widget->x, widget->y);
-    lv_obj_set_size(frame, widget->w, widget->h);
-    widget->frame = frame;
-
-    lv_obj_t* information_text = lv_label_create(frame, NULL);
-    lv_obj_add_style(information_text, LV_OBJ_PART_MAIN, &infoText_Widget_Base_Style);
-    lv_label_set_text(information_text, get_Info_Text(widget->type));
-    lv_obj_align(information_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 2);
-
+    //TODO wenn Widget gelöscht wird, muss auch das hiet gelöscht werden
     TextBox_Widget_Data* extr_data = malloc(sizeof(TextBox_Widget_Data));
     widget->extr_data = (void*)extr_data;
 
+    //TODO: Add rounded Corners to Frame
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+
+    char* informationString = get_Info_Text(widget->type);
+    uint16_t textWidth = getTextWidth(informationString, &Font12);
+    //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
+    if (widget->w < textWidth)
+        printf("Text passt nicht rein!\n");
+    //Text ist oben in der Mitte vom Frame
+    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+
+    char* unitText = get_Unit_Text(widget->type);
+    textWidth = getTextWidth(unitText, &Font16);
+    //StartX: Abstand rechts vom Fram ist 5 Pixel
+    Paint_DrawString_EN(widget->x + (widget->w - textWidth) - 5, widget->y + (widget->h / 2) + 5, unitText, &Font16, WHITE, BLACK, TRUE);
+
+    sFONT* fontValue = __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4];
+    //Draw value Text
+    ((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText = widget->x + widget->w - textWidth;
+    switch (widget->extraStyle & WS_FONT_MASK_CONTENT)
+    {
+    case WS_FONT_8_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 7;
+        break;
+    case WS_FONT_12_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 7;
+        break;
+    case WS_FONT_16_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 5;
+        break;
+    case WS_FONT_20_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 3;
+        break;
+    case WS_FONT_24_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        break;
+    case WS_FONT_30_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        break;
+    case WS_FONT_32_CONTENT:
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        break;
+    }
     char tempBuffer[10];
     get_Value_Text(widget->type, tempBuffer, true);
-    lv_obj_t* value_Text = lv_label_create(frame, NULL);
-    lv_obj_add_style(value_Text, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
-    lv_obj_set_style_local_text_font(value_Text, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
-    lv_label_set_text(value_Text, tempBuffer);
-    lv_obj_align(value_Text, NULL, LV_ALIGN_CENTER, -30, 10);
-    ((TextBox_Widget_Data*)widget->extr_data)->labelText = value_Text;
-
-    lv_obj_t* unit_Text = lv_label_create(frame, NULL);
-    lv_obj_add_style(unit_Text, LV_OBJ_PART_MAIN, &unit_Widget_Base_Style);
-    lv_label_set_text(unit_Text, get_Unit_Text(widget->type));
-    lv_obj_align(unit_Text, NULL, LV_ALIGN_IN_RIGHT_MID, -5, 11);
+    textWidth = getTextWidth(tempBuffer, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
+    //StartX: Abstand zwischen Unit rechts und Frame links soll gleich gross sein
+    Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, fontValue,WHITE, BLACK, TRUE);
 }
 
-static void add_Compass_widget(WidgetData* widget, lv_obj_t* screen)
+static void add_Compass_widget(WidgetData* widget)
 {
-    lv_obj_t* frame = lv_obj_create(screen, NULL);
-    lv_obj_add_style(frame, LV_OBJ_PART_MAIN, &frame_Widget_Base_Style);
-    lv_obj_align(frame, NULL, widget->alignement, widget->x, widget->y);
-    lv_obj_set_size(frame, widget->w, widget->h);
-    widget->frame = frame;
-#ifdef COMPASS_1METHOD
-    lv_obj_t* img = lv_img_create(frame, NULL);
-    lv_img_set_src(img, &Kompass);
-    float width = lv_obj_get_width(img) + COMPASS_PLACE_SIDE;
-    uint16_t zoomFactor = (uint16_t)(((float)((float)widget->w / width)) * 256);
-    lv_img_set_zoom(img, zoomFactor);
-    lv_obj_t* imgArrow = lv_img_create(frame, NULL);
-    lv_img_set_src(imgArrow, &arrow);
-    lv_coord_t yOffset = (lv_obj_get_height(img) * ((float)zoomFactor / (float)256));
-    lv_obj_align(imgArrow, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - COMPASS_PLACE_SIDE * 0.6 + 2);
-    yOffset = (lv_obj_get_height(img) * (((float)zoomFactor / (float)256) - 1)) / 2;
-    lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - COMPASS_PLACE_SIDE * 0.6);
-
-    lv_obj_t* labelText = lv_label_create(frame, NULL);
-    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
-    lv_obj_set_style_local_text_font(labelText, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
-    lv_obj_align(labelText, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 0);
+    Compass_Widget_Data* extr_data = malloc(sizeof(Compass_Widget_Data));
+    widget->extr_data = (void*)extr_data;
+    extr_data->lastAngle = 0;
+    extr_data->angleDifferenceToShow = 5;
+    //Draw Frame
+    //TODO: Add rounded Corners to Frame
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    Paint_DrawBitMap_Paste(gImage_Arrow_down, widget->x + widget->w / 2 - 5, widget->y + 28, 10, 10, FALSE);
+#ifdef Compass_Method1
+    Paint_DrawBitMap_Paste(gImage_Compass, widget->x + widget->w / 2 - 40, widget->y + widget->h - 80 - 10, 80, 80, FALSE);
 #else
-    lv_obj_t* img = lv_img_create(frame, NULL);
-    lv_img_set_src(img, &Kreis_4px);
-    uint16_t zoomFactor = (uint16_t)(((float)((float)widget->w / ((float)lv_obj_get_width(img) + 10))) * 256);
-    lv_img_set_zoom(img, zoomFactor);
-    lv_coord_t yOffset = (lv_obj_get_height(img) * (((float)zoomFactor / (float)256) - 1)) / 2;
-    lv_obj_align(img, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - 5);
-
-    lv_obj_t* imgArrow = lv_img_create(frame, NULL);
-    lv_img_set_src(imgArrow, &arrow);
-    yOffset = (lv_obj_get_height(img) * ((float)zoomFactor / (float)256));
-    lv_obj_align(imgArrow, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -yOffset - 7);
-
-    lv_style_init(&widget->lvgl_styles[0]);
-    lv_style_set_text_font(&widget->lvgl_styles[0], LV_CONT_PART_MAIN, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
-    lv_obj_t* labelText = lv_label_create(frame, NULL);
-    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &value_Widget_Base_Style);
-    lv_obj_add_style(labelText, LV_OBJ_PART_MAIN, &widget->lvgl_styles[0]);
-    lv_obj_align(labelText, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
-
-    float angle = 0 * DEGREE_TO_RADIAN;
-    float widgetWidth = lv_obj_get_height(img) * ((float)zoomFactor / (float)256) / 2 - 17;
-    lv_obj_t* label_N = lv_label_create(img, NULL);
-    lv_label_set_text(label_N, "N");
-    lv_obj_align(label_N, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * -cos(angle)); //PI im Gegenuhrzeigersinn
-    lv_obj_t* label_E = lv_label_create(img, NULL);
-    lv_label_set_text(label_E, "E");
-    lv_obj_align(label_E, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle+1.5707963), widgetWidth * cos(angle + 1.5707963)); //PI / 2 im Gegenuhrzeigersinn
-    lv_obj_t* label_S = lv_label_create(img, NULL);
-    lv_label_set_text(label_S, "S");
-    lv_obj_align(label_S, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * cos(angle));
-    lv_obj_t* label_W = lv_label_create(img, NULL);
-    lv_label_set_text(label_W, "W");
-    lv_obj_align(label_W, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle - 1.5707963), widgetWidth * cos(angle - 1.5707963)); //PI / 2 im Uhrzeigersinn
-#endif // COMPASS_1METHOD
+    Paint_DrawCircle(widget->x + widget->w / 2, widget->y + widget->h - 40 - 8, 40, BLACK, DOT_PIXEL_2X2, DRAW_FILL_EMPTY);
+#endif
 }
 
-static void add_Chart_Widget(WidgetData* widget, lv_obj_t* screen)
+static void add_Chart_Widget(WidgetData* widget)
 {
-    lv_obj_t* frame = lv_obj_create(screen, NULL);
-    lv_obj_add_style(frame, LV_OBJ_PART_MAIN, &frame_Widget_Base_Style);
-    lv_obj_align(frame, NULL, widget->alignement, widget->x, widget->y);
-    lv_obj_set_size(frame, widget->w, widget->h);
-    widget->frame = frame;
+    //Draw frame
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
 
     Chart_Widget_Data* extr_data = malloc(sizeof(Chart_Widget_Data));
     widget->extr_data = (void*)extr_data;
-
-    lv_obj_t* information_text = lv_label_create(frame, NULL);
-    lv_obj_add_style(information_text, LV_OBJ_PART_MAIN, &infoText_Widget_Base_Style);
-    lv_label_set_text(information_text, get_Info_Text(widget->type));
-    lv_obj_align(information_text, NULL, LV_ALIGN_IN_TOP_MID, 0, 2);
-
-    lv_obj_t* chart = lv_chart_create(frame, NULL);
-    lv_obj_set_size(chart, lv_obj_get_width(frame) - 10, lv_obj_get_height(frame) - lv_obj_get_height(information_text) - 20);
-    lv_obj_align(chart, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -15);
-    lv_obj_set_style_local_size(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, 0);
-
-    //lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-    lv_chart_series_t* ser1 = lv_chart_add_series(chart, COLOR_BLACK);
-    lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-    lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_SHIFT);
-    lv_chart_set_point_count(chart, CHART_POINT_COUNT);
-    extr_data->y_Range = 50;
-    lv_chart_set_range(chart, 0, extr_data->y_Range);
-    extr_data->chart = chart;
-    extr_data->lastMax = 50;
-    extr_data->series = ser1;
+    extr_data->data = fifo_create(ChartNumDataPoints, sizeof(Chart_Point));
     extr_data->lastPointTime = 0;
+    extr_data->startXPosition = widget->x + widget->w - 10;
     extr_data->timePeriod = 20;
-    extr_data->lastMax = 50;
-
-    lv_obj_t* img_arrow = lv_img_create(frame, NULL);
-    lv_img_set_src(img_arrow, &Doppelpfeil_Vario);
-    float height_Arrow = lv_obj_get_height(img_arrow) + 5;
-    uint16_t zoomFactor = (uint16_t)((float)((float)lv_obj_get_height(chart) / height_Arrow) * 256);
-    lv_img_set_zoom(img_arrow, zoomFactor);
-    lv_obj_align(img_arrow, NULL, LV_ALIGN_IN_LEFT_MID, 0, 2);
-
-    lv_obj_t* height_Text = lv_label_create(frame, NULL);
-    lv_obj_add_style(height_Text, LV_OBJ_PART_MAIN, &infoText_Widget_Base_Style);
-    lv_label_set_text(height_Text, "50");
-    lv_obj_align(height_Text, NULL, LV_ALIGN_IN_LEFT_MID, 15, 0);
+    extr_data->HeightDifferenzToShow = 50;
+    extr_data->heightChart = widget->h - 45;
+    extr_data->yStartPosChart = widget->y + 30;
+    extr_data->pointsAdded = 0;
+    uint32_t chartXWidth = widget->w - 35;
+    extr_data->xMoveDelta = chartXWidth / ChartNumDataPoints;
+    //Draw Chart
+    char* informationString = get_Info_Text(widget->type);
+    uint16_t textWidth = getTextWidth(informationString, &Font12);
+    //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
+    if (widget->w < textWidth)
+        printf("Text passt nicht rein!\n");
+    //Text ist oben in der Mitte vom Frame
+    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    Paint_DrawLine(widget->x + 8, widget->y + 25, widget->x + 8, widget->y + widget->h - 10, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+    char buffer[6];
+    snprintf(buffer, 6, "%im", extr_data->HeightDifferenzToShow);
+    Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
+    snprintf(buffer, 6, "%is", extr_data->timePeriod);
+    Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer,&Font12, WHITE, BLACK, TRUE);
 }
 
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
     float tempValue = get_Value_Text(widget->type, tempBuffer, false);
+    //Update Value Text
     if (tempBuffer[0] != '\0')
     {
-        lv_label_set_text(((TextBox_Widget_Data*)widget->extr_data)->labelText, tempBuffer);
-        if (widget->type == WidgetContent_Vario_Active || widget->type == WidgetContent_Vario_Lazy)
-        {
-            if (tempValue >= 0)
-                lv_obj_set_style_local_text_color(((TextBox_Widget_Data*)widget->extr_data)->labelText, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, COLOR_GREEN);
-            else
-                lv_obj_set_style_local_text_color(((TextBox_Widget_Data*)widget->extr_data)->labelText, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, COLOR_MAGENTA);
-        }
+        sFONT* font = __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4];
+        uint16_t textWidth = getTextWidth(tempBuffer, font);
+        //Clear surface in frame
+        Paint_ClearWindows(widget->x + 5, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText - 2, ((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - 8, widget->y + (widget->h / 2) + 21, WHITE);
+        //Paint_DrawRectangle(widget->x + 5, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText - 2, ((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - 8, widget->y + (widget->h / 2) + 21, WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+        Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, font, WHITE, BLACK, FALSE);
     }
 }
 
 static void update_Compass_Widget(WidgetData* widget)
 {
-#ifdef COMPASS_1METHOD
+    //Compass_Method2: Optimisation: Draw Circle once and rotate only letters in the middle. In the rotated function, only display pixels in circle (corners would "overdraw" circle)
     float heading;
-    if (vario_state_get_heading(&heading))
+    if (vario_state_get_heading(&heading) && abs(((Compass_Widget_Data*)widget->extr_data)->lastAngle - heading) > ((Compass_Widget_Data*)widget->extr_data)->angleDifferenceToShow)
     {
-        lv_obj_t* label = lv_obj_get_child(widget->frame, NULL);
-        lv_obj_t* temp = lv_obj_get_child(widget->frame, label);
-        lv_obj_t* img = lv_obj_get_child(widget->frame, temp);
+        ((Compass_Widget_Data*)widget->extr_data)->lastAngle = heading;
+#ifdef Compass_Method1
+        Paint_DrawBitMap_Paste_Rotated(gImage_Compass, widget->x + widget->w / 2 - 40, widget->y + widget->h - 80 - 10, 80, 80, (int)heading);
+#else
+        Paint_DrawBitMap_Paste_Rotated_Circle(gImage_Compass_Zahlen, widget->x + widget->w / 2 - 32, widget->y + widget->h - 80, 64, 64, (int)heading, 31);
+#endif
         char tempBuffer[9];
         if (heading > 337 || heading < 23)
-            snprintf(tempBuffer, 9, "%.0f° N", heading);
+            snprintf(tempBuffer, 9, "%.0fN", heading);
         else if (heading >= 23 && heading <= 67)
-            snprintf(tempBuffer, 9, "%.0f° NE", heading);
+            snprintf(tempBuffer, 9, "%.0fNE", heading);
         else if (heading > 67 && heading < 113)
-            snprintf(tempBuffer, 9, "%.0f° E", heading);
+            snprintf(tempBuffer, 9, "%.0fE", heading);
         else if (heading >= 113 && heading < 157)
-            snprintf(tempBuffer, 9, "%.0f° SE", heading);
+            snprintf(tempBuffer, 9, "%.0fSE", heading);
         else if (heading >= 157 && heading <= 201)
-            snprintf(tempBuffer, 9, "%.0f° S", heading);
+            snprintf(tempBuffer, 9, "%.0fS", heading);
         else if (heading > 201 && heading < 247)
-            snprintf(tempBuffer, 9, "%.0f° SW", heading);
+            snprintf(tempBuffer, 9, "%.0fSW", heading);
         else if (heading >= 247 && heading < 293)
-            snprintf(tempBuffer, 9, "%.0f° W", heading);
+            snprintf(tempBuffer, 9, "%.0fW", heading);
         else
-            snprintf(tempBuffer, 9, "%.0f° NW", heading);
-        lv_label_set_text(label, tempBuffer);
-        lv_img_set_angle(img, -heading * 10);
+            snprintf(tempBuffer, 9, "%.0fNW", heading);
+        uint16_t textWidth = getTextWidth(tempBuffer, &Font16);
+        Paint_ClearWindows(widget->x + 10, widget->y + 10, widget->x + (widget->w / 2) + 30, widget->y + 25, WHITE);
+        Paint_DrawString_EN(widget->x + (widget->w / 2) - textWidth / 2, widget->y + 10, tempBuffer, &Font16, WHITE, BLACK, FALSE);
     }
-#else
-    float heading;
-    if (vario_state_get_heading(&heading))
-    {
-        lv_obj_t* label = lv_obj_get_child(widget->obj_to_change, NULL);
-        char tempBuffer[6];
-        snprintf(tempBuffer, 6, "%.0f°", heading);
-        lv_label_set_text(label, tempBuffer);
-        lv_obj_t* arrow_img = lv_obj_get_child(widget->obj_to_change, label);
-        lv_obj_t* circle_img = lv_obj_get_child(widget->obj_to_change, arrow_img);
-        lv_obj_t* label_W = lv_obj_get_child(circle_img, NULL);
-        lv_obj_t* label_S = lv_obj_get_child(circle_img, label_W);
-        lv_obj_t* label_E = lv_obj_get_child(circle_img, label_S);
-        lv_obj_t* label_N = lv_obj_get_child(circle_img, label_E);
-        lv_obj_invalidate(circle_img);
-
-        float angle = heading * DEGREE_TO_RADIAN;
-        float widgetWidth = lv_obj_get_height(circle_img) * ((float)lv_img_get_zoom(circle_img) / (float)256) / 2 - 17;
-        lv_obj_align(label_N, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle + 3.141592654), widgetWidth * cos(angle + 3.141592654)); //PI im Gegenuhrzeigersinn
-        lv_obj_align(label_E, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle + 1.5707963), widgetWidth * cos(angle + 1.5707963)); //PI / 2 im Gegenuhrzeigersinn
-        lv_obj_align(label_S, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle), widgetWidth * cos(angle));
-        lv_obj_align(label_W, NULL, LV_ALIGN_CENTER, widgetWidth * sin(angle - 1.5707963), widgetWidth * cos(angle - 1.5707963)); //PI / 2 im Uhrzeigersinn
-    }
-#endif // COMPASS_1METHOD
 }
 
+//TODO: Program Mode, where it auto. zooms to see all Points
 static void update_Chart_Widget(WidgetData* widget)
 {
     float t1 = (float)clock() / CLOCKS_PER_SEC; //in seconds
+    //Update Chart
     Chart_Widget_Data* chart_data = (Chart_Widget_Data*)widget->extr_data;
+    //Place a point all x Seconds (e.g. when timePeriod is 20s and Point Count is 20, place all 1s a new point and shift all Point to the left)
     if (chart_data->timePeriod / CHART_POINT_COUNT <= t1 - chart_data->lastPointTime)
     {
+        chart_data->lastPointTime = t1;
+        if (chart_data->pointsAdded == 0)
+        {
+            float height;
+            vario_state_get_altitudeBaro(&height, false);
+            //Place first Point in the middle
+            chart_data->startHeight = height - chart_data->HeightDifferenzToShow / 2;
+            float percentageFromHeight = ((float)(height - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+            Chart_Point point = {
+                .lastXPoint = chart_data->startXPosition,
+                .yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart,
+                .heightValue = height,
+            };
+            fifo_add(chart_data->data, &point);
+            Paint_DrawPoint(point.lastXPoint, point.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+            chart_data->pointsAdded++;
+            return;
+        }
         float height;
         vario_state_get_altitudeBaro(&height, false);
-        lv_chart_set_next(chart_data->chart, ((Chart_Widget_Data*)widget->extr_data)->series, height);
-        chart_data->lastPointTime = t1;
-        if (chart_data->lastMax < (lv_coord_t)height)
+        //when new height can't is lower or higher than the range in the chart, shift the range, so the new point is in the chart
+        if (height < chart_data->startHeight || height > chart_data->startHeight + chart_data->HeightDifferenzToShow)
         {
-            lv_chart_set_range(chart_data->chart, (lv_coord_t)height - chart_data->y_Range, (lv_coord_t)height);
-            chart_data->lastMax = (lv_coord_t)height;
+            chart_data->startHeight = height < chart_data->startHeight ? height : (height - chart_data->HeightDifferenzToShow);
+            for (size_t i = 0; i < chart_data->pointsAdded; i++)
+            {
+                Chart_Point* itemPoint = fifo_peekItem(chart_data->data, i);
+                float percentageFromHeight = ((float)(itemPoint->heightValue - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+                if (percentageFromHeight > 1 || percentageFromHeight < 0)
+                    itemPoint->yPoint = -1;
+                else
+                    itemPoint->yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart;
+            }
         }
-        else if (chart_data->lastMax - chart_data->y_Range > (lv_coord_t)height)
+        float percentageFromHeight = ((float)(height - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+        Chart_Point newPoint = {
+            .lastXPoint = chart_data->startXPosition,
+            .yPoint = (uint16_t)((1-percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart,
+            .heightValue = height,
+        };
+        Chart_Point lastpoint;
+        if (chart_data->pointsAdded < CHART_POINT_COUNT)
         {
-            lv_chart_set_range(chart_data->chart, (lv_coord_t)height, (lv_coord_t)height + chart_data->y_Range);
-            chart_data->lastMax = (lv_coord_t)height + chart_data->y_Range;
+            chart_data->pointsAdded++;
+            if (fifo_is_full(chart_data->data))
+                printf("Test scheisse\n");
+        }
+        else
+            fifo_get(chart_data->data, &lastpoint);
+
+        fifo_add(chart_data->data, &newPoint);
+
+        Paint_ClearWindows(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT, chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, WHITE);
+        //Paint_DrawRectangle(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT , chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+
+        Paint_DrawPoint(newPoint.lastXPoint, newPoint.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+        //shift all Points left and render (dont shift last one)
+        for (size_t i = 0; i < chart_data->pointsAdded - 1; i++)
+        {
+            Chart_Point* itemPoint = fifo_peekItem(chart_data->data, i);
+            itemPoint->lastXPoint -= chart_data->xMoveDelta;
+            if(itemPoint->yPoint != -1)
+                Paint_DrawPoint(itemPoint->lastXPoint, itemPoint->yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
         }
     }
 }
 
-void vario_add_widget(WidgetData* widget, lv_obj_t* screen)
+void vario_display_add_widget(WidgetData* widget)
 {
     switch (widget->style)
     {
     case Widget_Empty:
         break;
     case Widget_TextBox:
-        add_TextBox_Widget(widget, screen);
+        add_TextBox_Widget(widget);
         break;
     case Widget_Compass:
-        add_Compass_widget(widget, screen);
+        add_Compass_widget(widget);
         break;
     case Widget_Chart:
-        add_Chart_Widget(widget, screen);
+        add_Chart_Widget(widget);
     default:
         break;
     }

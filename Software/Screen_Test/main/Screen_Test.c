@@ -25,7 +25,13 @@
 #define EPD_MOSI_PIN    41
 #define EPD_CLK_PIN     46
 
-#define DISP_BUF_SIZE 33600
+
+#define DISP_BUF_SIZE 16800
+#ifdef EInk_DoubleBuffer
+    #define DISP_BUF_SIZE 19200 //480*40
+#else
+    #define DISP_BUF_SIZE 16800
+#endif
 
 #define TAG "demo"
 #define LV_TICK_PERIOD_MS 3
@@ -64,17 +70,12 @@ void LVGL_TaskHandle_Task(void *arg)
 
 void TaskScreenRefresher(void *param)
 {
-    lv_obj_t* information_text = lv_label_create(lv_scr_act(), NULL);
-    int i = 0;
-    char buffer[20];
-    while(true)
-    {
-        i++;
-        snprintf(buffer, 20, "%i", i);
-        printf("%s \n", buffer);
-        lv_label_set_text(information_text, buffer);
-        vTaskDelay(900 / portTICK_PERIOD_MS);
-    }
+    // lv_obj_t* information_text = lv_label_create(lv_scr_act(), NULL);
+    // lv_obj_set_pos(information_text, 100, 100);
+    // lv_label_set_text(information_text, "Test132");
+    lv_obj_t* rectangle = lv_obj_create(lv_scr_act(), NULL);
+    lv_obj_set_size(rectangle, 100, 100);
+    lv_obj_set_style_local_bg_color(rectangle, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     vTaskDelete(NULL);
 }
 
@@ -149,25 +150,35 @@ void app_main(void)
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
     ESP_LOGI(TAG, "SPI initialized");
-    // testFunction_EPD3IN7();
-    // return;
+
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+
+    testFunction_EPD3IN7();
+    return;
     DEV_Module_Init();
     EPD_3IN7_1Gray_Init();       //init 1 Gray mode
     EPD_3IN7_1Gray_Clear();
     ESP_LOGI(TAG, "Screen initialized");
 
     lv_init();
+    static lv_disp_buf_t disp_buf;
     lv_color_t* buf1 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(buf1 != NULL);
-    //lv_color_t* buf2 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
-    //assert(buf2 != NULL);
+#ifdef EInk_DoubleBuffer
+    lv_color_t* buf2 = heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(buf2 != NULL);
+    uint32_t size_in_px = DISP_BUF_SIZE;
+    lv_disp_buf_init(&disp_buf, buf1, buf2, size_in_px);
 
-    static lv_disp_buf_t disp_buf;
-    //uint32_t size_in_px = DISP_BUF_SIZE;
+    lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.flush_cb = EPD_3in7_display_flush;
+    disp_drv.monitor_cb = my_monitor_cb;
+    disp_drv.buffer = &disp_buf;
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    EPD_3in7_setBuffer();
+#else
     uint32_t size_in_px = 480 * 280;
-
-    /* Initialize the working buffer depending on the selected display.
-     * NOTE: buf2 == NULL when using monochrome displays. */
     lv_disp_buf_init(&disp_buf, buf1, NULL, size_in_px);
 
     lv_disp_drv_t disp_drv;
@@ -175,8 +186,10 @@ void app_main(void)
     disp_drv.flush_cb = EPD_3in7_display_flush;
     disp_drv.set_px_cb = EPD_3IN7_set_px_cb;
     disp_drv.monitor_cb = my_monitor_cb;
+    disp_drv.rounder_cb = EPD_3IN7_rounder_cb;
     disp_drv.buffer = &disp_buf;
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+#endif
 
     /* Create and start a periodic timer interrupt to call lv_tick_inc */
     const esp_timer_create_args_t periodic_timer_args = {
@@ -189,9 +202,10 @@ void app_main(void)
     TaskHandle_t lvglTaskHandler, RefreshScreen;
     xTaskCreatePinnedToCore(LVGL_TaskHandle_Task, "LVGL TaskHandler", 4 * 1024, NULL, 2, &lvglTaskHandler, 0);
     xTaskCreatePinnedToCore(TaskScreenRefresher, "Refresh Screen", 4 * 1024, NULL, 8, &RefreshScreen, 0);
-    vTaskDelay(20000 / portTICK_PERIOD_MS);
+    vTaskDelay(30000 / portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "Deleting Tasks...");
     vTaskDelete(lvglTaskHandler);
-    vTaskDelete(RefreshScreen);
+    //vTaskDelete(RefreshScreen);
     lv_deinit();
     powerOffScreen();
     #endif

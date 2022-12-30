@@ -2,16 +2,9 @@
 #define __WIDGETVARIO_H
 
 #include <stdint.h>
-#include "lvgl/lvgl.h"
+#include "FIFO.h"
 
-#define COLOR_BLACK lv_color_hex(0x000000)
-#define COLOR_RED lv_color_hex(0xFF0000)
-#define COLOR_GREEN lv_color_hex(0x00FF00)
-#define COLOR_YELLOW lv_color_hex(0xFFFF00)
-#define COLOR_BLUE lv_color_hex(0x0000FF)
-#define COLOR_MAGENTA lv_color_hex(0xFF00FF)
-#define COLOR_CYAN lv_color_hex(0x00FFFF)
-#define COLOR_WHITE lv_color_hex(0xFFFFFF)
+#define ChartNumDataPoints 20
 
 #define WS_FONT_MASK_LABEL		0x0000000F
 #define WS_FONT_8_LABEL			0x00000000
@@ -67,32 +60,48 @@ typedef enum
 
 typedef struct
 {
-    lv_align_t          alignement;
     WidgetStyle			style;
     uint32_t			extraStyle;
     WidgetContentType	type;
     uint16_t			x, y, w, h;
-    lv_obj_t*           frame;
     void*               extr_data; //Widget_specific_data
 } WidgetData;
 
 typedef struct
 {
-    lv_obj_t* labelText;
+    uint32_t linkerRandUnitText;
+    uint32_t yStartValueText;
 } TextBox_Widget_Data;
 
 typedef struct
 {
-    lv_obj_t* chart;
-    lv_chart_series_t* series;
+    int yPoint;
+    int lastXPoint;
+    float heightValue;
+} Chart_Point;
+
+typedef struct
+{
+    uint32_t HeightDifferenzToShow; //in Meters
+    int32_t startHeight; //Start Height from Chart in Meters (height at the bottom)
     uint32_t timePeriod; //In Seconds
-    uint64_t lastPointTime;
-    int16_t y_Range;
-    lv_coord_t lastMax;
+    uint64_t lastPointTime; //When a point was added last Time
+    fifo_t data; //Fifo with all the data from Chart_point
+    uint32_t startXPosition; //most right Position, where new Points will be spawned
+    uint32_t xMoveDelta; //how much each Point will be moved left, when a new Point is spawned
+    uint32_t heightChart; //In Pixel
+    uint32_t yStartPosChart; //in Pixel, where the Chart does start
+    uint32_t pointsAdded; //How many Points are added tp the chart
 } Chart_Widget_Data;
 
+typedef struct
+{
+    int32_t lastAngle;
+    int32_t angleDifferenceToShow;
+} Compass_Widget_Data;
+
 void init_WidgetHandler();
-void vario_add_widget(WidgetData* widget, lv_obj_t *screen);
+void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
 #endif

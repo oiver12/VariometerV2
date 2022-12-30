@@ -1,6 +1,7 @@
 ﻿#include "DeviceContext.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include <math.h>
 
 vario_state_t vario_state;
 vario_settings_t vario_settings;
@@ -35,8 +36,13 @@ bool vario_state_get_vertVelocity(float* value)
 void vario_state_set_vertVelocity(float value)
 {
     xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
-    vario_state.vertVelocity = value;
-    vario_state.stateChange |= 0x1; //set State to changed
+    //we cant see a value Change smaller than 0.1 on the screen
+    //TODO: Beste Methode, um den Bildschirm nicht dauernd zu refreshen? Vlt. brauchen andere Komponenten genauere Angaben, welche sie dann ncith bekommen, weil es Änderungen von < 0.1f nicht anzeigt
+    if(fabs(vario_state.vertVelocity - value) > 0.1f)
+    {
+        vario_state.vertVelocity = value;
+        vario_state.stateChange |= 0x1; //set State to changed
+    }
     float temp;
     if (fifo_is_full(vario_state.vertVel_Fifo))
     {
@@ -85,8 +91,11 @@ bool vario_state_get_vertAcc(float* value)
 void vario_state_set_vertAcc(float value)
 {
     xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
-    vario_state.vertAcc = value;
-    vario_state.stateChange |= 0x8;
+    if(fabs(vario_state.vertAcc - value) > 0.1f)
+    {
+        vario_state.stateChange |= 0x8;
+        vario_state.vertAcc = value;
+    }
     xSemaphoreGive(semaphore_vario_state);
 }
 bool vario_state_get_pressure(float* value)
@@ -101,8 +110,11 @@ bool vario_state_get_pressure(float* value)
 void vario_state_set_pressure(float value)
 {
     xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
-    vario_state.pressure = value;
-    vario_state.stateChange |= 0x10;
+    if(fabs(vario_state.pressure - value) > 0.1f)
+    {
+        vario_state.stateChange |= 0x10;
+        vario_state.pressure = value;
+    }
     xSemaphoreGive(semaphore_vario_state);
 }
 bool vario_state_get_temperature(float* value)
@@ -117,8 +129,11 @@ bool vario_state_get_temperature(float* value)
 void vario_state_set_temperature(float value)
 {
     xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
-    vario_state.temperature = value;
-    vario_state.stateChange |= 0x20;
+    if(fabs(vario_state.temperature - value) > 0.1f)
+    {
+        vario_state.stateChange |= 0x20;
+        vario_state.temperature = value;
+    }
     xSemaphoreGive(semaphore_vario_state);
 }
 bool vario_state_get_heading(float* value)
@@ -154,8 +169,11 @@ bool vario_state_get_altitudeBaro(float* value, bool stateChange)
 void vario_state_set_altitudeBaro(float value)
 {
     xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
-    vario_state.altitudeBaro = value;
-    vario_state.stateChange |= 0x80;
+    if(fabs(vario_state.altitudeBaro - value) > 0.1f)
+    {
+        vario_state.stateChange |= 0x80;
+        vario_state.altitudeBaro = value;
+    }
     xSemaphoreGive(semaphore_vario_state);
 }
 

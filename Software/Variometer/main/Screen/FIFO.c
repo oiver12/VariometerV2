@@ -47,11 +47,11 @@ fifo_t fifo_create(uint16_t count, size_t size)
                 newfifo->writeoffset = 0;
                 newfifo->storedbytes = 0;
                 // Return the pointer to fifo_descriptor structure
-                return newfifo;
+return newfifo;
             }
             else {
-                // Cannot allocate space for items, free struct resources
-                free(newfifo);
+            // Cannot allocate space for items, free struct resources
+            free(newfifo);
             }
         }
     }
@@ -137,6 +137,30 @@ bool fifo_discard(fifo_t fifo, uint16_t count, enum fifo_side side)
         return true;
     }
     return false;
+}
+
+void* fifo_peekItem(fifo_t fifo, uint16_t index)
+{
+    uint8_t* startAdress = (uint8_t*)fifo->itemspace + fifo->readoffset;
+    uint8_t* currAdress = startAdress;
+    for (size_t i = 0; i < index; i++)
+    {
+        currAdress += fifo->itemsize;
+        uint16_t spaceNeeded = ((uint8_t*)currAdress - (uint8_t*)fifo->itemspace);
+        if (((uint8_t*)currAdress - (uint8_t*)fifo->itemspace) >= fifo->allocatedbytes)
+        {
+            currAdress = fifo->itemspace;
+        }
+    }
+    return currAdress;
+    /*if (!fifo_is_empty(fifo)) {
+        fifo_copy_from(fifo, item);
+        fifo->storedbytes -= fifo->itemsize;
+        return true;
+    }
+    else {
+        return false;
+    }*/
 }
 
 static void fifo_copy_from(fifo_t fifo, void* item)

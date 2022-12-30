@@ -208,6 +208,14 @@ extern "C" {
 	 * @return Returns true if the data was discarted, false if not.
 	 */
 	bool fifo_discard(fifo_t fifo, uint16_t count, enum fifo_side side);
+	/*
+	* @brief Get Item which is located Index away from Start of Fifo
+	* 
+	* Can be used to cycle trough the Fifo with a for loop
+	* 
+	* @return Returns the pointer to the element
+	*/
+	void* fifo_peekItem(fifo_t fifo, uint16_t index);
 
     void fifo_deinit(fifo_t fifo);
 

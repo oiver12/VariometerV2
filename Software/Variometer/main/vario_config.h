@@ -6,6 +6,7 @@
 //SCREEN
 #define SCREEN_EINK
 //#define SCREEM_ILI9488
+//#define EInk_DoubleBuffer
 
 //FREERTOS
 #define TASK_KALMAN_PRIORITY 10

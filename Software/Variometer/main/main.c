@@ -104,7 +104,6 @@ static void TaskMeasureHeight(void *parameters)
     };
     //set PresSens Pin as Interrupt 
     gpio_config(&gpio_config_INT_DPS310);
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
     //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
     gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
     vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -113,9 +112,9 @@ static void TaskMeasureHeight(void *parameters)
     {
         //wait till unblocked from Interrupt
         uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 50 / portTICK_PERIOD_MS);
-        if (notificationValue == 0) {
-            ESP_LOGW(TAG, "Interrupt didn't fire");
-        }
+        // if (notificationValue == 0) {
+        //     ESP_LOGW(TAG, "Interrupt didn't fire");
+        // }
         dsp310_get_Pressure(&DPS310_Data);
         if(count % 34 == 0)
         {
@@ -393,6 +392,7 @@ void app_main(void)
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
     i2c_config_t conf_I2C = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_SDA,

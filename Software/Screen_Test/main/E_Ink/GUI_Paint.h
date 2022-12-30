@@ -203,6 +203,8 @@ void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius, UWORD Color,
 void Paint_DrawNormalHLine(UWORD Xpoint, UWORD Ypoint, UWORD width);
 void Paint_DrawNormalVLine(UWORD Xpoint, UWORD Ypoint, UWORD height);
 
+void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color);
+
 //Display string
 void Paint_DrawChar(UWORD Xstart, UWORD Ystart, const char Acsii_Char, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString, sFONT* Font, UWORD Color_Foreground, UWORD Color_Background);

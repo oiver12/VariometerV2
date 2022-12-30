@@ -1,4 +1,4 @@
-﻿using NPOI.HSSF.Record;
+﻿/*using NPOI.HSSF.Record;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.SS.Util;
@@ -123,3 +123,4 @@ namespace VariometerAnalysis
         }
     }
 }
+*/

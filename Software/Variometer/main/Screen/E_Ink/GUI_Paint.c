@@ -60,6 +60,8 @@
 #include <string.h> //memset()
 #include <math.h>
 
+#define M_PI 3.14159265358979323846
+
 PAINT Paint;
 
 /******************************************************************************
@@ -82,8 +84,7 @@ void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD
 		
     Paint.WidthByte = (Width % 8 == 0)? (Width / 8 ): (Width / 8 + 1);
     Paint.HeightByte = Height;    
-//    printf("WidthByte = %d, HeightByte = %d\r\n", Paint.WidthByte, Paint.HeightByte);
-//    printf(" EPD_WIDTH / 8 = %d\r\n",  122 / 8);
+    printf("WidthByte = %d, HeightByte = %d\r\n", Paint.WidthByte, Paint.HeightByte);
    
     Paint.Rotate = Rotate;
     Paint.Mirror = MIRROR_NONE;
@@ -131,9 +132,9 @@ void Paint_SetScale(UBYTE scale)
         Paint.Scale = scale;
         Paint.WidthByte = (Paint.WidthMemory % 4 == 0)? (Paint.WidthMemory / 4 ): (Paint.WidthMemory / 4 + 1);
     }else if(scale == 7){//Only applicable with 5in65 e-Paper
-				Paint.Scale = scale;
-				Paint.WidthByte = (Paint.WidthMemory % 2 == 0)? (Paint.WidthMemory / 2 ): (Paint.WidthMemory / 2 + 1);;
-		}else{
+		Paint.Scale = scale;
+		Paint.WidthByte = (Paint.WidthMemory % 2 == 0)? (Paint.WidthMemory / 2 ): (Paint.WidthMemory / 2 + 1);;
+	}else{
         printf("Set Scale Input parameter error\r\n");
         printf("Scale Only support: 2 4 7\r\n");
     }
@@ -328,6 +329,7 @@ parameter:
     Line_width : Line width
     Line_Style: Solid and dotted lines
 ******************************************************************************/
+//TODO: Optimise this funktion, so when 8 pixel are in buffer in one byte, set the whole byte
 void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                     UWORD Color, DOT_PIXEL Line_width, LINE_STYLE Line_Style)
 {
@@ -410,6 +412,62 @@ void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
         for(Ypoint = Ystart; Ypoint < Yend; Ypoint++) {
             Paint_DrawLine(Xstart, Ypoint, Xend, Ypoint, Color , Line_width, LINE_STYLE_SOLID);
         }
+        //UWORD XstartR = 0, YstartR = 0, XendR = 0, YendR = 0;
+        //switch (Paint.Rotate) {
+        //case 0:
+        //    XstartR = Xstart;
+        //    YstartR = Ystart;
+        //    break;
+        //case 90:
+        //    XstartR = Paint.WidthMemory - Ystart - 1;
+        //    YstartR = Xstart;
+        //    break;
+        //case 180:
+        //    XstartR = Paint.WidthMemory - Xstart - 1;
+        //    YstartR = Paint.HeightMemory - Ystart - 1;
+        //    break;
+        //case 270:
+        //    XstartR = Ystart;
+        //    YstartR = Paint.HeightMemory - Xstart - 1;
+        //    break;
+        //default:
+        //    return;
+        //}
+        //if (YstartR > YendR)
+        //{
+        //    UWORD temp = YstartR;
+        //    YstartR = YendR;
+        //    YendR = temp;
+        //}
+        //if (XstartR > XendR)
+        //{
+        //    UWORD temp = XstartR;
+        //    XstartR = XendR;
+        //    XendR = temp;
+        //}
+        //UWORD widthPixel = XendR - XstartR;
+        //UWORD widthBytes = widthPixel / 8;
+        ////UDOUBLE Addr = XstartR / 8 + YstartR * Paint.WidthByte;
+        ////UBYTE Rdata = Paint.Image[Addr];
+        ////if (Color == BLACK)
+        ////    Paint.Image[Addr] = Rdata & ~(0x80 >> (X % 8));
+        ////else
+        ////    Paint.Image[Addr] = Rdata | (0x80 >> (X % 8));
+        //for (size_t y = YstartR; y < YendR; y++)
+        //{
+        //    for (size_t x = 0; x < widthBytes; x++)
+        //    {
+        //        UDOUBLE Addr = x + y * Paint.WidthByte;
+        //        Paint.Image[Addr] = Color;
+        //        /*if (widthPixel % 8 != 0)
+        //        {
+        //            for (size_t i = 0; i < length; i++)
+        //            {
+
+        //            }
+        //        }*/
+        //    }
+        //}
     } else {
         Paint_DrawLine(Xstart, Ystart, Xend, Ystart, Color, Line_width, LINE_STYLE_SOLID);
         Paint_DrawLine(Xstart, Ystart, Xstart, Yend, Color, Line_width, LINE_STYLE_SOLID);
@@ -499,7 +557,7 @@ parameter:
     Color_Background : Select the background color
 ******************************************************************************/
 void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
-                    sFONT* Font, UWORD Color_Foreground, UWORD Color_Background)
+                    sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, UBYTE backgroundRedraw)
 {
     UWORD Page, Column;
 
@@ -515,7 +573,7 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
         for (Column = 0; Column < Font->Width; Column ++ ) {
 
             //To determine whether the font background color and screen background color is consistent
-            if (FONT_BACKGROUND == Color_Background) { //this process is to speed up the scan
+            if (!backgroundRedraw) { //this process is to speed up the scan
                 if (*ptr & (0x80 >> (Column % 8)))
                     Paint_SetPixel(Xpoint + Column, Ypoint + Page, Color_Foreground);
                     // Paint_DrawPoint(Xpoint + Column, Ypoint + Page, Color_Foreground, DOT_PIXEL_DFT, DOT_STYLE_DFT);
@@ -548,7 +606,7 @@ parameter:
     Color_Background : Select the background color
 ******************************************************************************/
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
-                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background)
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, UBYTE backgroundRedraw)
 {
     UWORD Xpoint = Xstart;
     UWORD Ypoint = Ystart;
@@ -570,7 +628,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
             Xpoint = Xstart;
             Ypoint = Ystart;
         }
-        Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
+        Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground, backgroundRedraw);
 
         //The next character of the address
         pString ++;
@@ -716,7 +774,7 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
     }
 
     //show
-    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground);
+    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground, TRUE);
 }
 
 /******************************************************************************
@@ -737,14 +795,14 @@ void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font,
     UWORD Dx = Font->Width;
 
     //Write data into the cache
-    Paint_DrawChar(Xstart                           , Ystart, value[pTime->Hour / 10], Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx                      , Ystart, value[pTime->Hour % 10], Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx  + Dx / 4 + Dx / 2   , Ystart, ':'                    , Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx * 2 + Dx / 2         , Ystart, value[pTime->Min / 10] , Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx * 3 + Dx / 2         , Ystart, value[pTime->Min % 10] , Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx * 4 + Dx / 2 - Dx / 4, Ystart, ':'                    , Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx * 5                  , Ystart, value[pTime->Sec / 10] , Font, Color_Background, Color_Foreground);
-    Paint_DrawChar(Xstart + Dx * 6                  , Ystart, value[pTime->Sec % 10] , Font, Color_Background, Color_Foreground);
+    Paint_DrawChar(Xstart                           , Ystart, value[pTime->Hour / 10], Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx                      , Ystart, value[pTime->Hour % 10], Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx  + Dx / 4 + Dx / 2   , Ystart, ':'                    , Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx * 2 + Dx / 2         , Ystart, value[pTime->Min / 10] , Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx * 3 + Dx / 2         , Ystart, value[pTime->Min % 10] , Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx * 4 + Dx / 2 - Dx / 4, Ystart, ':'                    , Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx * 5                  , Ystart, value[pTime->Sec / 10] , Font, Color_Background, Color_Foreground, TRUE);
+    Paint_DrawChar(Xstart + Dx * 6                  , Ystart, value[pTime->Sec % 10] , Font, Color_Background, Color_Foreground, TRUE);
 }
 
 /******************************************************************************
@@ -794,6 +852,111 @@ void Paint_DrawBitMap_Paste(const unsigned char* image_buffer, UWORD xStart, UWO
             else
                 color = (((srcImage<<(x%8) & 0x80) == 0) ? 0 : 1);
             Paint_SetPixel(x+xStart, y+yStart, color);
+        }
+    }
+}
+
+void Paint_DrawBitMap_Paste_Rotated(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD imageWidth, UWORD imageHeight, int angle)
+{
+    uint16_t widthBytes = imageWidth % 8 == 0 ? imageWidth / 8 : imageWidth / 8 + 1;
+    int hwidth = imageWidth / 2;
+    int hheight = imageHeight / 2;
+    double sinma = sin((-angle) / 180.0 * M_PI);
+    double cosma = cos((-angle) / 180.0 * M_PI);
+    for (int x = 0; x < imageWidth; x++)
+    {
+        for (int y = 0; y < imageHeight; y++)
+        {
+            int xt = x - hwidth;
+            int yt = y - hheight;
+
+            /*int xs = (int)round((cosma * xt - sinma * yt) + hwidth);
+            int ys = (int)round((sinma * xt + cosma * yt) + hheight);*/
+            int xs = (int)((cosma * xt - sinma * yt) + hwidth);
+            int ys = (int)((sinma * xt + cosma * yt) + hheight);
+
+            /*UWORD xro = 0, yro = 0;
+            switch (Paint.Rotate) {
+            case 0:
+                xro = x + Xstart;
+                yro = y + Ystart;
+                break;
+            case 90:
+                xro = Paint.WidthMemory - y - 1;
+                yro = x + Xstart;
+                break;
+            case 180:
+                xro = Paint.WidthMemory - (x + Xstart) - 1;
+                yro = Paint.HeightMemory - y - Ystart - 1;
+                break;
+            case 270:
+                xro = y + Ystart;
+                yro = Paint.HeightMemory - x - Xstart - 1;
+                break;
+            default:
+                return;
+            }
+            uint32_t addr2 = xro / 8 + yro * Paint.WidthByte;*/
+            if (xs >= 0 && xs < imageWidth && ys >= 0 && ys < imageHeight) {
+                uint32_t addr1 = xs / 8 + ys * widthBytes;
+                /* set target pixel (x,y) to color at (xs,ys) */
+                if ((image_buffer[addr1] & (0x80 >> (xs % 8))) == 0)
+                {
+                    Paint_SetPixel(x + Xstart, y + Ystart, BLACK);
+                }
+                else
+                {
+                    Paint_SetPixel(x + Xstart, y + Ystart, WHITE);
+                }
+                /*int32_t oneorzero = (image_buffer[addr1] & (0x80 >> (xs % 8))) >> (7 - (xs % 8));
+                uint32_t n = 7 - (xs % 8);
+                Paint.Image[addr2] = (Paint.Image[addr2] & ~(1UL << n)) | (oneorzero << n);*/
+                //Paint.Image[addr2] ^= (-oneorzero ^ Paint.Image[addr2]) & (0x80 >> (xs % 8));
+            }
+            else {
+                /* set target pixel (x,y) to some default background = WHITE*/
+                Paint_SetPixel(x + Xstart, y + Ystart, WHITE);
+                //rotatedImage[addr2] = rotatedImage[addr2] | (0x80 >> (x % 8));
+            }
+        }
+    }
+}
+
+void Paint_DrawBitMap_Paste_Rotated_Circle(const unsigned char* image_buffer, UWORD Xstart, UWORD Ystart, UWORD imageWidth, UWORD imageHeight, int angle, int radius)
+{
+    uint16_t widthBytes = imageWidth % 8 == 0 ? imageWidth / 8 : imageWidth / 8 + 1;
+    int hwidth = imageWidth / 2;
+    int hheight = imageHeight / 2;
+    double sinma = sin((-angle) / 180.0 * M_PI);
+    double cosma = cos((-angle) / 180.0 * M_PI);
+    for (int x = 0; x < imageWidth; x++)
+    {
+        for (int y = 0; y < imageHeight; y++)
+        {
+            int xt = x - hwidth;
+            int yt = y - hheight;
+
+            int xs = (int)((cosma * xt - sinma * yt) + hwidth);
+            int ys = (int)((sinma * xt + cosma * yt) + hheight);
+            uint8_t firstT = (xs >= 0 && xs < imageWidth&& ys >= 0 && ys < imageHeight);
+            uint8_t secondT = (xt * xt + yt * yt < radius* radius);
+            if (xs >= 0 && xs < imageWidth && ys >= 0 && ys < imageHeight && xt * xt + yt * yt < radius * radius) {
+                uint32_t addr1 = xs / 8 + ys * widthBytes;
+                /* set target pixel (x,y) to color at (xs,ys) */
+                if ((image_buffer[addr1] & (0x80 >> (xs % 8))) == 0)
+                {
+                    Paint_SetPixel(x + Xstart, y + Ystart, BLACK);
+                }
+                else
+                {
+                    Paint_SetPixel(x + Xstart, y + Ystart, WHITE);
+                }
+            }
+            //else {
+            //    /* set target pixel (x,y) to some default background = WHITE*/
+            //    Paint_SetPixel(x + Xstart, y + Ystart, WHITE);
+            //    //rotatedImage[addr2] = rotatedImage[addr2] | (0x80 >> (x % 8));
+            //}
         }
     }
 }
