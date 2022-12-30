@@ -1,0 +1,108 @@
+﻿#ifndef __WIDGETVARIO_H
+#define __WIDGETVARIO_H
+
+#include <stdint.h>
+#include "FIFO.h"
+
+#define ChartNumDataPoints 20
+
+#define WS_FONT_MASK_LABEL		0x0000000F
+#define WS_FONT_8_LABEL			0x00000000
+#define WS_FONT_12_LABEL		0x00000001
+#define WS_FONT_16_LABEL		0x00000002
+#define WS_FONT_20_LABEL		0x00000003
+#define WS_FONT_24_LABEL		0x00000004
+
+#define WS_FONT_MASK_CONTENT	0x000000F0
+#define WS_FONT_8_CONTENT		0x00000000
+#define WS_FONT_12_CONTENT		0x00000010
+#define WS_FONT_16_CONTENT		0x00000020
+#define WS_FONT_20_CONTENT		0x00000030
+#define WS_FONT_22_CONTENT		0x00000040
+#define WS_FONT_24_CONTENT		0x00000050
+#define WS_FONT_26_CONTENT		0x00000060
+#define WS_FONT_28_CONTENT		0x00000070
+#define WS_FONT_30_CONTENT		0x00000080
+#define WS_FONT_32_CONTENT		0x00000090
+
+//Wie sieht das Widget aus (TextBox, Compass, etc.)
+typedef enum
+{
+    Widget_Empty,
+    Widget_TextBox,
+    Widget_Compass,
+    Widget_Chart,
+} WidgetStyle;
+
+//was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
+typedef enum
+{
+    /* Empty Widget */
+    WidgetContent_Empty,
+
+    /* Text Box Widgets */
+    WidgetContent_Speed_Ground,
+    WidgetContent_Vario_Active,
+    WidgetContent_Vario_Lazy,
+    WidgetContent_VertAcc,
+    WidgetContent_Pressure,
+    WidgetContent_Temperature,
+    WidgetContent_SDCardInfo,
+    /*WidgetContent_Altitude_GPS,		// QNH
+    WidgetContent_Altitude_Baro,	// QNE
+    WidgetContent_Altitude_AGL,		// QFE*/
+
+    /* Compass Widgets */
+    WidgetContent_CompassSensor,
+
+    /* Chart Widgets */
+    WidgetContent_AltitudeBaroChart,
+} WidgetContentType;
+
+typedef struct
+{
+    WidgetStyle			style;
+    uint32_t			extraStyle;
+    WidgetContentType	type;
+    uint16_t			x, y, w, h;
+    void*               extr_data; //Widget_specific_data
+} WidgetData;
+
+typedef struct
+{
+    uint32_t linkerRandUnitText;
+    uint32_t yStartValueText;
+} TextBox_Widget_Data;
+
+typedef struct
+{
+    int yPoint;
+    int lastXPoint;
+    float heightValue;
+} Chart_Point;
+
+typedef struct
+{
+    uint32_t HeightDifferenzToShow; //in Meters
+    int32_t startHeight; //Start Height from Chart in Meters (height at the bottom)
+    uint32_t timePeriod; //In Seconds
+    uint64_t lastPointTime; //When a point was added last Time
+    fifo_t data; //Fifo with all the data from Chart_point
+    uint32_t startXPosition; //most right Position, where new Points will be spawned
+    uint32_t xMoveDelta; //how much each Point will be moved left, when a new Point is spawned
+    uint32_t heightChart; //In Pixel
+    uint32_t yStartPosChart; //in Pixel, where the Chart does start
+    uint32_t pointsAdded; //How many Points are added tp the chart
+} Chart_Widget_Data;
+
+typedef struct
+{
+    int32_t lastAngle;
+    int32_t angleDifferenceToShow;
+} Compass_Widget_Data;
+
+void init_WidgetHandler();
+void vario_display_add_widget(WidgetData* widget);
+void vario_update_widget(WidgetData* widget);
+
+#endif

@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\input.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\renderer.cpp" />
+    <ClCompile Include="src\Screen\DeviceContext.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\Vario_Screen.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\Widget_Vario.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\FIFO.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI_Demo.c" />
+    <ClCompile Include="src\Screen\E-Ink\font8.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E-Ink\font12.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E-Ink\font16.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E-Ink\font20.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E-Ink\font24.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E-Ink\GUI_Paint.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="SemaphorTemp.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\dewcin.h" />
+    <ClInclude Include="src\game.h" />
+    <ClInclude Include="src\input.h" />
+    <ClInclude Include="src\renderer.h" />
+    <ClInclude Include="src\Screen\DeviceContext.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\vario_config.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\Vario_Screen.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\Widget_Vario.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\FIFO.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\E-Ink\fonts.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\E-Ink\GUI_Paint.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="SemaphorTemp.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Screen">
+      <UniqueIdentifier>{033ca043-d659-4999-b6dd-7d5fe1bac0c1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
