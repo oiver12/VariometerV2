@@ -16,8 +16,6 @@ void startRender()
 
     ScreenManager_init();
     
-    ScreenManager_show_Screen(0);
-    
     static WidgetData widgetDataScreen0[5] = {
         {.extraStyle = WS_FONT_24_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 1, .y = 27},
         {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 1, .y = 107},
@@ -27,9 +25,11 @@ void startRender()
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 5);
     static WidgetData widgetDataScreen1[1] = {
-        {.extraStyle = WS_FONT_32_CONTENT, .h = 150, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 1, .y = 27},
+        {.extraStyle = WS_FONT_32_CONTENT, .h = 150, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 1, .y = 27},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 1);
+    ScreenManager_show_Screen(1);
+
     float pressure = 101325;
     vario_state_set_member(&pressure, vario_state_pressure);
 }

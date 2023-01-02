@@ -15,7 +15,7 @@
 #define AUDIO_EN 21
 #define AUDIO_GAIN 47
 
-#define WAVE_AMPTITUDE          (30000.0)        // 1~32767
+#define WAVE_AMPTITUDE          (6000.0)        // 1~32767
 #define SINE_WAVE_LEN(tone)     (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
 #define BYTE_NUM_EVERY_TONE(duration)     (duration * PDM_TX_FREQ_HZ / 1000)
 

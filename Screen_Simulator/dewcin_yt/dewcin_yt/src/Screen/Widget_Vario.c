@@ -233,6 +233,18 @@ static void add_Chart_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer,&Font12, WHITE, BLACK, TRUE);
 }
 
+static void add_sdCardInfo_Widget(WidgetData* widget)
+{
+    sd_card_state_t sdcard_state;
+    device_state_get_member(&sdcard_state, device_state_statusSDCard, TRUE);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    char* informationString = "SD Card usage";
+    uint16_t textWidth = getTextWidth(informationString, &Font12);
+    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 10, widget->y + 40, BLACK, DOT_PIXEL_1X1, FALSE);
+    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 30, widget->y + 40, BLACK, DOT_PIXEL_1X1, TRUE);
+}
+
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
@@ -374,6 +386,8 @@ void vario_display_add_widget(WidgetData* widget)
         break;
     case Widget_Chart:
         add_Chart_Widget(widget);
+    case Widget_SdCardInfo:
+        add_sdCardInfo_Widget(widget);
     default:
         break;
     }

@@ -32,6 +32,7 @@ typedef enum
     Widget_TextBox,
     Widget_Compass,
     Widget_Chart,
+    Widget_SdCardInfo
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -47,11 +48,13 @@ typedef enum
     WidgetContent_VertAcc,
     WidgetContent_Pressure,
     WidgetContent_Temperature,
-    WidgetContent_SDCardInfo,
     /*WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_Baro,	// QNE
     WidgetContent_Altitude_AGL,		// QFE*/
 
+    /*Sd Card Info Widget*/
+    WidgetContent_SDCardInfo,
+    
     /* Compass Widgets */
     WidgetContent_CompassSensor,
 
