@@ -276,15 +276,6 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 70, buffer, &Font12, WHITE, BLACK, true);
 }
 
-static void add_PageButton_Widget(WidgetData* widget, Settings_Page_t currPage)
-{
-	uint16_t buttonWidth = widget->w / 2;
-	Paint_DrawRectangle(widget->x, widget->y, widget->x + buttonWidth, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, currPage == Settings_Page_Audio ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
-    Paint_DrawRectangle(widget->x + buttonWidth, widget->y, widget->x + 2 * buttonWidth, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, currPage == Settings_Page_Config ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
-	Paint_DrawString_EN(widget->x + buttonWidth + 5, widget->y + 5, "Audio", &Font12, currPage == Settings_Page_Audio ? BLACK , WHITE : WHITE, BLACK, TRUE);
-    Paint_DrawString_EN(widget->x + buttonWidth + 5, widget->y + 5, "Config", &Font12, currPage == Settings_Page_Audio ? BLACK, WHITE : WHITE, BLACK, TRUE);
-}
-
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
@@ -504,12 +495,48 @@ void vario_update_widget(WidgetData* widget)
     }
 }
 
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage)
+/********** Settings **********/
+static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, bool selected,Settings_Page_t currPage)
 {
-    
+    bool currentPageWidget = false;
+    if (currPage == Settings_Page_Audio && widget->type == WidgetContent_Settings_PageButton_Audio)
+        currentPageWidget = true;
+    else if (currPage == Settings_Page_Config && widget->type == WidgetContent_Settings_PageButton_Config)
+        currentPageWidget = true;
+
+    //if (selected || !(currentPageWidget && !selected))
+       Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, selected && currentPageWidget ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, currentPageWidget && !selected ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
+    if(widget->type == WidgetContent_Settings_PageButton_Audio)
+        Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Audio", &Font12, currentPageWidget && !selected ? BLACK : WHITE, currentPageWidget && !selected ? WHITE : BLACK, TRUE);
+    else if(widget->type == WidgetContent_Settings_PageButton_Config)
+        Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Config", &Font12, currentPageWidget && !selected ? BLACK : WHITE, currentPageWidget && !selected ? WHITE : BLACK, TRUE);
 }
 
-void vario_update_settings_widget(WidgetData* widget, Settings_Page_t currPage)
+static void add_Settings_Slider_Widget(WidgetData* widget, bool hovered, bool selected)
 {
-    
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+}
+
+static void add_Settings_SoundThreshold(WidgetData* widget, bool hovered,bool selected)
+{
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+}
+
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected)
+{
+    switch (widget->style)
+    {
+    case Widget_Settings_PageButton:
+        add_Settings_PageButton_Widget(widget, hovered, selected,currPage);
+        break;
+    case Widget_Settings_Slider:
+        add_Settings_Slider_Widget(widget, hovered,selected);
+        break;
+    case Widget_Settings_SoundThreshold:
+        add_Settings_SoundThreshold(widget, hovered,selected);
+        break;
+    default:
+        printf("Setting Widget not implemented!\n");
+    }
 }

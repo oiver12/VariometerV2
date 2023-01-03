@@ -69,7 +69,8 @@ typedef enum
     WidgetContent_CompassSensor,
 
     /* Settings Widget */
-	WidgetContent_Settings_PageButtons,
+	WidgetContent_Settings_PageButton_Audio,
+    WidgetContent_Settings_PageButton_Config,
 	WidgetContent_Settings_VolumeSlider,
 	WidgetContent_Settings_SoundLiftThreshold,
 	WidgetContent_Settings_SoundSinkThreshold,
@@ -125,7 +126,6 @@ void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage);
-void vario_update_settings_widget(WidgetData* widget, Settings_Page_t currPage);
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
 
 #endif
