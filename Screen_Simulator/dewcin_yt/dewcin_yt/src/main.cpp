@@ -55,6 +55,14 @@ dewcin_app_entry_point
 			ScreenManager_set_Battery(vertVel);
 			int heading = (int)vertVel * 20;
 			vario_state_set_member(&heading, vario_state_heading);
+			if ((int)vertVel % 5 == 0)
+			{
+				sd_card_state_t state;
+				device_state_get_member(&state, device_state_statusSDCard, true);
+				state.freeSpace = 2258000000;
+				state.status = (SD_CARD_STATE)(state.status | SD_CARD_STATE_FLIGHTLOGGING);
+				device_state_set_member(&state, device_state_statusSDCard);
+			}
 			updateRender();
 		}
 		uint8_t* ScreenBuffer = (uint8_t*)dewcin::Game::getBuffer();

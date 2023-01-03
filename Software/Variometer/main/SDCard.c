@@ -44,6 +44,9 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     slot_config.d3 = 16;
     slot_config.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
+    sd_card_state_t sdcard_state_vario; //for Vario State
+    memset(&sdcard_state_vario, 0, sizeof(sd_card_state_t));
+
     ESP_LOGI(TAG, "Mounting filesystem");
     ret = esp_vfs_fat_sdmmc_mount(Mount_Point, &host, &slot_config, &mount_config, &card);
 
@@ -55,7 +58,8 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
                      "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
         }
-        device_state_set_sdcard(0);
+        sdcard_state_vario.status |= SD_CARD_STATE_ERROR_INIT;
+        device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
         return ret;
     }
     ESP_LOGI(TAG, "Filesystem mounted");
@@ -63,7 +67,33 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     sdcard->card = card;
     sdcard->Mount_Point = malloc(strlen(Mount_Point) + 1);
     strcpy(sdcard->Mount_Point, Mount_Point);
-    device_state_set_sdcard(1);
+    /* Get volume information and free clusters of sdcard */
+    FATFS *fs;
+    uint32_t fre_clust, fre_sect, tot_sect;
+	FRESULT res = f_getfree(sdcard->Mount_Point, &fre_clust, &fs);
+	if (res) {
+		printf("Couldn't find out SdCard size\n");
+        sdcard_state_vario.freeSpace = 0;
+        sdcard_state_vario.maxSpace = 0;
+        sdcard_state_vario.status |= SD_CARD_STATE_INIT;
+        device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
+        return ret;
+	}
+
+	/* Get total sectors and free sectors */
+	tot_sect = (fs->n_fatent - 2) * fs->csize;
+	fre_sect = fre_clust * fs->csize;
+	
+	uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
+	uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
+
+	/* Print the free space in bytes */
+	printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
+
+    sdcard_state_vario.status |= SD_CARD_STATE_INIT;
+    sdcard_state_vario.maxSpace = tmp_total_bytes;
+    sdcard_state_vario.freeSpace = tmp_free_bytes;
+    device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
     return ret;
 }
 
@@ -121,7 +151,34 @@ bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName)
     return stat(buffer, &st) != -1;
 }
 
-uint64_t remainingSpaceBytes_sdcard(sdcard_t *sdcard)
+uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard)
 {
-    return (uint64_t)(sdcard->card->csd.capacity * sdcard->card->csd.sector_size);
+    if(!sdcard->cardInit)
+        return 0;
+    sd_card_state_t state;
+    device_state_get_member(&state, device_state_statusSDCard, false);
+
+    FATFS *fs;
+    uint32_t fre_clust, fre_sect, tot_sect;
+	FRESULT res = f_getfree(sdcard->Mount_Point, &fre_clust, &fs);
+	if (res) {
+		printf("Couldn't find out SdCard size\n");
+        state.freeSpace = 0;
+        state.maxSpace = 0;
+        state.status |= SD_CARD_STATE_INIT;
+        device_state_set_member(&state, device_state_statusSDCard);
+        return 0;
+	}
+
+	/* Get total sectors and free sectors */
+	tot_sect = (fs->n_fatent - 2) * fs->csize;
+	fre_sect = fre_clust * fs->csize;
+	
+	uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
+	uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
+
+    state.freeSpace = tmp_free_bytes;
+    state.maxSpace = tmp_total_bytes;
+    device_state_set_member(&state, device_state_statusGPS);
+    return tmp_free_bytes;
 }

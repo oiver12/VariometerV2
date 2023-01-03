@@ -18,7 +18,7 @@
 typedef enum {
     ScreenMode_Widget = 0,
     ScreenMode_Settings = 1,
-    ScreenMode_PowerAccept = 2
+    ScreenMode_PowerAccept = 2,
 } ScreenMode;
 
 typedef struct {
@@ -27,7 +27,14 @@ typedef struct {
 } VarioScreen_t;
 
 typedef struct {
+    Settings_Page_t currPage;
+    WidgetData widgetsAudio[MAX_WIDGETS_SCREEN];
+	WidgetData widgetsConfig[MAX_WIDGETS_SCREEN];
+} VarioScreen_Settings_t;
+
+typedef struct {
     VarioScreen_t screens[MAX_SCREENS];
+	VarioScreen_Settings_t settingsScreen;
     size_t screensAdded;
     uint8_t curr_Screen;
     ScreenMode screenMode;

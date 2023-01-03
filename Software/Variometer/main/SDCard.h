@@ -16,6 +16,6 @@ esp_err_t deinit_sdcard(sdcard_t *sdcard);
 FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool createNew);
 bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName);
 esp_err_t writeToFile_sdcard(sdcard_t *sdcard);
-uint64_t remainingSpaceBytes_sdcard(sdcard_t *sdcard);
+uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard);
 
 #endif

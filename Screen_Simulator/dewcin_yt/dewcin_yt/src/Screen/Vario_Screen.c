@@ -117,6 +117,9 @@ void ScreenManager_init()
     Draw_status_bar();
 
     init_WidgetHandler();
+
+    screenManagerInstance.screenMode = ScreenMode_Settings;
+	//screenManagerInstance.settingsScreen.
 }
 
 void ScreenManager_set_gps(int enabled)
@@ -239,6 +242,10 @@ void ScreenManager_update()
         Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 220, nextString, &Font12, WHITE, BLACK, FALSE);
         stringLength = strlen(nextString1) * Font12.Width;
         Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
+    }
+    else if (screenManagerInstance.screenMode == ScreenMode_Settings)
+    {
+        //vario_update_settings_widget()
     }
 }
 

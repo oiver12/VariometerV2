@@ -60,48 +60,51 @@ static const char* get_Info_Text(WidgetContentType contentType)
         return "Pressure";
     case WidgetContent_Temperature:
         return "Temperature";
-    case WidgetContent_AltitudeBaroChart:
+    case WidgetContent_Altitude_Baro:
         return "Barometer Altitude";
     default:
         return "";
     }
 }
 
-float get_Value_Text(WidgetContentType contentType, char* const buffer, bool shouldRender)
+float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t bufferSize, bool shouldRender, bool shouldReset)
 {
     float temp;
     bool returnValue = false;
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:
-        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, shouldReset);
         break;
     case WidgetContent_Vario_Active:
-        returnValue = vario_state_get_member(&temp, vario_state_vertVel, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_vertVel, shouldReset);
         break;
     case WidgetContent_Vario_Lazy:
-        returnValue = vario_state_get_member(&temp, vario_state_vertVelLazy, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_vertVelLazy, shouldReset);
         break;
     case WidgetContent_VertAcc:
-        returnValue = vario_state_get_member(&temp, vario_state_vertAcc, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_vertAcc, shouldReset);
         break;
     case WidgetContent_Pressure:
-        returnValue = vario_state_get_member(&temp, vario_state_pressure, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_pressure, shouldReset);
         break;
     case WidgetContent_Temperature:
-        returnValue = vario_state_get_member(&temp, vario_state_temperature, TRUE);
+        returnValue = vario_state_get_member(&temp, vario_state_temperature, shouldReset);
+        break;
+    case WidgetContent_Altitude_Baro:
+        returnValue = vario_state_get_member(&temp, vario_state_altitudeBaro, shouldReset);
         break;
     default:
         return;
     }
-    if (returnValue | shouldRender)
+    if ((returnValue | shouldRender) && bufferSize != 0)
     {
         //Wenn zwischen -0.1f und 0.0f, setzte auf 0.0f, weil sonst -0.0 angezeigt wird
         if (temp > -0.05f && temp < 0.0f)
             temp = 0.0f;
-        snprintf(buffer, BUFFER_TEXT_SIZE, "%.1f", temp);
+        snprintf(buffer, bufferSize, "%.1f", temp);
     }
-    else
+    else if(bufferSize != 0)
         buffer[0] = 0;
     return temp;
 }
@@ -122,6 +125,8 @@ static const char* get_Unit_Text(WidgetContentType contentType)
         return "hPa";
     case WidgetContent_Temperature:
         return 'C°';
+    case WidgetContent_Altitude_Baro:
+        return "m";
     default:
         return "";
     }
@@ -177,7 +182,7 @@ static void add_TextBox_Widget(WidgetData* widget)
         break;
     }
     char tempBuffer[10];
-    get_Value_Text(widget->type, tempBuffer, true);
+    get_Value_Text(widget->type, tempBuffer, 10, true, true);
     textWidth = getTextWidth(tempBuffer, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     //StartX: Abstand zwischen Unit rechts und Frame links soll gleich gross sein
     Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, fontValue,WHITE, BLACK, TRUE);
@@ -211,7 +216,7 @@ static void add_Chart_Widget(WidgetData* widget)
     extr_data->lastPointTime = 0;
     extr_data->startXPosition = widget->x + widget->w - 10;
     extr_data->timePeriod = 20;
-    extr_data->HeightDifferenzToShow = 50;
+    extr_data->differenzToShow = 50;
     extr_data->heightChart = widget->h - 45;
     extr_data->yStartPosChart = widget->y + 30;
     extr_data->pointsAdded = 0;
@@ -227,7 +232,7 @@ static void add_Chart_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
     Paint_DrawLine(widget->x + 8, widget->y + 25, widget->x + 8, widget->y + widget->h - 10, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
     char buffer[6];
-    snprintf(buffer, 6, "%im", extr_data->HeightDifferenzToShow);
+    snprintf(buffer, 6, "%i%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
     Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
     snprintf(buffer, 6, "%is", extr_data->timePeriod);
     Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer,&Font12, WHITE, BLACK, TRUE);
@@ -241,14 +246,49 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
     char* informationString = "SD Card usage";
     uint16_t textWidth = getTextWidth(informationString, &Font12);
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
-    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 10, widget->y + 40, BLACK, DOT_PIXEL_1X1, FALSE);
-    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 30, widget->y + 40, BLACK, DOT_PIXEL_1X1, TRUE);
+    if (sdcard_state.status & SD_CARD_STATE_ERROR_INIT)
+    {
+		char* buffer = "SD Card not mounted";
+		textWidth = getTextWidth(buffer, &Font12);
+		Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
+        return;
+	}
+    uint32_t startPos = widget->x + 10;
+    uint32_t widthProgressBar = widget->w - 60;
+    Paint_DrawRectangle(startPos, widget->y + 25, startPos + widthProgressBar, widget->y + 45, BLACK, DOT_PIXEL_1X1, FALSE);
+    double percentage = (double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace;
+    uint32_t filledPartWidth = percentage * widthProgressBar;
+    Paint_DrawRectangle(startPos, widget->y + 25, startPos + filledPartWidth, widget->y + 45, BLACK, DOT_PIXEL_1X1, TRUE);
+    char buffer[50];
+    snprintf(buffer, 10, "%i%%", (int)(percentage * 100));
+    Paint_DrawString_EN(startPos + widthProgressBar + 7, widget->y + 29, buffer, &Font16, WHITE, BLACK, true);
+    if (sdcard_state.status & SD_CARD_STATE_FLIGHTLOGGING)
+        snprintf(buffer, 50, "Flight Logger started");
+    else
+        snprintf(buffer, 50, "Flight Logger disabled");
+    textWidth = getTextWidth(buffer, &Font12);
+    Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 55, buffer, &Font12, WHITE, BLACK, true);
+    if(sdcard_state.status & SD_CARD_STATE_IGC_LOGGING)
+        snprintf(buffer, 50, "IGC Logger started");
+    else
+        snprintf(buffer, 50, "IGC Logger disabled");
+    textWidth = getTextWidth(buffer, &Font12);
+    Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 70, buffer, &Font12, WHITE, BLACK, true);
+}
+
+static void add_PageButton_Widget(WidgetData* widget, Settings_Page_t currPage)
+{
+	uint16_t buttonWidth = widget->w / 2;
+	Paint_DrawRectangle(widget->x, widget->y, widget->x + buttonWidth, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, currPage == Settings_Page_Audio ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
+    Paint_DrawRectangle(widget->x + buttonWidth, widget->y, widget->x + 2 * buttonWidth, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, currPage == Settings_Page_Config ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
+	Paint_DrawString_EN(widget->x + buttonWidth + 5, widget->y + 5, "Audio", &Font12, currPage == Settings_Page_Audio ? BLACK , WHITE : WHITE, BLACK, TRUE);
+    Paint_DrawString_EN(widget->x + buttonWidth + 5, widget->y + 5, "Config", &Font12, currPage == Settings_Page_Audio ? BLACK, WHITE : WHITE, BLACK, TRUE);
 }
 
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    float tempValue = get_Value_Text(widget->type, tempBuffer, false);
+    float tempValue = get_Value_Text(widget->type, tempBuffer, 10, false, true);
     //Update Value Text
     if (tempBuffer[0] != '\0')
     {
@@ -308,42 +348,42 @@ static void update_Chart_Widget(WidgetData* widget)
         chart_data->lastPointTime = t1;
         if (chart_data->pointsAdded == 0)
         {
-            float height;
-            vario_state_get_member(&height, vario_state_altitudeBaro, FALSE);
+            /*float height;
+            vario_state_get_member(&height, vario_state_altitudeBaro, FALSE);*/
+			float value = get_Value_Text(widget->type, NULL, 0, false, false);
             //Place first Point in the middle
-            chart_data->startHeight = height - chart_data->HeightDifferenzToShow / 2;
-            float percentageFromHeight = ((float)(height - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+            chart_data->startValue = value - chart_data->differenzToShow / 2;
+            float percentageFromHeight = ((float)(value - chart_data->startValue)) / ((float)chart_data->startValue);
             Chart_Point point = {
                 .lastXPoint = chart_data->startXPosition,
                 .yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart,
-                .heightValue = height,
+                .heightValue = value,
             };
             fifo_add(chart_data->data, &point);
             Paint_DrawPoint(point.lastXPoint, point.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
             chart_data->pointsAdded++;
             return;
         }
-        float height;
-        vario_state_get_member(&height, vario_state_altitudeBaro, FALSE);
+        float value = get_Value_Text(widget->type, NULL, 0, false, false);
         //when new height can't is lower or higher than the range in the chart, shift the range, so the new point is in the chart
-        if (height < chart_data->startHeight || height > chart_data->startHeight + chart_data->HeightDifferenzToShow)
+        if (value < chart_data->startValue || value > chart_data->startValue + chart_data->differenzToShow)
         {
-            chart_data->startHeight = height < chart_data->startHeight ? height : (height - chart_data->HeightDifferenzToShow);
+            chart_data->startValue = value < chart_data->startValue ? value : (value - chart_data->differenzToShow);
             for (size_t i = 0; i < chart_data->pointsAdded; i++)
             {
                 Chart_Point* itemPoint = fifo_peekItem(chart_data->data, i);
-                float percentageFromHeight = ((float)(itemPoint->heightValue - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+                float percentageFromHeight = ((float)(itemPoint->heightValue - chart_data->startValue)) / ((float)chart_data->differenzToShow);
                 if (percentageFromHeight > 1 || percentageFromHeight < 0)
                     itemPoint->yPoint = -1;
                 else
                     itemPoint->yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart;
             }
         }
-        float percentageFromHeight = ((float)(height - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
+        float percentageFromHeight = ((float)(value - chart_data->startValue)) / ((float)chart_data->differenzToShow);
         Chart_Point newPoint = {
             .lastXPoint = chart_data->startXPosition,
             .yPoint = (uint16_t)((1-percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart,
-            .heightValue = height,
+            .heightValue = value,
         };
         Chart_Point lastpoint;
         if (chart_data->pointsAdded < CHART_POINT_COUNT)
@@ -353,22 +393,68 @@ static void update_Chart_Widget(WidgetData* widget)
                 printf("Test scheisse\n");
         }
         else
+        {
             fifo_get(chart_data->data, &lastpoint);
+            if (lastpoint.yPoint != -1)
+                Paint_DrawPoint(lastpoint.lastXPoint, lastpoint.yPoint, WHITE, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+        }
 
         fifo_add(chart_data->data, &newPoint);
 
-        Paint_ClearWindows(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT, chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, WHITE);
+        //Paint_ClearWindows(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT, chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, WHITE);
         //Paint_DrawRectangle(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT , chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 
         Paint_DrawPoint(newPoint.lastXPoint, newPoint.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
         //shift all Points left and render (dont shift last one)
+		//TODO: there are buggs, where the last point isn't rendered full.
+		//TODO: also fifo_peekItem shouldn't make a for loop everytime. State could be remembered in the fifo and just call getNext() on fifo
         for (size_t i = 0; i < chart_data->pointsAdded - 1; i++)
         {
             Chart_Point* itemPoint = fifo_peekItem(chart_data->data, i);
+			//Clear old Point
+            if(itemPoint->yPoint != -1)
+				Paint_DrawPoint(itemPoint->lastXPoint, itemPoint->yPoint, WHITE, DOT_PIXEL_2X2, DOT_STYLE_DFT);
             itemPoint->lastXPoint -= chart_data->xMoveDelta;
             if(itemPoint->yPoint != -1)
                 Paint_DrawPoint(itemPoint->lastXPoint, itemPoint->yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
         }
+    }
+}
+
+void update_sdCardInfo_Widget(WidgetData* widget)
+{
+    sd_card_state_t sdcard_state;
+    if (device_state_get_member(&sdcard_state, device_state_statusSDCard, true))
+    {
+        if (sdcard_state.status & SD_CARD_STATE_ERROR_INIT)
+        {
+            char* buffer = "SD Card not mounted";
+            uint16_t textWidth = getTextWidth(buffer, &Font12);
+            Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
+            return;
+        }
+        uint32_t startPos = widget->x + 10;
+        uint32_t widthProgressBar = widget->w - 60;
+        Paint_ClearWindows(widget->x + 5, widget->y + 25, widget->x + widget->w - 5, widget->y + widget->h - 5, WHITE);
+        Paint_DrawRectangle(startPos, widget->y + 25, startPos + widthProgressBar, widget->y + 45, BLACK, DOT_PIXEL_1X1, FALSE);
+        double percentage = (double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace;
+        uint32_t filledPartWidth = percentage * widthProgressBar;
+        Paint_DrawRectangle(startPos, widget->y + 25, startPos + filledPartWidth, widget->y + 45, BLACK, DOT_PIXEL_1X1, TRUE);
+        char buffer[50];
+        snprintf(buffer, 10, "%i%%", (int)(percentage * 100));
+        Paint_DrawString_EN(startPos + widthProgressBar + 7, widget->y + 29, buffer, &Font16, WHITE, BLACK, true);
+        if (sdcard_state.status & SD_CARD_STATE_FLIGHTLOGGING)
+            snprintf(buffer, 50, "Flight Logger started");
+        else
+            snprintf(buffer, 50, "Flight Logger disabled");
+        uint16_t textWidth = getTextWidth(buffer, &Font12);
+        Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 55, buffer, &Font12, WHITE, BLACK, true);
+        if (sdcard_state.status & SD_CARD_STATE_IGC_LOGGING)
+            snprintf(buffer, 50, "IGC Logger started");
+        else
+            snprintf(buffer, 50, "IGC Logger disabled");
+        textWidth = getTextWidth(buffer, &Font12);
+        Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 70, buffer, &Font12, WHITE, BLACK, true);
     }
 }
 
@@ -386,8 +472,10 @@ void vario_display_add_widget(WidgetData* widget)
         break;
     case Widget_Chart:
         add_Chart_Widget(widget);
+        break;
     case Widget_SdCardInfo:
         add_sdCardInfo_Widget(widget);
+        break;
     default:
         break;
     }
@@ -407,7 +495,21 @@ void vario_update_widget(WidgetData* widget)
         break;
     case Widget_Chart:
         update_Chart_Widget(widget);
+        break;
+    case Widget_SdCardInfo:
+        update_sdCardInfo_Widget(widget);
+        break;
     default:
         break;
     }
+}
+
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage)
+{
+    
+}
+
+void vario_update_settings_widget(WidgetData* widget, Settings_Page_t currPage)
+{
+    
 }

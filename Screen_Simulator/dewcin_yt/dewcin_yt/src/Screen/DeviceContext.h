@@ -54,13 +54,14 @@ typedef struct {
 
 typedef enum {
     SD_CARD_STATE_INIT = 1 << 0,
-    SD_CARD_STATE_IGC_LOGGING = 1 << 1,
-    SD_CARD_STATE_FLIGHTLOGGING = 1 << 2, //for Testdata
+    SD_CARD_STATE_ERROR_INIT = 1 << 1,
+    SD_CARD_STATE_IGC_LOGGING = 1 << 2,
+    SD_CARD_STATE_FLIGHTLOGGING = 1 << 3, //for Testdata
 } SD_CARD_STATE;
 
 typedef struct {
-    uint32_t freeSpace;
-    uint32_t maxSpace;
+    uint64_t freeSpace;
+    uint64_t maxSpace;
     SD_CARD_STATE status;
 } sd_card_state_t;
 

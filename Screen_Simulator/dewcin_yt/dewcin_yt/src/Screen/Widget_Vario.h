@@ -25,6 +25,11 @@
 #define WS_FONT_30_CONTENT		0x00000080
 #define WS_FONT_32_CONTENT		0x00000090
 
+typedef enum {
+    Settings_Page_Audio,
+    Settings_Page_Config
+} Settings_Page_t;
+
 //Wie sieht das Widget aus (TextBox, Compass, etc.)
 typedef enum
 {
@@ -32,7 +37,12 @@ typedef enum
     Widget_TextBox,
     Widget_Compass,
     Widget_Chart,
-    Widget_SdCardInfo
+    Widget_SdCardInfo,
+    /*Settings Widget*/
+    Widget_Settings_PageButton,
+    Widget_Settings_Slider,
+	Widget_Settings_Checkbox,
+    Widget_Settings_SoundThreshold,
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -41,25 +51,28 @@ typedef enum
     /* Empty Widget */
     WidgetContent_Empty,
 
-    /* Text Box Widgets */
+    /* Text Box Widgets / Chart Widgets */
     WidgetContent_Speed_Ground,
     WidgetContent_Vario_Active,
     WidgetContent_Vario_Lazy,
     WidgetContent_VertAcc,
     WidgetContent_Pressure,
     WidgetContent_Temperature,
-    /*WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_Baro,	// QNE
+    /*WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_AGL,		// QFE*/
 
-    /*Sd Card Info Widget*/
+    /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,
     
     /* Compass Widgets */
     WidgetContent_CompassSensor,
 
-    /* Chart Widgets */
-    WidgetContent_AltitudeBaroChart,
+    /* Settings Widget */
+	WidgetContent_Settings_PageButtons,
+	WidgetContent_Settings_VolumeSlider,
+	WidgetContent_Settings_SoundLiftThreshold,
+	WidgetContent_Settings_SoundSinkThreshold,
 } WidgetContentType;
 
 typedef struct
@@ -71,23 +84,18 @@ typedef struct
     void*               extr_data; //Widget_specific_data
 } WidgetData;
 
+/***** Text Box Widget Data *****/
 typedef struct
 {
     uint32_t linkerRandUnitText;
     uint32_t yStartValueText;
 } TextBox_Widget_Data;
 
+/***** Chart Widget Data ******/
 typedef struct
 {
-    int yPoint;
-    int lastXPoint;
-    float heightValue;
-} Chart_Point;
-
-typedef struct
-{
-    uint32_t HeightDifferenzToShow; //in Meters
-    int32_t startHeight; //Start Height from Chart in Meters (height at the bottom)
+    uint32_t differenzToShow; //in Meters
+    int32_t startValue; //Start Height from Chart in Meters (height at the bottom)
     uint32_t timePeriod; //In Seconds
     uint64_t lastPointTime; //When a point was added last Time
     fifo_t data; //Fifo with all the data from Chart_point
@@ -97,15 +105,27 @@ typedef struct
     uint32_t yStartPosChart; //in Pixel, where the Chart does start
     uint32_t pointsAdded; //How many Points are added tp the chart
 } Chart_Widget_Data;
+typedef struct
+{
+    int yPoint;
+    int lastXPoint;
+    float heightValue;
+} Chart_Point;
 
+/***** Compass Widget Data *****/
 typedef struct
 {
     int32_t lastAngle;
     int32_t angleDifferenceToShow;
 } Compass_Widget_Data;
 
+/***** Settings Widget Data *****/
+
 void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
+
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage);
+void vario_update_settings_widget(WidgetData* widget, Settings_Page_t currPage);
 
 #endif

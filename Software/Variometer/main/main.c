@@ -50,9 +50,6 @@ TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wi
 
 static const char *TAG = "main";
 
-//vario_state_t vario_state;
-//SemaphoreHandle_t vario_state_Mutex = NULL; //für das Schrieben und Auslesen aus verschiedenen Tasks
-
 float accSum;
 float accCount;
 float rotationVario[4];
@@ -127,7 +124,8 @@ static void TaskMeasureHeight(void *parameters)
             temperature = DPS310_Data.Temperature;
         }
         xSemaphoreGive(pressure_temperature_Mutex);
-        vario_state_set_pressure(DPS310_Data.Pressure);
+        float pressure = DPS310_Data.Pressure;
+        vario_state_set_member(&pressure, vario_state_pressure);
         //printf("%.2f \n", DPS310_Data.Pressure);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
@@ -324,14 +322,17 @@ static void TaskKalmanFilter(void *parameters)
             .rotation = {rotation[0], rotation[1], rotation[2], rotation[3]},
         };
 
-        vario_state_set_vertVelocity(matrix_get(x, 1, 0));
-        vario_state_set_vertAcc(acc - 9.81);
-        vario_state_set_altitudeBaro(heightDifferenz);
+        float vertVel = matrix_get(x, 1, 0);
+        vario_state_set_member(&vertVel, vario_state_vertVel);
+        float accXCorr = acc - 9.81;
+        vario_state_set_member(&accXCorr, vario_state_vertAcc);
+        vario_state_set_member(&heightDifferenz, vario_state_altitudeBaro);
         if(countHeading % 10 == 0)
         {
             float roll, pitch, yaw;
             Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
-            vario_state_set_heading(yaw);
+            int heading = (int)yaw;
+            vario_state_set_member(&heading, vario_state_heading);
         }
         logVarioData(flight_state);
         SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));

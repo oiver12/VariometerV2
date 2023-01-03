@@ -6,8 +6,9 @@
 #include "E_Ink/GUI_Paint.h"
 
 #define BUFFER_TEXT_SIZE 20
-//#define Compass_Method1
+#define Compass_Method1
 
+#define COMPASS_1METHOD
 #define DEGREE_TO_RADIAN 0.01745329251
 #define COMPASS_PLACE_SIDE 15
 #define CHART_POINT_COUNT 20
@@ -73,25 +74,25 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, bool sho
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:
-        returnValue = vario_state_get_groundSpeed(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, TRUE);
         break;
     case WidgetContent_Vario_Active:
-        returnValue = vario_state_get_vertVelocity(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_vertVel, TRUE);
         break;
     case WidgetContent_Vario_Lazy:
-        returnValue = vario_state_get_vertLazy(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_vertVelLazy, TRUE);
         break;
     case WidgetContent_VertAcc:
-        returnValue = vario_state_get_vertAcc(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_vertAcc, TRUE);
         break;
     case WidgetContent_Pressure:
-        returnValue = vario_state_get_pressure(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_pressure, TRUE);
         break;
     case WidgetContent_Temperature:
-        returnValue = vario_state_get_temperature(&temp);
+        returnValue = vario_state_get_member(&temp, vario_state_temperature, TRUE);
         break;
     default:
-        return;
+        return 0.0f;
     }
     if (returnValue | shouldRender)
     {
@@ -120,7 +121,7 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
-        return 'C°';
+        return "C";
     default:
         return "";
     }
@@ -135,7 +136,7 @@ static void add_TextBox_Widget(WidgetData* widget)
     //TODO: Add rounded Corners to Frame
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
 
-    char* informationString = get_Info_Text(widget->type);
+    const char* informationString = get_Info_Text(widget->type);
     uint16_t textWidth = getTextWidth(informationString, &Font12);
     //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
     if (widget->w < textWidth)
@@ -143,7 +144,7 @@ static void add_TextBox_Widget(WidgetData* widget)
     //Text ist oben in der Mitte vom Frame
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
 
-    char* unitText = get_Unit_Text(widget->type);
+    const char* unitText = get_Unit_Text(widget->type);
     textWidth = getTextWidth(unitText, &Font16);
     //StartX: Abstand rechts vom Fram ist 5 Pixel
     Paint_DrawString_EN(widget->x + (widget->w - textWidth) - 5, widget->y + (widget->h / 2) + 5, unitText, &Font16, WHITE, BLACK, TRUE);
@@ -217,7 +218,7 @@ static void add_Chart_Widget(WidgetData* widget)
     uint32_t chartXWidth = widget->w - 35;
     extr_data->xMoveDelta = chartXWidth / ChartNumDataPoints;
     //Draw Chart
-    char* informationString = get_Info_Text(widget->type);
+    const char* informationString = get_Info_Text(widget->type);
     uint16_t textWidth = getTextWidth(informationString, &Font12);
     //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
     if (widget->w < textWidth)
@@ -230,6 +231,18 @@ static void add_Chart_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
     snprintf(buffer, 6, "%is", extr_data->timePeriod);
     Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer,&Font12, WHITE, BLACK, TRUE);
+}
+
+static void add_sdCardInfo_Widget(WidgetData* widget)
+{
+    sd_card_state_t sdcard_state;
+    device_state_get_member(&sdcard_state, device_state_statusSDCard, TRUE);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    char* informationString = "SD Card usage";
+    uint16_t textWidth = getTextWidth(informationString, &Font12);
+    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 10, widget->y + 40, BLACK, DOT_PIXEL_1X1, FALSE);
+    Paint_DrawRectangle(widget->x + 10, widget->y + 20, widget->x + widget->w - 30, widget->y + 40, BLACK, DOT_PIXEL_1X1, TRUE);
 }
 
 static void update_TextBox_Widget(WidgetData* widget)
@@ -251,8 +264,8 @@ static void update_TextBox_Widget(WidgetData* widget)
 static void update_Compass_Widget(WidgetData* widget)
 {
     //Compass_Method2: Optimisation: Draw Circle once and rotate only letters in the middle. In the rotated function, only display pixels in circle (corners would "overdraw" circle)
-    float heading;
-    if (vario_state_get_heading(&heading) && abs(((Compass_Widget_Data*)widget->extr_data)->lastAngle - heading) > ((Compass_Widget_Data*)widget->extr_data)->angleDifferenceToShow)
+    int heading;
+    if (vario_state_get_member(&heading, vario_state_heading, TRUE) && abs(((Compass_Widget_Data*)widget->extr_data)->lastAngle - heading) > ((Compass_Widget_Data*)widget->extr_data)->angleDifferenceToShow)
     {
         ((Compass_Widget_Data*)widget->extr_data)->lastAngle = heading;
 #ifdef Compass_Method1
@@ -262,21 +275,21 @@ static void update_Compass_Widget(WidgetData* widget)
 #endif
         char tempBuffer[9];
         if (heading > 337 || heading < 23)
-            snprintf(tempBuffer, 9, "%.0fN", heading);
+            snprintf(tempBuffer, 9, "%iN", heading);
         else if (heading >= 23 && heading <= 67)
-            snprintf(tempBuffer, 9, "%.0fNE", heading);
+            snprintf(tempBuffer, 9, "%iNE", heading);
         else if (heading > 67 && heading < 113)
-            snprintf(tempBuffer, 9, "%.0fE", heading);
+            snprintf(tempBuffer, 9, "%iE", heading);
         else if (heading >= 113 && heading < 157)
-            snprintf(tempBuffer, 9, "%.0fSE", heading);
+            snprintf(tempBuffer, 9, "%iSE", heading);
         else if (heading >= 157 && heading <= 201)
-            snprintf(tempBuffer, 9, "%.0fS", heading);
+            snprintf(tempBuffer, 9, "%iS", heading);
         else if (heading > 201 && heading < 247)
-            snprintf(tempBuffer, 9, "%.0fSW", heading);
+            snprintf(tempBuffer, 9, "%iSW", heading);
         else if (heading >= 247 && heading < 293)
-            snprintf(tempBuffer, 9, "%.0fW", heading);
+            snprintf(tempBuffer, 9, "%iW", heading);
         else
-            snprintf(tempBuffer, 9, "%.0fNW", heading);
+            snprintf(tempBuffer, 9, "%iNW", heading);
         uint16_t textWidth = getTextWidth(tempBuffer, &Font16);
         Paint_ClearWindows(widget->x + 10, widget->y + 10, widget->x + (widget->w / 2) + 30, widget->y + 25, WHITE);
         Paint_DrawString_EN(widget->x + (widget->w / 2) - textWidth / 2, widget->y + 10, tempBuffer, &Font16, WHITE, BLACK, FALSE);
@@ -296,7 +309,7 @@ static void update_Chart_Widget(WidgetData* widget)
         if (chart_data->pointsAdded == 0)
         {
             float height;
-            vario_state_get_altitudeBaro(&height, false);
+            vario_state_get_member(&height, vario_state_altitudeBaro, FALSE);
             //Place first Point in the middle
             chart_data->startHeight = height - chart_data->HeightDifferenzToShow / 2;
             float percentageFromHeight = ((float)(height - chart_data->startHeight)) / ((float)chart_data->HeightDifferenzToShow);
@@ -311,7 +324,7 @@ static void update_Chart_Widget(WidgetData* widget)
             return;
         }
         float height;
-        vario_state_get_altitudeBaro(&height, false);
+        vario_state_get_member(&height, vario_state_altitudeBaro, FALSE);
         //when new height can't is lower or higher than the range in the chart, shift the range, so the new point is in the chart
         if (height < chart_data->startHeight || height > chart_data->startHeight + chart_data->HeightDifferenzToShow)
         {
@@ -373,6 +386,10 @@ void vario_display_add_widget(WidgetData* widget)
         break;
     case Widget_Chart:
         add_Chart_Widget(widget);
+        break;
+    case Widget_SdCardInfo:
+        add_sdCardInfo_Widget(widget);
+        break;
     default:
         break;
     }
