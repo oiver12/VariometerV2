@@ -39,6 +39,9 @@
     <ClCompile Include="SemaphorTemp.c">
       <Filter>Screen</Filter>
     </ClCompile>
+    <ClCompile Include="src\Screen\Settings_Widget_Vario.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\dewcin.h" />
@@ -67,6 +70,9 @@
       <Filter>Screen</Filter>
     </ClInclude>
     <ClInclude Include="SemaphorTemp.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
       <Filter>Screen</Filter>
     </ClInclude>
   </ItemGroup>

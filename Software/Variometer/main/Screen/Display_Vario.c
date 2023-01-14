@@ -108,41 +108,52 @@ void LVGL_TaskHandle_Task(void *arg)
 
 void render_Screen_Task(void *arg)
 {
-    ScreenManager_init();
-    
-    ScreenManager_show_Screen(0);
-    
-    static WidgetData widgetDataScreen0[5] = {
-        {.extraStyle = WS_FONT_24_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 1, .y = 27},
-        {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 1, .y = 107},
-        {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 150, .style = Widget_Chart, .type = WidgetContent_AltitudeBaroChart, .x = 101, .y = 107},
-        {.extraStyle = WS_FONT_24_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 151, .y = 27},
-        {.extraStyle = WS_FONT_16_CONTENT, .h = 80, .w = 150, .style = Widget_TextBox, .type = WidgetContent_Pressure, .x = 301, .y = 27},
-    };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 5);
-
-    uint64_t startTime = esp_timer_get_time();
-    while(1)
-    {
-        //TODO: Render while Display is refreshing
-        uint64_t startTimeRender = esp_timer_get_time();
-        ScreenManager_update();
-        printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
-        EPD_3IN7_1Gray_Display(ScreenBuffer, PART_BW_T_BW);
-        //vTaskDelay(1000 / portTICK_PERIOD_MS);
-        if(esp_timer_get_time() - startTime > 40 * 1000 * 1000)
-            break;
-    }
     EPD_3IN7_4Gray_Init();
     EPD_3IN7_4Gray_Clear();
     
     EPD_3IN7_Sleep();
 
     DEV_Module_Exit();
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS); //temporär
+
+    DEV_Module_Init();
+    EPD_3IN7_1Gray_Init();       //init 1 Gray mode
+    EPD_3IN7_1Gray_Clear();
+
+    ScreenManager_init();
+    
+    static WidgetData widgetDataScreen0[7] = {
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
+        {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 87},
+        {.extraStyle = WS_FONT_20_CONTENT, .h = 193, .w = 180, .style = Widget_Chart, .type = WidgetContent_Altitude_Baro, .x = 100, .y = 87},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 160, .y = 27},
+        {.extraStyle = WS_FONT_16_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Pressure, .x = 320, .y = 27},
+        {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
+		{.extraStyle = WS_FONT_24_CONTENT, .h = 63, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 280, .y = 187},
+    };
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 7);
+    ScreenManager_show_Screen(0);
+
+    uint64_t startTime = esp_timer_get_time();
+    int counter = 0;
+    while(1)
+    {
+        //TODO: Render while Display is refreshing
+        uint64_t startTimeRender = esp_timer_get_time();
+        if(counter % 10 == 0)
+            ScreenManager_draw_status_bar();
+        counter++;
+        ScreenManager_update();
+        printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
+        EPD_3IN7_1Gray_Display(ScreenBuffer, counter % 150 == 0 ? FULL_G_T_BW : PART_BW_T_BW);
+        // if(esp_timer_get_time() - startTime > 40 * 1000 * 1000)
+        //     break;
+    }
     vTaskDelete(NULL);
 }
 
-esp_err_t init_Display_LVGL()
+esp_err_t init_Display()
 {
     lv_init();
 
@@ -207,6 +218,6 @@ esp_err_t init_Display_LVGL()
 
     Paint_Clear(WHITE);
 
-    xTaskCreatePinnedToCore(render_Screen_Task, "Screen Render", 4 * 1024, NULL, TASK_SCREEN_RENDER_PRIORITY, NULL, 1);
+    xTaskCreate(render_Screen_Task, "Screen Render", 4 * 1024, NULL, TASK_SCREEN_RENDER_PRIORITY, NULL);
     return ESP_OK;
 }

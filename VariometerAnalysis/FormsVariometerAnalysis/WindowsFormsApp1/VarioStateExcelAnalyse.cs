@@ -1,11 +1,15 @@
-﻿/*using NPOI.HSSF.Record;
+﻿using NPOI.HSSF.Record;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using ICell = NPOI.SS.UserModel.ICell;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.NetworkInformation;
 
-namespace VariometerAnalysis
+namespace WindowsFormsApp1
 {
     public struct vario_state
     {
@@ -76,7 +80,7 @@ namespace VariometerAnalysis
 
             IDrawing drawing = sheet.CreateDrawingPatriarch();
             IClientAnchor anchor1 = drawing.CreateAnchor(0, 0, 0, 0, 0, 10, 10, 40);
-            CreateChart(drawing, sheet, anchor1, "title1", "title2", count);
+            //CreateChart(drawing, sheet, anchor1, "title1", "title2", count);
             //IClientAnchor anchor2 = drawing.CreateAnchor(0, 0, 0, 0, 0, 20, 10, 35);
             //CreateChart(drawing, sheet, anchor2, "s1", "s2", count, true);
             using (FileStream fs = File.Create("../../../test.xlsx"))
@@ -123,4 +127,3 @@ namespace VariometerAnalysis
         }
     }
 }
-*/

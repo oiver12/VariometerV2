@@ -4,6 +4,7 @@
 #include <esp_log.h>
 #include "nmea_parser.h"
 #include <string.h>
+#include "DeviceContext.h"
 
 bool sdCard_init = false;
 static const char *TAG = "FlightLogger";
@@ -15,7 +16,7 @@ int countVarioFile;
 sdcard_t *sdcard;
 const char *directoryLogs = "/Trackloggs";
 
-static void NMEASentenceLogger(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     switch (event_id) {
     case GPS_NMEA_SENTECE:
@@ -31,7 +32,7 @@ static void NMEASentenceLogger(void *event_handler_arg, esp_event_base_t event_b
     }
 }
 
-void startLogging(sdcard_t *card)
+void startLogging(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle)
 {
     if(!(card->cardInit))
     {
@@ -39,6 +40,7 @@ void startLogging(sdcard_t *card)
             return;
     }
     sdCard_init = true;
+    nmea_parser_add_handler(nmea_parser_handle, FlightLogger_NMEASentenceLogger, NULL, GPS_NMEA_SENTECE);
     int count = 0;
     do{
         if(directoryLogs == NULL)
@@ -61,6 +63,10 @@ void startLogging(sdcard_t *card)
     snprintf(fileNameNMEA, sizeof(fileNameNMEA), "NMEA%02d.txt", --count);
     fileNMEA = openFile_sdcard(card, directoryLogs, fileNameNMEA, true);
     sdcard = card;
+    sd_card_state_t sdstate;
+    device_state_get_member(&sdstate, device_state_statusSDCard, true);
+    sdstate.status |= SD_CARD_STATE_FLIGHTLOGGING;
+    device_state_set_member(&sdstate, device_state_statusSDCard);
 }
 
 void endLogging()

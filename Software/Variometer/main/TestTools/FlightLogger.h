@@ -3,8 +3,9 @@
 
 #include "SDCard.h"
 #include "../main.h"
+#include "nmea_parser.h"
 
-void startLogging(sdcard_t *card);
+void startLogging(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle);
 void endLogging();
 
 void logVarioData(FlightLogger_t state);

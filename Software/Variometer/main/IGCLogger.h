@@ -18,14 +18,15 @@ typedef struct {
 } igc_gps_data_t;
 
 typedef struct {
-    igc_gps_data_t gps_data;
     float pressureAltitude;
     volatile int64_t gpsLastTimeUpdate;
     sdcard_t *sdcard;
     FILE *file;
+    nmea_parser_handle_t nmea_parser_handle;
+    igc_gps_data_t gps_data;
 } igc_logger_t;
 
-esp_err_t start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_handler);
+void start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle);
 void updatePressureAltitude_IGCLogger(float height);
 esp_err_t stop_IGCLogger();
 

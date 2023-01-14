@@ -199,7 +199,7 @@ esp_err_t nmea_parser_deinit(nmea_parser_handle_t nmea_hdl);
  *  - ESP_ERR_INVALIG_ARG: Invalid combination of event base and event id
  *  - Others: Fail
  */
-esp_err_t nmea_parser_add_handler(nmea_parser_handle_t nmea_hdl, esp_event_handler_t event_handler, void *handler_args);
+esp_err_t nmea_parser_add_handler(nmea_parser_handle_t nmea_hdl, esp_event_handler_t event_handler, void *handler_args, int32_t eventID);
 
 /**
  * @brief Remove user defined handler for NMEA parser
@@ -211,7 +211,7 @@ esp_err_t nmea_parser_add_handler(nmea_parser_handle_t nmea_hdl, esp_event_handl
  *  - ESP_ERR_INVALIG_ARG: Invalid combination of event base and event id
  *  - Others: Fail
  */
-esp_err_t nmea_parser_remove_handler(nmea_parser_handle_t nmea_hdl, esp_event_handler_t event_handler);
+esp_err_t nmea_parser_remove_handler(nmea_parser_handle_t nmea_hdl, esp_event_handler_t event_handler, int32_t eventID);
 
 #ifdef __cplusplus
 }

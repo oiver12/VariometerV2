@@ -25,6 +25,7 @@ typedef struct{
 typedef struct{
     Tonestate_t *ToneArray;
     size_t sizeToneArray;
+    uint16_t volume;
     int indexCurrentToneArray;
     //benötigt um zu biepen --> nur einmal ausrechnen wenn Geschwindigkiet gesetzt wird
     int frequencyNow;
@@ -32,9 +33,11 @@ typedef struct{
     float lastBeepVelocity;
 } SoundManager_t;
 
-esp_err_t init_SoundManager(SoundManager_t *sM);
-esp_err_t deinit_SoundManager(SoundManager_t *sM);
-void SoundManager_calculateNewBiep(SoundManager_t *sM, float newVelocity);
+esp_err_t init_SoundManager();
+esp_err_t deinit_SoundManager();
+void SoundManager_calculateNewBiep(float newVelocity);
 esp_err_t SoundManager_playSinWave(int frequency, int duration);
+
+void SoundManager_setVolume(uint16_t volume);
 
 #endif

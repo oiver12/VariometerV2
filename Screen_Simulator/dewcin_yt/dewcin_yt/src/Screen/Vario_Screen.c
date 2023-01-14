@@ -3,6 +3,7 @@
 #include "E-Ink/GUI_Paint.h"
 #include <string.h>
 #include <math.h>
+#include "DeviceContext.h"
 
 const unsigned char gImage_lautsprecher_an[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFC,0XFF,0XFF,0XEC,0X3F,0XFF,
@@ -81,97 +82,45 @@ const unsigned char gImage_battery_halfFull[78] = { 0xFF,0XFF,0XFF,0XFF,0XFF,0XF
 const unsigned char gImage_PowerOff[1300] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xC0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFF, 0xF0, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x60, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0xF0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7, 0x1, 0xF8, 0xE, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0x81, 0xF8, 0x1F, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0x81, 0xF8, 0x1F, 0x80, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3F, 0x81, 0xF8, 0x1F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x1, 0xF8, 0xF, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFE, 0x1, 0xF8, 0x7, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFC, 0x0, 0xF0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFC, 0x0, 0x0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFE, 0x0, 0x0, 0x7, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x0, 0x0, 0xF, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x80, 0x0, 0x1F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3F, 0xC0, 0x0, 0x3F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0xF0, 0x0, 0xFF, 0x80, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xF, 0xFF, 0xF, 0xFF, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7, 0xFF, 0xFF, 0xFE, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3, 0xFF, 0xFF, 0xF8, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xC0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x7, 0xFE, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xF0, 0xFF, 0xFF, 0xC0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFF, 0xF0, 0xFF, 0xFF, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0};
 
 WidgetData widgetData_Audio_Settings[2] = {
-        {.extraStyle = 0, .h = 20, .w = 479, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
-        {.extraStyle = 0, .h = 100, .w = 479, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
+        {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
+        {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
 };
 
 Vario_Screen_Manager_t screenManagerInstance;
 
 //Zeichne die Status Bar am oberen Rand.
-//TODO: Get the actual Status
-static void Draw_status_bar()
+void ScreenManager_draw_status_bar()
 {
     //Lösche die alte Anzeige
     Paint_ClearWindows(0, 0, Paint.Width, 24, WHITE);
+    
+    GPS_State gpsState;
+    device_state_get_member(&gpsState, device_state_statusGPS, true);
     //Draw GPS Icon
-    Paint_DrawBitMap_Paste(gImage_gps_an, 0, 0, 24, 24, FALSE);
+    if(gpsState == GPS_STATE_FIX_INVALID)
+        Paint_DrawBitMap_Paste(gImage_gps_aus, 0, 0, 24, 24, FALSE);
+    else
+		Paint_DrawBitMap_Paste(gImage_gps_an, 0, 0, 24, 24, FALSE);
 
+    uint16_t volume = 0;
+	vario_settings_get_member(&volume, vario_settings_soundVolume, true);
     //Draw Lautsprecher Icon
-    Paint_DrawBitMap_Paste(gImage_lautsprecher_aus, 30, 0, 24, 24, FALSE);
+    if(volume == 0)
+        Paint_DrawBitMap_Paste(gImage_lautsprecher_aus, 30, 0, 24, 24, FALSE);
+    else
+		Paint_DrawBitMap_Paste(gImage_lautsprecher_an, 30, 0, 24, 24, FALSE);
 
     //Draw Sd-Card Icon
-    Paint_DrawBitMap_Paste(gImage_sd_card_good, 60, 0, 24, 24, FALSE);
+    sd_card_state_t sdcard_state;
+	device_state_get_member(&sdcard_state, device_state_statusSDCard, true);
+    if(sdcard_state.status | SD_CARD_STATE_INIT)
+        Paint_DrawBitMap_Paste(gImage_sd_card_good, 60, 0, 24, 24, FALSE);
+    else
+		Paint_DrawBitMap_Paste(gImage_sd_card_error, 60, 0, 24, 24, FALSE);
 
+    float percentage = 0;
+	device_state_get_member(&percentage, device_state_batteryPercentage, true);
     //Draw Battery Icon and Texts
-    Paint_DrawBitMap_Paste(gImage_battery_full, Paint.Width - 24 - 2, 0, 24, 24, FALSE);
-    char* PercentageString = "99%";
-    uint16_t stringWidth = strlen(PercentageString) * Font16.Width;
-    Paint_DrawString_EN(Paint.Width - 26 - stringWidth, 8, PercentageString, &Font16, WHITE, BLACK, TRUE);
-}
-
-static void init_SettingsWidgets()
-{
-    WidgetData pageButtonSettingsWidget[2] = {
-        {.x = 1, .y = 27, .w = Paint.Width / 2, .h = 20, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Audio, .extraStyle = 0},
-        {.x = Paint.Width / 2, .y = 27, .w = Paint.Width / 2, .h = 20, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Config, .extraStyle = 0}
-    };
-    for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
-    {
-        screenManagerInstance.settingsScreen.pageButtonWidgets[i].data = pageButtonSettingsWidget[i];
-    }
-    widget_Settings_linkedList* prev = NULL;
-    for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
-    {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
-        if (i == 0)
-        {
-            screenManagerInstance.settingsScreen.headListAudio = listElement;
-            screenManagerInstance.settingsScreen.topFieldAudio = listElement;
-        }
-        listElement->prev = prev;
-        if (prev)
-            prev->next = listElement;
-        listElement->data = widgetData_Audio_Settings[i];
-        listElement->data.x = 1;
-        prev = listElement;
-    }
-}
-
-/* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
-* Zeichne auch die Status Bar
-*/
-void ScreenManager_init()
-{
-    memset(screenManagerInstance.screens, 0, sizeof(screenManagerInstance.screens));
-    screenManagerInstance.curr_Screen = 0;
-    screenManagerInstance.screensAdded = 0;
-    screenManagerInstance.screenMode = ScreenMode_Widget;
-
-    Draw_status_bar();
-
-    init_WidgetHandler();
-
-    init_SettingsWidgets();
-}
-
-void ScreenManager_set_gps(int enabled)
-{
-    //lv_img_set_src(gps_obj, enabled ? &gps_an : &gps_aus);
-}
-
-void ScreenManager_set_volume(int value)
-{
-    //lv_img_set_src(lautsprecher_obj, value == 0 ? &lautsprecher_stumm : &lautsprecher_an);
-}
-
-void ScreenManager_set_sdcard(int enabled)
-{
-    //lv_img_set_src(sdcard_obj, enabled ? &sd_card_good : &sd_card_error);
-}
-
-//Zeichne richtiges Icon je nach Percentage und zeichne links daneben die Prozentzahl
-void ScreenManager_set_Battery(int percentage)
-{
     if (percentage < 10)
         Paint_DrawBitMap_Paste(gImage_battery_empty, Paint.Width - 24 - 2, 0, 24, 24, FALSE);
     else if (percentage < 25)
@@ -189,9 +138,76 @@ void ScreenManager_set_Battery(int percentage)
     //Clear Surface from old Text
     Paint_ClearWindows(Paint.Width - 26 - 50, 5, Paint.Width - 26, 25, WHITE);
     char buffer[5];
-    snprintf(buffer, 5, "%i%%", percentage);
+    snprintf(buffer, 5, "%i%%", (int)(percentage * 100.0f));
     uint16_t stringWidth = strlen(buffer) * Font16.Width;
     Paint_DrawString_EN(Paint.Width - 26 - stringWidth, 8, buffer, &Font16, WHITE, BLACK, FALSE);
+}
+
+static void init_SettingsWidgets()
+{
+    WidgetData pageButtonSettingsWidget[2] = {
+        {.x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Audio, .extraStyle = 0},
+        {.x = 10, .y = 67, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Config, .extraStyle = 0}
+    };
+	WidgetData backButtonWidget = { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = 0 };
+    
+    /* Init Page Buttons Setting Widgets */
+    widget_Settings_linkedList* backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    backButtonWidget.type = WidgetContent_Settings_PageButton;
+    backButtonItem->data = backButtonWidget;
+    screenManagerInstance.settingsScreen.headListPageButtons = backButtonItem;
+    screenManagerInstance.settingsScreen.topFielPageButtons = backButtonItem;
+    widget_Settings_linkedList* prev = backButtonItem;
+    for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
+    {
+        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement->prev = prev;
+        prev->next = listElement;
+		listElement->data = pageButtonSettingsWidget[i];
+        listElement->data.x = 10;
+        prev = listElement;
+    }
+    
+    /* Init Audio Setting Widgets */
+    backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    backButtonWidget.type = WidgetContent_Settings_PageButton_Audio;
+    backButtonItem->data = backButtonWidget;
+    screenManagerInstance.settingsScreen.headListAudio = backButtonItem;
+    screenManagerInstance.settingsScreen.topFieldAudio = backButtonItem;
+	prev = backButtonItem;
+    for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
+    {
+        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement->prev = prev;
+        prev->next = listElement;
+        listElement->data = widgetData_Audio_Settings[i];
+        listElement->data.x = 10;
+        prev = listElement;
+    }
+
+    /* Init Config Setting Widget */
+    backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    backButtonWidget.type = WidgetContent_Settings_PageButton_Config;
+    backButtonItem->data = backButtonWidget;
+    screenManagerInstance.settingsScreen.headListConfig = backButtonItem;
+    screenManagerInstance.settingsScreen.topFieldConfig = backButtonItem;
+}
+
+/* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
+* Zeichne auch die Status Bar
+*/
+void ScreenManager_init()
+{
+    memset(screenManagerInstance.screens, 0, sizeof(screenManagerInstance.screens));
+    screenManagerInstance.curr_Screen = 0;
+    screenManagerInstance.screensAdded = 0;
+    screenManagerInstance.screenMode = ScreenMode_Widget;
+
+    ScreenManager_draw_status_bar();
+
+    init_WidgetHandler();
+
+    init_SettingsWidgets();
 }
 
 //TODO: Implement this function. Free different buffers
@@ -279,8 +295,8 @@ void ScreenManager_update()
 
 static void draw_Settings_Scrollbar()
 {
-    uint32_t currY = screenManagerInstance.settingsScreen.pageButtonWidgets[0].data.y + screenManagerInstance.settingsScreen.pageButtonWidgets[0].data.h;
-    widget_Settings_linkedList* element = screenManagerInstance.settingsScreen.topFieldAudio;
+    uint32_t currY = 28;
+    widget_Settings_linkedList* element = screenManagerInstance.settingsScreen.topFielPageButtons;
     if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Audio)
     {
         element = screenManagerInstance.settingsScreen.topFieldAudio;
@@ -289,43 +305,63 @@ static void draw_Settings_Scrollbar()
     {
         element = screenManagerInstance.settingsScreen.topFieldConfig;
     }
+	Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
     while(element && currY + element->data.h <= Paint.Height)
     {
         element->data.y = currY;
-        vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, screenManagerInstance.settingsScreen.hoveredField == element,screenManagerInstance.settingsScreen.selectedField == element);
+        if(screenManagerInstance.settingsScreen.hoveredField != element)
+            vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false,screenManagerInstance.settingsScreen.selectedField == element);
         currY += element->data.h;
         element = element->next;
     }
+    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element);
 }
 
 static void settings_enter_press()
 {
     //We have the top Buttons hovered
-    if (!screenManagerInstance.settingsScreen.hoveredField)
+    if (screenManagerInstance.settingsScreen.currPage == Settings_Page_PageButtons)
     {
-        //We are in selected Mode
+        switch (screenManagerInstance.settingsScreen.hoveredField->data.type)
+        {
+        case WidgetContent_Settings_PageButton:
+            screenManagerInstance.screenMode = ScreenMode_Widget;
+            Screen_redraw_Screen();
+            return;
+        case WidgetContent_Settings_PageButton_Audio:
+            screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
+            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFieldAudio;
+            break;
+        case WidgetContent_Settings_PageButton_Config:
+            screenManagerInstance.settingsScreen.currPage = Settings_Page_Config;
+            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFieldConfig;
+            break;
+        default:
+            printf("Page Button not found\n");
+            break;
+        }
+        draw_Settings_Scrollbar();
+    }
+    else
+    {
+        //deselect field
         if (screenManagerInstance.settingsScreen.selectedField)
         {
-            if (screenManagerInstance.settingsScreen.selectedField->data.type == WidgetContent_Settings_PageButton_Audio)
-                screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
-            else if(screenManagerInstance.settingsScreen.selectedField->data.type == WidgetContent_Settings_PageButton_Config)
-                screenManagerInstance.settingsScreen.currPage = Settings_Page_Config;
-            //select Field and go out of selected Mode
-            screenManagerInstance.settingsScreen.selectedField = false;
-            for (size_t i = 0; i < sizeof(screenManagerInstance.settingsScreen.pageButtonWidgets) / sizeof(widget_Settings_linkedList); i++)
-            {
-                vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.pageButtonWidgets[i].data, screenManagerInstance.settingsScreen.currPage, false, false);
-            }
+            screenManagerInstance.settingsScreen.selectedField = NULL;
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
         }
-        //We are in hover mode
         else
         {
-            //go to selected Mode
-            screenManagerInstance.settingsScreen.selectedField = &screenManagerInstance.settingsScreen.pageButtonWidgets[screenManagerInstance.settingsScreen.currPage];
-            for (size_t i = 0; i < sizeof(screenManagerInstance.settingsScreen.pageButtonWidgets) / sizeof(widget_Settings_linkedList); i++)
+            if (screenManagerInstance.settingsScreen.hoveredField->data.style == Widget_settings_BackButton)
             {
-                vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.pageButtonWidgets[i].data, screenManagerInstance.settingsScreen.currPage, false, true);
+                screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
+                screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
+                draw_Settings_Scrollbar();
+                return;
             }
+            //select field
+            screenManagerInstance.settingsScreen.selectedField = screenManagerInstance.settingsScreen.hoveredField;
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true);
         }
     }
 }
@@ -333,54 +369,50 @@ static void settings_enter_press()
 static void ScreenManager_openSettings()
 {
     Paint_Clear(WHITE);
-    Draw_status_bar();
+    ScreenManager_draw_status_bar();
     screenManagerInstance.screenMode = ScreenMode_Settings;
-    screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
-    screenManagerInstance.settingsScreen.hoveredField = NULL;
+    screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
+    screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
     screenManagerInstance.settingsScreen.selectedField = NULL;
-
-    settings_enter_press();
 
     draw_Settings_Scrollbar();
 }
 
-static void settings_left_press()
+static void settings_up_press()
 {
-    if (!screenManagerInstance.settingsScreen.hoveredField)
+    if(!screenManagerInstance.settingsScreen.selectedField)
     {
-        if (screenManagerInstance.settingsScreen.selectedField)
+        if (screenManagerInstance.settingsScreen.hoveredField->prev)
         {
-            //we can go left
-            if (screenManagerInstance.settingsScreen.currPage != Settings_Page_Audio)
-            {
-                screenManagerInstance.settingsScreen.currPage--;
-                screenManagerInstance.settingsScreen.selectedField = &screenManagerInstance.settingsScreen.pageButtonWidgets[screenManagerInstance.settingsScreen.currPage];
-                for (size_t i = 0; i < sizeof(screenManagerInstance.settingsScreen.pageButtonWidgets) / sizeof(widget_Settings_linkedList); i++)
-                {
-                    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.pageButtonWidgets[i].data, screenManagerInstance.settingsScreen.currPage, i == 0, true);
-                }
-            }
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
+            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->prev;
+            //we are hovering a field
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
         }
+    }
+    else
+    {
+        //change Value in Field
+		vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_up);
     }
 }
 
-static void settings_right_press()
+static void settings_down_press()
 {
-    if (!screenManagerInstance.settingsScreen.hoveredField)
+    if (!screenManagerInstance.settingsScreen.selectedField)
     {
-        if (screenManagerInstance.settingsScreen.selectedField)
-        {
-            //we can go right
-            if (screenManagerInstance.settingsScreen.currPage != Settings_Page_Config)
-            {
-                screenManagerInstance.settingsScreen.currPage++;
-                screenManagerInstance.settingsScreen.selectedField = &screenManagerInstance.settingsScreen.pageButtonWidgets[screenManagerInstance.settingsScreen.currPage];
-                for (size_t i = 0; i < sizeof(screenManagerInstance.settingsScreen.pageButtonWidgets) / sizeof(widget_Settings_linkedList); i++)
-                {
-                    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.pageButtonWidgets[i].data, screenManagerInstance.settingsScreen.currPage, false, true);
-                }
-            }
-        }
+		//we are hovering a field
+		if (screenManagerInstance.settingsScreen.hoveredField->next)
+		{
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
+			screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->next;
+			vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
+		}
+    }
+    else
+    {
+		//change Value in Field
+        vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_down);
     }
 }
 
@@ -417,7 +449,7 @@ void ScreenManager_powerButtonPressed(uint32_t pressTimeMS)
 * Bei Widgets anzeige, wird der nächste Bildschirm angezeigt
 * Bei Power Accept, soll gecancelt werden
 */
-void ScreenManager_LeftArrowPressed()
+void ScreenManager_DownArrowPressed()
 {
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
@@ -438,11 +470,11 @@ void ScreenManager_LeftArrowPressed()
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
-        settings_left_press();
+        settings_down_press();
     }
 }
 
-void ScreenManager_RightArrowPressed()
+void ScreenManager_UpArrowPressed()
 {
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
@@ -463,7 +495,7 @@ void ScreenManager_RightArrowPressed()
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
-        settings_right_press();
+        settings_up_press();
     }
 }
 
@@ -494,7 +526,7 @@ void Screen_redraw_Screen()
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
         Paint_Clear(WHITE);
-        Draw_status_bar();
+        ScreenManager_draw_status_bar();
         for (size_t i = 0; i < screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgetsAdded; i++)
         {
             vario_display_add_widget(&screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgets[i]);

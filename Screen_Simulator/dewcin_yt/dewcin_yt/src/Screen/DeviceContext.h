@@ -3,13 +3,15 @@
 #include "FIFO.h"
 
 /*
-* Speicher für alle Device Information. Auf diese können alle zugreifen (z.B. wird vertVel gespeichert, welche vom Bildschirm gelesen wird und 
+* Speicher für alle Device Information. Auf diese können alle zugreifen (z.B. wird vertVel gespeichert, welche vom Bildschirm gelesen wird und
 * auch von der SD-Karte gelesen wird. Mit einem SemaphoreHandle_t wird dann vor Race Conditions geschützt, damit von verschiedenen Tasks ausgelesen
 * werden kann. stateChange gibt immer an, ob seit dem letzten auslesen die Variable verändert wurde (muss dann z.B. nicht nochmal gerendert werden).
 */
 
 #define MAX_STRING_SIZE 16
-#define FIFO_VERTLAZY_SIZE 5
+#define FIFO_VERTLAZY_SIZE 66 //ca. 2 Sekunde integriert
+
+#define Volume_max_Size 20000 //eig. 2^16 / 2 = 32'768, aber wäre zu viel Leistung für den Lautsprecher (denke ich ausprobieren!)
 
 typedef struct {
     float vertVelocity; //m/s  0. bit (0x1)
@@ -37,13 +39,20 @@ typedef enum {
 } vario_state_member_t;
 
 typedef struct {
-    float soundVolume;
+    uint16_t soundVolume;
     float takeOffSpeed;
     float landingSpeed;
     float landingTimout;
 
     uint16_t stateChange;
 } vario_settings_t;
+
+typedef enum {
+    vario_settings_soundVolume = 1 << 0,
+    vario_settings_takeOffSpeed = 1 << 1,
+    vario_settings_landingSpeed = 1 << 2,
+    vario_settings_landingTimout = 1 << 3,
+} vario_settings_member_t;
 
 typedef struct {
     char manufacture[MAX_STRING_SIZE];
@@ -65,9 +74,15 @@ typedef struct {
     SD_CARD_STATE status;
 } sd_card_state_t;
 
+typedef enum {
+    GPS_STATE_FIX_INVALID, /*!< Not fixed */
+    GPS_STATE_FIX_GPS,     /*!< GPS */
+    GPS_STATE_FIX_DGPS,    /*!< Differential GPS */
+} GPS_State;
+
 typedef struct {
     float batteryPercentage;
-    uint8_t statusGPS;
+    GPS_State statusGPS;
     sd_card_state_t status_sd_card;
 
     uint16_t stateChange;
@@ -92,10 +107,15 @@ typedef struct {
 void init_DeviceContext();
 
 /*
-* Vario State. value has to be the right type for the returnValue!!! 
+* Vario State. value has to be the right type for the returnValue!!!
 */
 void vario_state_set_member(void* value, vario_state_member_t member);
 bool vario_state_get_member(void* value, vario_state_member_t member, bool stateChange);
+/*
+* Device Settings
+*/
+void vario_settings_set_member(void* value, vario_settings_member_t member);
+bool vario_settings_get_member(void* value, vario_settings_member_t member, bool stateChange);
 /*
 * Device State
 */

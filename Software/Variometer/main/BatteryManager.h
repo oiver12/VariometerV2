@@ -12,8 +12,7 @@ typedef struct{
     bool cali_enable;
 } Battery_Manager_t;
 
-esp_err_t init_Battery_Manager(Battery_Manager_t* manager, int oversampling);
-esp_err_t deinit_Battery_Manager(Battery_Manager_t* manager);
-esp_err_t readPercentage_Battery(Battery_Manager_t* manager);
+esp_err_t init_Battery_Manager(int oversampling);
+esp_err_t deinit_Battery_Manager();
 
 #endif

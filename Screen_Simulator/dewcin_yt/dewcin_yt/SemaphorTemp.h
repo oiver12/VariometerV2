@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#define portMAX_DELAY 10
+
 typedef struct {
 	int tempData;
 } Semaphore;

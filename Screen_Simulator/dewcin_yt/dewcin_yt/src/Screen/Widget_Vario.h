@@ -26,6 +26,12 @@
 #define WS_FONT_32_CONTENT		0x00000090
 
 typedef enum {
+    Button_Direction_up,
+	Button_Direction_down,
+} Button_Direction;
+
+typedef enum {
+    Settings_Page_PageButtons,
     Settings_Page_Audio,
     Settings_Page_Config
 } Settings_Page_t;
@@ -40,6 +46,7 @@ typedef enum
     Widget_SdCardInfo,
     /*Settings Widget*/
     Widget_Settings_PageButton,
+    Widget_settings_BackButton,
     Widget_Settings_Slider,
 	Widget_Settings_Checkbox,
     Widget_Settings_SoundThreshold,
@@ -69,6 +76,7 @@ typedef enum
     WidgetContent_CompassSensor,
 
     /* Settings Widget */
+	WidgetContent_Settings_PageButton,
 	WidgetContent_Settings_PageButton_Audio,
     WidgetContent_Settings_PageButton_Config,
 	WidgetContent_Settings_VolumeSlider,
@@ -120,12 +128,12 @@ typedef struct
     int32_t angleDifferenceToShow;
 } Compass_Widget_Data;
 
-/***** Settings Widget Data *****/
-
 void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
+/*** Settings Implemented in "Settings_Widget_Vario.c" ***/
 void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
+void vario_display_settings_widget_handle_input(WidgetData* widget, Button_Direction direction);
 
 #endif

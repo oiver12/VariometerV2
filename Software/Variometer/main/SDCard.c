@@ -13,6 +13,8 @@ static const char *TAG = "SDCard";
 
 esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
 {
+    if(sdcard->cardInit)
+        return ESP_OK;
     // /* Configure SDCard */
     gpio_config_t sdcard_detect_conf = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -113,7 +115,7 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
     if(directory != NULL)
     {
         strcat(buffer, directory);
-        ESP_LOGI(TAG, "Directory: %s", buffer);
+        //ESP_LOGI(TAG, "Directory: %s", buffer);
         if(stat(buffer, &st) == -1)
         {
             if(mkdir(buffer, 0700) != 0)
@@ -124,18 +126,18 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
             else
                 ESP_LOGI(TAG, "Createt Directory");
         }
-        else
-        {
-            ESP_LOGI(TAG, "Direactory already exists");
-        }
+        // else
+        // {
+        //     ESP_LOGI(TAG, "Direactory already exists");
+        // }
     }
     strcat(buffer, "/");
     strcat(buffer, fileName);
     //ESP_LOGI(TAG, "File Destination: %s", buffer);
-    if(stat(buffer, &st) != -1 && createNew)
-    {
-        ESP_LOGE(TAG, "File already exists");
-    }
+    // if(stat(buffer, &st) != -1 && createNew)
+    // {
+    //     ESP_LOGE(TAG, "File already exists");
+    // }
     if(createNew)
         return fopen(buffer, "w");
     else

@@ -152,8 +152,15 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
 
 esp_err_t dsp310_get_Pressure(dps310_t *dev)
 {
+    // volatile int test1 = gpio_get_level(38);
+    // uint8_t bufferBackground = 0;
+    // read_Bytes(dev, 0x0A, 1, &bufferBackground);
     uint8_t buffer[3] = {0};
     esp_err_t err =  read_Bytes(dev, 0x00, 3, buffer);
+    //Clear old Interrupt (Important!!!)
+    uint8_t bufferInterrupt = 0;
+    read_Bytes(dev, 0x0A, 1, &bufferInterrupt);
+    //volatile int test2 = gpio_get_level(38);
     static int64_t lastTime;
     if(err != ESP_OK)
     {   

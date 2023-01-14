@@ -2,6 +2,7 @@
 #include <string.h>
 #include <esp_log.h>
 #include <math.h>
+#include "DeviceContext.h"
 
 #define IGC_HEADER_DATE			(2)
 #define IGC_HEADER_PILOT		(4)
@@ -87,7 +88,7 @@ static const char * makeFileName(char *buf, size_t buflength, sdcard_t *sdcard)
 	return NULL;
 }
 
-static void gps_event_handler_igcLogger(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+static void IGCLogger_gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
 	//TODO: GNZDA kann ignoriert werden
     gps_t *gps = NULL;
@@ -132,19 +133,34 @@ static void logICGSentence(void *arg)
 	fprintf(logger.file, "\r\n");
 }
 
-esp_err_t start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_handler)
+static void igcLogget_Task(void *params)
 {
-	nmea_parser_add_handler(nmea_handler, gps_event_handler_igcLogger, NULL);
+	sdcard_t *card = (sdcard_t *)params;
 	while(logger.gpsLastTimeUpdate == 0)
 	{
 		vTaskDelay(500 / portTICK_PERIOD_MS);
 	}
 	ESP_LOGI(TAG, "IGC Logging started");
 	char buffer[26 + strlen(directory)];
-	init_sdcard(card, sdcard_Mount_Point);
+	if(!(card->cardInit))
+    {
+        if(init_sdcard(card, sdcard_Mount_Point) != ESP_OK)
+            return;
+    }
 	const char* FileName = makeFileName(buffer, 26 + strlen(directory), card);
 	ESP_LOGI(TAG, "File Name: %s", FileName);
 	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, true);
+	if(!f)
+	{
+		printf("Cannot opne IGC File!\n");
+		return;
+	}
+
+	sd_card_state_t sdstate;
+    device_state_get_member(&sdstate, device_state_statusSDCard, true);
+    sdstate.status |= SD_CARD_STATE_IGC_LOGGING;
+    device_state_set_member(&sdstate, device_state_statusSDCard);
+
 	logger.sdcard = card;
 	logger.file = f;
 	if(f)
@@ -178,18 +194,22 @@ esp_err_t start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_handler)
 		esp_timer_handle_t periodic_timer;
 		ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
 		ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000000));
-		return ESP_OK;
 	}
-	else
-	{
-		return ESP_ERR_INVALID_RESPONSE;
-	}
+	vTaskDelete(NULL);
+}
+
+void start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle)
+{
+	nmea_parser_add_handler(nmea_parser_handle, IGCLogger_gps_event_handler, NULL, GPS_UPDATE);
+	logger.nmea_parser_handle = nmea_parser_handle;
+	xTaskCreate(igcLogget_Task, "igcLogget_Task", 1024 * 3, card, 5, NULL);
 }
 
 esp_err_t stop_IGCLogger()
 {
 	fclose(logger.file);
 	logger.file = NULL;
+	nmea_parser_remove_handler(logger.nmea_parser_handle, IGCLogger_gps_event_handler, GPS_UPDATE);
 	return ESP_OK;
 }
 

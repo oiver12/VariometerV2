@@ -1,7 +1,9 @@
 ﻿#include "DeviceContext.h"
 #include <math.h>
 #include "../../SemaphorTemp.h"
-#define portMAX_DELAY 10
+#include "../../SoundManager.h"
+
+//#define portMAX_DELAY 10
 
 vario_state_t vario_state;
 vario_settings_t vario_settings;
@@ -23,6 +25,9 @@ void init_DeviceContext()
     semaphore_device_state = xSemaphoreCreateMutex();
     semaphore_flight_stats = xSemaphoreCreateMutex();
     vario_state.vertVel_Fifo = fifo_create(FIFO_VERTLAZY_SIZE, sizeof(float));
+
+    vario_settings.soundVolume = 10000;
+    device_state.statusGPS = GPS_STATE_FIX_INVALID;
 }
 
 void vario_state_set_member(void* value, vario_state_member_t member)
@@ -122,7 +127,7 @@ void device_state_set_member(void* value, device_state_member_t member)
         device_state.batteryPercentage = *((float*)value);
         break;
     case device_state_statusGPS:
-        device_state.statusGPS = *((uint8_t*)value);
+        device_state.statusGPS = *((GPS_State*)value);
         break;
     case device_state_statusSDCard:
         device_state.status_sd_card = *((sd_card_state_t*)value);
@@ -144,7 +149,7 @@ bool device_state_get_member(void* value, device_state_member_t member, bool sta
         *(float*)value = device_state.batteryPercentage;
         break;
     case device_state_statusGPS:
-        *(uint8_t*)value = device_state.statusGPS;
+        *(GPS_State*)value = device_state.statusGPS;
         break;
     case device_state_statusSDCard:
         *(sd_card_state_t*)value = device_state.status_sd_card;
@@ -157,5 +162,64 @@ bool device_state_get_member(void* value, device_state_member_t member, bool sta
     if (stateChange)
         device_state.stateChange &= 0xFFFF - member;
     xSemaphoreGive(semaphore_device_state);
+    return returnValue;
+}
+
+void vario_settings_set_member(void* value, vario_settings_member_t member)
+{
+    xSemaphoreTake(semaphore_vario_settings, portMAX_DELAY);
+    switch (member)
+    {
+    case vario_settings_soundVolume:
+        if (*((uint16_t*)value) <= Volume_max_Size)
+        {
+            vario_settings.soundVolume = *((uint16_t*)value);
+            SoundManager_setVolume(vario_settings.soundVolume);
+        }
+        else
+            printf("Volume to high!\n");
+        break;
+    case vario_settings_takeOffSpeed:
+        vario_settings.takeOffSpeed = *((float*)value);
+        break;
+    case vario_settings_landingSpeed:
+        vario_settings.landingSpeed = *((float*)value);
+        break;
+    case vario_settings_landingTimout:
+        vario_settings.landingTimout = *((float*)value);
+        break;
+    default:
+        printf("Member von Vario Settings konnte nicht gefunden werden!\n");
+        break;
+    }
+    vario_settings.stateChange |= member;
+    xSemaphoreGive(semaphore_vario_settings);
+}
+
+bool vario_settings_get_member(void* value, vario_settings_member_t member, bool stateChange)
+{
+    xSemaphoreTake(semaphore_vario_settings, portMAX_DELAY);
+    switch (member)
+    {
+    case vario_settings_soundVolume:
+        *(uint16_t*)value = vario_settings.soundVolume;
+        break;
+    case vario_settings_takeOffSpeed:
+        *(float*)value = vario_settings.takeOffSpeed;
+        break;
+    case vario_settings_landingSpeed:
+        *(float*)value = vario_settings.landingSpeed;
+        break;
+    case vario_settings_landingTimout:
+        *(float*)value = vario_settings.landingTimout;
+        break;
+    default:
+        printf("Member von Vario Settings konnte nicht gefunden werden!\n");
+        break;
+    }
+    bool returnValue = vario_settings.stateChange & member;
+    if (stateChange)
+        vario_settings.stateChange &= 0xFFFF - member;
+    xSemaphoreGive(semaphore_vario_settings);
     return returnValue;
 }

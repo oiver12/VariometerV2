@@ -20,7 +20,7 @@ namespace WindowsFormsApp1
 { 
     class BufferGDBConvert
     {
-        public static void ConvertGDBBuffer(String filePath)
+        public static void ConvertGDBBuffer(String filePath, int sizeXVar, int sizeYVar)
         {
             using (FileStream fs = File.Open(filePath, FileMode.Open, FileAccess.Read))
             {
@@ -58,30 +58,10 @@ namespace WindowsFormsApp1
                             }
 #endif
 #if ShowOnScreen
-                            /*int oldX1 = 0;
-                            int oldX2 = 479;
-                            int oldY1 = 201;
-                            int oldY2 = 279;
-                            int x1 = -oldY2 + 279;
-                            int x2 = -oldY1 + 279;
-                            int y1 = oldX1;
-                            int y2 = oldX2;
-
-                            int area_width = oldY2 - oldY1 + 1;
-                            if (area_width % 8 != 0)
-                            {
-                                area_width = ((area_width + 8 - 1) & -8);
-                                if (oldY1 + area_width <= 279)
-                                    oldY2 = oldY1 + area_width - 1;
-                                else if (oldY2 - area_width >= 0)
-                                    oldY1 = oldY2 - area_width + 1;
-                                else
-                                    Console.WriteLine("Komisch schiesse");
-                            }*/
-                            int x1 = 100;
-                            int x2 = 164;
-                            int y1 = 100;
-                            int y2 = 164;
+                            int x1 = 0;
+                            int x2 = sizeXVar;
+                            int y1 = 0;
+                            int y2 = sizeYVar;
                             int sizeX = (x2-x1) % 8 == 0 ? (x2 - x1 + 1) / 8 : (x2 - x1 + 1) / 8 + 1;
                             int sizeY = y2 - y1;
 #if Buffer_lvcolor

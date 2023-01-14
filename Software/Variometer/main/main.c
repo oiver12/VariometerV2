@@ -40,8 +40,8 @@
 #define TEMPGRAD_L 0.0065
 
 /* Kalman Filter */
-float ms5611_stnd_height = 0.1298; //Standardabweichung Höhenmessung
-float bmi088_stnd_acc = 0.2; //Standardabweichung Beschleunigungssensor
+float dps310_stnd_height = 0.1298; //Standardabweichung Höhenmessung
+float bmi088_stnd_acc = 0.9; //Standardabweichung Beschleunigungssensor
 TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
 
 /* GPS */
@@ -60,8 +60,6 @@ float startTemperature;
 float pressure;
 float temperature;
 SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
-
-SoundManager_t soundManager;
 
 volatile bool hasMeasuredStartPressure = false;
 
@@ -108,10 +106,10 @@ static void TaskMeasureHeight(void *parameters)
     while(1)
     {
         //wait till unblocked from Interrupt
-        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 50 / portTICK_PERIOD_MS);
-        // if (notificationValue == 0) {
-        //     ESP_LOGW(TAG, "Interrupt didn't fire");
-        // }
+        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
+        if (notificationValue == 0) {
+            ESP_LOGW(TAG, "Interrupt didn't fire");
+        }
         dsp310_get_Pressure(&DPS310_Data);
         if(count % 34 == 0)
         {
@@ -182,7 +180,7 @@ static void TaskMeasureAcc(void *parameters)
         count++;
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
-        //printf("%.2f \n", accX);
+        //printf("%.2f \n", accX-9.81);
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
             accSum += accX;
@@ -231,9 +229,9 @@ static void TaskKalmanFilter(void *parameters)
     matrix_set(H, 0, 0, 1);
     matrix_set(H, 0, 1, 0);
     /* Set Measurement covariance matrix */
-    /* R = ms5611_stnd_height^2 */
+    /* R = dps310_stnd_height^2 */
     matrix_t *R = &kf.R;
-    matrix_set(R, 0, 0, ms5611_stnd_height*ms5611_stnd_height);
+    matrix_set(R, 0, 0, dps310_stnd_height*dps310_stnd_height);
     /* Set Estimate Uncertainty Matrix*/
     /* P = 500   0
             0   500 */
@@ -335,51 +333,15 @@ static void TaskKalmanFilter(void *parameters)
             vario_state_set_member(&heading, vario_state_heading);
         }
         logVarioData(flight_state);
-        SoundManager_calculateNewBiep(&soundManager, matrix_get(x, 1, 0));
+        SoundManager_calculateNewBiep(matrix_get(x, 1, 0));
         //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
 } 
 
-static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-{
-    //TODO: GNZDA kann ignoriert werden
-    gps_t *gps = NULL;
-    switch (event_id) {
-    case GPS_UPDATE:
-        gps = (gps_t *)event_data;
-        /* print information parsed from GPS statements */
-        ESP_LOGI(TAG, "%d/%d/%d %d:%d:%d => \r\n"
-                 "\t\t\t\t\t\tlatitude   = %.05f°N\r\n"
-                 "\t\t\t\t\t\tlongitude = %.05f°E\r\n"
-                 "\t\t\t\t\t\taltitude   = %.02fm\r\n"
-                 "\t\t\t\t\t\tspeed      = %fm/s\r\n"
-                 "\t\t\t\t\t\tsats in View      = %u\r\n"
-                "\t\t\t\t\t\tmessage      = %s ",
-                 gps->date.year + YEAR_BASE, gps->date.month, gps->date.day,
-                 gps->tim.hour + TIME_ZONE, gps->tim.minute, gps->tim.second,
-                 gps->latitude, gps->longitude, gps->altitude, gps->speed, gps->sats_in_view, gps->infoString);
-        break;
-    case GPS_UNKNOWN:
-        /* print unknown statements */
-        ESP_LOGW(TAG, "Unknown statement:%s", (char *)event_data);
-        break;
-    default:
-        break;
-    }
-}
-
 void app_main(void)
  {
-    // Battery_Manager_t battery_Manager;
-    // init_Battery_Manager(&battery_Manager, 1);
-    // vTaskDelay(30 / portTICK_PERIOD_MS);
-    // for (size_t i = 0; i < 100; i++)
-    // {
-    //     readPercentage_Battery(&battery_Manager);
-    //     vTaskDelay(500 / portTICK_PERIOD_MS);
-    // }
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -406,24 +368,28 @@ void app_main(void)
     ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_I2C.mode, 0, 0, 0));
 
     // // /* Configure GPS Reader Library */
-    // nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    // gps_config.uart.rx_pin = USART2_RX;
-    // nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
-    // //nmea_parser_add_handler(gps_nmea_hdl, gps_event_handler, NULL);
-    // ESP_LOGI(TAG, "GPS started");
+    nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
+    gps_config.uart.rx_pin = USART2_RX;
+    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
+    ESP_LOGI(TAG, "GPS started");
     // sdcard_t sdcard;
-    // start_IGCLogger(&sdcard, gps_nmea_hdl);
-    //vario_state_Mutex = xSemaphoreCreateMutex();
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-    init_DeviceContext();
+    init_DeviceContext(gps_nmea_hdl);
+
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
-    startLogging(sdcard);
-    init_SoundManager(&soundManager);
+    startLogging(sdcard, gps_nmea_hdl);
+    start_IGCLogger(sdcard, gps_nmea_hdl);
+    
+    init_SoundManager();
+
+    init_Battery_Manager(4);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
 
-    init_Display_LVGL();
+    init_Display();
     return;
 }

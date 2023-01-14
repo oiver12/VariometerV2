@@ -29,7 +29,6 @@ namespace dewcin
 	private:
 		HINSTANCE hInstance;
 		HWND windowHandle = 0;
-		bool running = false;
 
 		std::wstring windowTitle;
 		int windowWidth, windowHeight;
@@ -38,6 +37,8 @@ namespace dewcin
 		std::function<void(float delta)> update;
 
 	public:
+		bool running = false;
+
 		Game();
 
 

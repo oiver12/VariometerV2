@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <driver/gpio.h>
+#include "DeviceContext.h"
 
 #define BUFF_SIZE   2048
 #define PDM_TX_FREQ_HZ          44100           // I2S PDM TX frequency
@@ -15,49 +16,51 @@
 #define AUDIO_EN 21
 #define AUDIO_GAIN 47
 
-#define WAVE_AMPTITUDE          (6000.0)        // 1~32767
+//#define WAVE_AMPTITUDE          (6000.0)        // 1~32767
 #define SINE_WAVE_LEN(tone)     (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
 #define BYTE_NUM_EVERY_TONE(duration)     (duration * PDM_TX_FREQ_HZ / 1000)
 
 int16_t *buffer;
 int16_t bufferZero[200];
 
+SoundManager_t soundManager_instance; 
+
 void SoundManager_Task(void *parameters)
 {
-    //TODO: evtl. volatile
-    SoundManager_t *sM = (SoundManager_t *)parameters;
-    float lastFreqeuncy = sM->frequencyNow-1;
+    //TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
+    float lastFreqeuncy = soundManager_instance.frequencyNow-1;
     size_t w_bytes = 0;
     int tone_point = 0;
     while(true)
     {
-        if(sM->ToneArray[sM->indexCurrentToneArray].state == no_Sound)
+        if(soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state == no_Sound)
         {
             vTaskDelay(20 / portTICK_PERIOD_MS);
             continue;
         }
-        if(lastFreqeuncy != sM->frequencyNow)
+        //Buffer neu berechnen, wenn Frequenz geändert wurde
+        if(lastFreqeuncy != soundManager_instance.frequencyNow)
         {
-            tone_point = SINE_WAVE_LEN(sM->frequencyNow);
-            /* Generate the tone buffer */
+            tone_point = SINE_WAVE_LEN(soundManager_instance.frequencyNow);
+            /* Generate the tone buffer (needs 1.2ms for it)*/
             for (int i = 0; i < tone_point; i++) {
-                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * WAVE_AMPTITUDE);
+                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * soundManager_instance.volume);
             }
-            lastFreqeuncy = sM->frequencyNow;
+            lastFreqeuncy = soundManager_instance.frequencyNow;
         }
         w_bytes = 0;
         //evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
-        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(sM->durationNow); tot_bytes += w_bytes) 
+        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(soundManager_instance.durationNow); tot_bytes += w_bytes) 
         {
             if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
             {
                 printf("Write Task: i2s write failed\n");
             }
         }
-        //printf("Time: %lli. Should be: %i\n", ((esp_timer_get_time() - lastTime)/1000), sM->durationNow/2);
-        if(sM->ToneArray[sM->indexCurrentToneArray].state != constant_Deep)
+        //spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
+        if(soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state != constant_Deep)
         {
-            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(sM->durationNow); tot_bytes += w_bytes) 
+            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(soundManager_instance.durationNow); tot_bytes += w_bytes) 
             {
                 if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
                 {
@@ -69,40 +72,40 @@ void SoundManager_Task(void *parameters)
     vTaskDelete(NULL);
 }
 
-void SoundManager_calculateNewBiep(SoundManager_t *sM, float newVelocity)
+void SoundManager_calculateNewBiep(float newVelocity)
 {
     //in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
-  for (size_t i = 0; i < sM->sizeToneArray; i++)
+  for (size_t i = 0; i < soundManager_instance.sizeToneArray; i++)
   {
-    if(newVelocity >= sM->ToneArray[i].lowerVelocity && newVelocity <= sM->ToneArray[i].upVelocity)
+    if(newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)
     {
-        volatile float difference = sM->lastBeepVelocity - newVelocity;
+        volatile float difference = soundManager_instance.lastBeepVelocity - newVelocity;
         //Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
-        if(fabs(difference) < VELOCITY_THRESHOLD && !(sM->indexCurrentToneArray > 1 && i == 1) && !(sM->indexCurrentToneArray  <= 1 && i > 1))
+        if(fabs(difference) < VELOCITY_THRESHOLD && !(soundManager_instance.indexCurrentToneArray > 1 && i == 1) && !(soundManager_instance.indexCurrentToneArray  <= 1 && i > 1))
         {
             return;
         }
-        sM->lastBeepVelocity = newVelocity;
-        sM->indexCurrentToneArray = i;
+        soundManager_instance.lastBeepVelocity = newVelocity;
+        soundManager_instance.indexCurrentToneArray = i;
         //wenn letzter Ton, dann einfach Geschwindigkeit nehemn
-        if((sM->sizeToneArray - 1) == i || i == 0)
+        if((soundManager_instance.sizeToneArray - 1) == i || i == 0)
         {
-            sM->frequencyNow = sM->ToneArray[i].frequency;
-            sM->durationNow = sM->ToneArray[i].duration;
+            soundManager_instance.frequencyNow = soundManager_instance.ToneArray[i].frequency;
+            soundManager_instance.durationNow = soundManager_instance.ToneArray[i].duration;
         }
         //sonst linear Interplorieren
         else
         {
             //linear zwischen zwei States machen
-            float factor = (newVelocity - sM->ToneArray[i].lowerVelocity)/(sM->ToneArray[i].upVelocity-sM->ToneArray[i].lowerVelocity);
-            sM->frequencyNow = factor * (sM->ToneArray[i+1].frequency - sM->ToneArray[i].frequency) + sM->ToneArray[i].frequency;
-            sM->durationNow = factor * (sM->ToneArray[i+1].duration - sM->ToneArray[i].duration) + sM->ToneArray[i].duration;
+            float factor = (newVelocity - soundManager_instance.ToneArray[i].lowerVelocity)/(soundManager_instance.ToneArray[i].upVelocity-soundManager_instance.ToneArray[i].lowerVelocity);
+            soundManager_instance.frequencyNow = factor * (soundManager_instance.ToneArray[i+1].frequency - soundManager_instance.ToneArray[i].frequency) + soundManager_instance.ToneArray[i].frequency;
+            soundManager_instance.durationNow = factor * (soundManager_instance.ToneArray[i+1].duration - soundManager_instance.ToneArray[i].duration) + soundManager_instance.ToneArray[i].duration;
         }
     }
   }
 }
 
-esp_err_t init_SoundManager(SoundManager_t *sM)
+esp_err_t init_SoundManager()
 {
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -138,9 +141,9 @@ esp_err_t init_SoundManager(SoundManager_t *sM)
     buffer = (int16_t *)calloc(1, BUFF_SIZE);
     assert(buffer);
     
-    sM->ToneArray = calloc(6, sizeof(Tonestate_t));
-    assert(sM->ToneArray);
-    sM->sizeToneArray = 6;
+    soundManager_instance.ToneArray = calloc(6, sizeof(Tonestate_t));
+    assert(soundManager_instance.ToneArray);
+    soundManager_instance.sizeToneArray = 6;
     Tonestate_t stateBeep[6] = {
         {.state = constant_Deep, .frequency = 250, .duration = 200, .lowerVelocity = -999, .upVelocity = -2.5f},
         {.state = no_Sound, .frequency = 0, .duration = 0, .lowerVelocity = -2.5f, .upVelocity = 0.1f},
@@ -149,16 +152,18 @@ esp_err_t init_SoundManager(SoundManager_t *sM)
         {.state = Biepen, .frequency = 1000, .duration = 300, .lowerVelocity = 3.5f, .upVelocity = 10},
         {.state = Biepen, .frequency = 1600, .duration = 90, .lowerVelocity = 10, .upVelocity = 999}
     };
-    memcpy(sM->ToneArray, stateBeep, sizeof(stateBeep));
-    sM->indexCurrentToneArray = 1;
-    xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, sM, 7, NULL);
+    memcpy(soundManager_instance.ToneArray, stateBeep, sizeof(stateBeep));
+    soundManager_instance.indexCurrentToneArray = 1;
+    uint16_t volume = 6000;
+    vario_settings_set_member(&volume, vario_settings_soundVolume);
+    xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, NULL, 7, NULL);
     return ESP_OK;
 }
 
-esp_err_t deinit_SoundManager(SoundManager_t *sM)
+esp_err_t deinit_SoundManager()
 {
     gpio_set_level(AUDIO_EN, 0);
-    free(sM->ToneArray);
+    free(soundManager_instance.ToneArray);
     free(buffer);
     return ESP_OK;
 }
@@ -169,7 +174,7 @@ esp_err_t SoundManager_playSinWave(int frequency, int duration)
     int tone_point = SINE_WAVE_LEN(frequency);
     /* Generate the tone buffer */
     for (int i = 0; i < tone_point; i++) {
-        buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * WAVE_AMPTITUDE);
+        buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * soundManager_instance.volume);
     }
     
     for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration*2); tot_bytes += w_bytes) {
@@ -179,4 +184,9 @@ esp_err_t SoundManager_playSinWave(int frequency, int duration)
         }
     }
     return ESP_OK;
+}
+
+void SoundManager_setVolume(uint16_t volume)
+{
+    soundManager_instance.volume = volume;
 }

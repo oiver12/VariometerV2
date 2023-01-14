@@ -53,7 +53,7 @@ static const char* get_Info_Text(WidgetContentType contentType)
     case WidgetContent_Vario_Active:
         return "Instant Vario";
     case WidgetContent_Vario_Lazy:
-        return "Vario integrated";
+        return "Vario integrated (2s)";
     case WidgetContent_VertAcc:
         return "Vertical Acceleration";
     case WidgetContent_Pressure:
@@ -215,8 +215,8 @@ static void add_Chart_Widget(WidgetData* widget)
     extr_data->data = fifo_create(ChartNumDataPoints, sizeof(Chart_Point));
     extr_data->lastPointTime = 0;
     extr_data->startXPosition = widget->x + widget->w - 10;
-    extr_data->timePeriod = 20;
-    extr_data->differenzToShow = 50;
+    extr_data->timePeriod = 120;
+    extr_data->differenzToShow = 200;
     extr_data->heightChart = widget->h - 45;
     extr_data->yStartPosChart = widget->y + 30;
     extr_data->pointsAdded = 0;
@@ -256,7 +256,7 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
     uint32_t startPos = widget->x + 10;
     uint32_t widthProgressBar = widget->w - 60;
     Paint_DrawRectangle(startPos, widget->y + 25, startPos + widthProgressBar, widget->y + 45, BLACK, DOT_PIXEL_1X1, FALSE);
-    double percentage = (double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace;
+    double percentage = 1.0f - ((double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace);
     uint32_t filledPartWidth = percentage * widthProgressBar;
     Paint_DrawRectangle(startPos, widget->y + 25, startPos + filledPartWidth, widget->y + 45, BLACK, DOT_PIXEL_1X1, TRUE);
     char buffer[50];
@@ -356,19 +356,12 @@ static void update_Chart_Widget(WidgetData* widget)
             return;
         }
         float value = get_Value_Text(widget->type, NULL, 0, false, false);
+        bool startValueChanged = false;
         //when new height can't is lower or higher than the range in the chart, shift the range, so the new point is in the chart
         if (value < chart_data->startValue || value > chart_data->startValue + chart_data->differenzToShow)
         {
             chart_data->startValue = value < chart_data->startValue ? value : (value - chart_data->differenzToShow);
-            for (size_t i = 0; i < chart_data->pointsAdded; i++)
-            {
-                Chart_Point* itemPoint = fifo_peekItem(chart_data->data, i);
-                float percentageFromHeight = ((float)(itemPoint->heightValue - chart_data->startValue)) / ((float)chart_data->differenzToShow);
-                if (percentageFromHeight > 1 || percentageFromHeight < 0)
-                    itemPoint->yPoint = -1;
-                else
-                    itemPoint->yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart;
-            }
+            startValueChanged = true;
         }
         float percentageFromHeight = ((float)(value - chart_data->startValue)) / ((float)chart_data->differenzToShow);
         Chart_Point newPoint = {
@@ -395,7 +388,6 @@ static void update_Chart_Widget(WidgetData* widget)
         //Paint_ClearWindows(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT, chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, WHITE);
         //Paint_DrawRectangle(chart_data->startXPosition - chart_data->xMoveDelta * CHART_POINT_COUNT , chart_data->yStartPosChart - 2, chart_data->startXPosition + 2, chart_data->yStartPosChart + chart_data->heightChart + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 
-        Paint_DrawPoint(newPoint.lastXPoint, newPoint.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
         //shift all Points left and render (dont shift last one)
 		//TODO: there are buggs, where the last point isn't rendered full.
 		//TODO: also fifo_peekItem shouldn't make a for loop everytime. State could be remembered in the fifo and just call getNext() on fifo
@@ -405,10 +397,19 @@ static void update_Chart_Widget(WidgetData* widget)
 			//Clear old Point
             if(itemPoint->yPoint != -1)
 				Paint_DrawPoint(itemPoint->lastXPoint, itemPoint->yPoint, WHITE, DOT_PIXEL_2X2, DOT_STYLE_DFT);
+            if (startValueChanged)
+            {
+                float percentageFromHeight = ((float)(itemPoint->heightValue - chart_data->startValue)) / ((float)chart_data->differenzToShow);
+                if (percentageFromHeight > 1 || percentageFromHeight < 0)
+                    itemPoint->yPoint = -1;
+                else
+                    itemPoint->yPoint = (uint16_t)((1 - percentageFromHeight) * (float)chart_data->heightChart) + chart_data->yStartPosChart;
+            }
             itemPoint->lastXPoint -= chart_data->xMoveDelta;
             if(itemPoint->yPoint != -1)
                 Paint_DrawPoint(itemPoint->lastXPoint, itemPoint->yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
         }
+        Paint_DrawPoint(newPoint.lastXPoint, newPoint.yPoint, BLACK, DOT_PIXEL_2X2, DOT_STYLE_DFT);
     }
 }
 
@@ -428,7 +429,7 @@ void update_sdCardInfo_Widget(WidgetData* widget)
         uint32_t widthProgressBar = widget->w - 60;
         Paint_ClearWindows(widget->x + 5, widget->y + 25, widget->x + widget->w - 5, widget->y + widget->h - 5, WHITE);
         Paint_DrawRectangle(startPos, widget->y + 25, startPos + widthProgressBar, widget->y + 45, BLACK, DOT_PIXEL_1X1, FALSE);
-        double percentage = (double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace;
+        double percentage = 1.0f - ((double)sdcard_state.freeSpace / (double)sdcard_state.maxSpace);
         uint32_t filledPartWidth = percentage * widthProgressBar;
         Paint_DrawRectangle(startPos, widget->y + 25, startPos + filledPartWidth, widget->y + 45, BLACK, DOT_PIXEL_1X1, TRUE);
         char buffer[50];
@@ -492,51 +493,5 @@ void vario_update_widget(WidgetData* widget)
         break;
     default:
         break;
-    }
-}
-
-/********** Settings **********/
-static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, bool selected,Settings_Page_t currPage)
-{
-    bool currentPageWidget = false;
-    if (currPage == Settings_Page_Audio && widget->type == WidgetContent_Settings_PageButton_Audio)
-        currentPageWidget = true;
-    else if (currPage == Settings_Page_Config && widget->type == WidgetContent_Settings_PageButton_Config)
-        currentPageWidget = true;
-
-    //if (selected || !(currentPageWidget && !selected))
-       Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, selected && currentPageWidget ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, currentPageWidget && !selected ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
-    if(widget->type == WidgetContent_Settings_PageButton_Audio)
-        Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Audio", &Font12, currentPageWidget && !selected ? BLACK : WHITE, currentPageWidget && !selected ? WHITE : BLACK, TRUE);
-    else if(widget->type == WidgetContent_Settings_PageButton_Config)
-        Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Config", &Font12, currentPageWidget && !selected ? BLACK : WHITE, currentPageWidget && !selected ? WHITE : BLACK, TRUE);
-}
-
-static void add_Settings_Slider_Widget(WidgetData* widget, bool hovered, bool selected)
-{
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-}
-
-static void add_Settings_SoundThreshold(WidgetData* widget, bool hovered,bool selected)
-{
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-}
-
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected)
-{
-    switch (widget->style)
-    {
-    case Widget_Settings_PageButton:
-        add_Settings_PageButton_Widget(widget, hovered, selected,currPage);
-        break;
-    case Widget_Settings_Slider:
-        add_Settings_Slider_Widget(widget, hovered,selected);
-        break;
-    case Widget_Settings_SoundThreshold:
-        add_Settings_SoundThreshold(widget, hovered,selected);
-        break;
-    default:
-        printf("Setting Widget not implemented!\n");
     }
 }

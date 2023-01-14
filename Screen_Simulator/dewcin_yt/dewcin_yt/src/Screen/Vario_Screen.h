@@ -34,7 +34,8 @@ typedef struct {
 
 typedef struct {
     Settings_Page_t currPage;
-    widget_Settings_linkedList pageButtonWidgets[2];
+    widget_Settings_linkedList* headListPageButtons;
+    widget_Settings_linkedList* topFielPageButtons;
     widget_Settings_linkedList* headListAudio;
     widget_Settings_linkedList* topFieldAudio; //in Scrollbar from Audio field on top
     widget_Settings_linkedList* headListConfig;
@@ -56,14 +57,15 @@ typedef struct {
 void ScreenManager_init();
 void ScreenManager_deinit();
 void ScreenManager_show_Screen(size_t screenIndex);
-void ScreenManager_set_gps(int enabled);
-void ScreenManager_set_volume(int value);
-void ScreenManager_set_sdcard(int enabled);
-void ScreenManager_set_Battery(int percentage);
+void ScreenManager_draw_status_bar();
+//void ScreenManager_set_gps(int enabled);
+//void ScreenManager_set_volume(int value);
+//void ScreenManager_set_sdcard(int enabled);
+//void ScreenManager_set_Battery(int percentage);
 void ScreenManager_update();
 void ScreenManager_powerButtonPressed(uint32_t pressTimeMS);
-void ScreenManager_LeftArrowPressed();
-void ScreenManager_RightArrowPressed();
+void ScreenManager_DownArrowPressed();
+void ScreenManager_UpArrowPressed();
 void ScreenManager_EnterKeyPressed();
 void Screen_redraw_Screen();
 void ScreenManager_add_Screen_add_widgets(WidgetData* widgets, size_t size);
