@@ -102,7 +102,7 @@ static void IGCLogger_gps_event_handler(void *event_handler_arg, esp_event_base_
 			logger.gps_data.longitude = gps->longitude;
 			logger.gps_data.time = gps->tim;
 			logger.gps_data.fix3D = gps->fix_mode == GPS_MODE_3D;
-			ESP_LOGI(TAG, "GPS Update: %lli ms", (int64_t)((esp_timer_get_time() - logger.gpsLastTimeUpdate)/1000));
+			//ESP_LOGI(TAG, "GPS Update: %lli ms", (int64_t)((esp_timer_get_time() - logger.gpsLastTimeUpdate)/1000));
 			logger.gpsLastTimeUpdate = esp_timer_get_time();
 			break;
 		default:
@@ -117,6 +117,7 @@ void updatePressureAltitude_IGCLogger(float height)
 
 static void logICGSentence(void *arg)
 {
+	static int count = 0;
 	fprintf(logger.file, "B");
 	fprintf(logger.file, "%02d%02d%02d", logger.gps_data.time.hour, logger.gps_data.time.minute, logger.gps_data.time.second); //log Time HHMMSS
 	int degree = floor(logger.gps_data.latitude); //DD
@@ -131,6 +132,10 @@ static void logICGSentence(void *arg)
 	fprintf(logger.file, "%05d", (int)logger.pressureAltitude); //PPPPP
 	fprintf(logger.file, "%05d", (int)logger.gps_data.altitude); //GGGGG
 	fprintf(logger.file, "\r\n");
+	if(count % 10 == 0)
+	{
+		fflush(logger.file);
+	}
 }
 
 static void igcLogget_Task(void *params)

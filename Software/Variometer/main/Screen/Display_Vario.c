@@ -145,7 +145,7 @@ void render_Screen_Task(void *arg)
             ScreenManager_draw_status_bar();
         counter++;
         ScreenManager_update();
-        printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
+        //printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
         EPD_3IN7_1Gray_Display(ScreenBuffer, counter % 150 == 0 ? FULL_G_T_BW : PART_BW_T_BW);
         // if(esp_timer_get_time() - startTime > 40 * 1000 * 1000)
         //     break;

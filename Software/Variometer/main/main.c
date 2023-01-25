@@ -23,6 +23,7 @@
 #include "TestTools/FlightLogger.h"
 #include "DeviceContext.h"
 #include "Screen/Display_Vario.h"
+#include "ButtonInput.h"
 
 #define POWSW_ENABLE 13
 
@@ -356,6 +357,7 @@ void app_main(void)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    
     i2c_config_t conf_I2C = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_SDA,
@@ -382,6 +384,8 @@ void app_main(void)
     start_IGCLogger(sdcard, gps_nmea_hdl);
     
     init_SoundManager();
+
+    ButtonInput_Init();
 
     init_Battery_Manager(4);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
