@@ -1,9 +1,9 @@
 #ifndef __DISPLAYVARIO_H
 #define __DISPLAYVARIO_H
 
-#include "lvgl.h"
 #include "../vario_config.h"
 #ifdef SCREEM_ILI9488
+#include "lvgl.h"
 #include "lvgl_helpers.h"
 #endif
 

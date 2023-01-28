@@ -33,6 +33,7 @@ void EPD_3in7_setBuffer()
 }
 #endif
 
+#ifdef SCREEM_ILI9488
 void EPD_3in7_display_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
     static int RefreshCounter = 0;
@@ -90,7 +91,6 @@ void EPD_3IN7_set_px_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_
     else
         buf[addr] = rdata | (0x80 >> (Xpoint % 8)); 
 }
-#endif
 
 static void lv_tick_task(void *arg) {
     (void) arg;
@@ -105,6 +105,8 @@ void LVGL_TaskHandle_Task(void *arg)
     }
     vTaskDelete(NULL);
 }
+#endif
+#endif
 
 void render_Screen_Task(void *arg)
 {
@@ -155,8 +157,6 @@ void render_Screen_Task(void *arg)
 
 esp_err_t init_Display()
 {
-    lv_init();
-
     #ifdef SCREEN_EINK
     spi_bus_config_t spi2cfg={
         .miso_io_num= -1,
@@ -175,6 +175,8 @@ esp_err_t init_Display()
     ESP_LOGI(TAG, "Screen initialized");
     #endif
     #ifdef SCREEM_ILI9488
+    lv_init();
+
     //mit ili9488 können wir mit zwei Buffer arbeiten. Mit E Ink nicht, da wir custom
     //set_px_cb benutzen und dann mit lvgl nur ein Buffer benutzen können.
     lvgl_driver_init();
@@ -207,7 +209,7 @@ esp_err_t init_Display()
     #endif
     if ((ScreenBuffer = (uint8_t*)heap_caps_malloc(DISP_BUF_SIZE, MALLOC_CAP_DMA)) == NULL) {
         printf("Failed to apply for black memory...\r\n");
-        return;
+        return ESP_ERR_NO_MEM;
     }
 
     printf("Paint_NewImage \r\n");

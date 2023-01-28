@@ -76,6 +76,9 @@ IRAM_ATTR static void buttonMenu_ISR(void* params)
 {
     gpio_isr_handler_remove((gpio_num_t)Button_Menu);
     int button_state = gpio_get_level((gpio_num_t)Button_Menu);
+    static char message[20];
+    snprintf(message, 20,"B:%i", button_state);
+    xQueueSendFromISR(button_press_queue, &message, 0);
     //gedrückt
     if(button_state == 0)
     {
@@ -85,14 +88,6 @@ IRAM_ATTR static void buttonMenu_ISR(void* params)
             xTimerStartFromISR(button_press_Menu_semaphore, 0);
         }
     }
-    // //released
-    // else
-    // {
-    //    if (button_state_enum == BUTTON_STATE_PRESSED) {
-    //         button_state_enum = BUTTON_STATE_IDLE;
-    //         // Do something when the button is released
-    //     }
-    // }
 }
 
 void buttonMenu_TimerCallback(TimerHandle_t xTimer)
@@ -134,6 +129,9 @@ IRAM_ATTR static void buttonUP_ISR(void* params)
 
 void buttonUP_TimerCallback(TimerHandle_t xTimer)
 {
+    static char message[20];
+    snprintf(message, 20, "Timer");
+    xQueueSendFromISR(button_press_queue, &message, 0);
     //long Press
     xEventGroupSetBitsFromISR(button_press_EventGroup, ButtonUp_Long, 0);
 }
@@ -208,6 +206,16 @@ void ButtonInput_Task(void *params)
     }
 }
 
+void PrintTask(void *params)
+{
+    while(1)
+    {
+        char buffer;
+        xQueueReceive(button_press_queue, &buffer, portMAX_DELAY);
+        ESP_LOGI(TAG, "%s", &buffer);
+    }
+}
+
 void ButtonInput_Init()
 {
     //Set Button pins as input and enable interrupt
@@ -235,4 +243,5 @@ void ButtonInput_Init()
     button_press_EventGroup = xEventGroupCreate();
     xEventGroupClearBits(button_press_EventGroup, ButtonEnter_Short | ButtonEnter_Long | ButtonMenu_Short | ButtonMenu_Long | ButtonUp_Short | ButtonUp_Long | ButtonDown_Short | ButtonDown_Long);
     xTaskCreate(ButtonInput_Task, "ButtonInput_Task", 1024 * 3, NULL, 5, NULL);
+    xTaskCreate(PrintTask, "Print Task Button", 1024 * 3, NULL, 5, NULL);
 }
