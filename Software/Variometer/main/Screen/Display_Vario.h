@@ -10,5 +10,7 @@
 #include <esp_err.h>
 
 esp_err_t init_Display();
+esp_err_t Display_powerOff_Screen();
+esp_err_t Display_SetFullRefresh();
 
 #endif

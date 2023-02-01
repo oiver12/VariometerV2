@@ -24,6 +24,8 @@
 
 #ifdef SCREEN_EINK
 uint8_t* ScreenBuffer;
+bool screenRefreshing = true;
+bool Screen_FullRefresh = false;
 
 #ifdef EInk_DoubleBuffer
 void EPD_3in7_setBuffer()
@@ -110,15 +112,6 @@ void LVGL_TaskHandle_Task(void *arg)
 
 void render_Screen_Task(void *arg)
 {
-    EPD_3IN7_4Gray_Init();
-    EPD_3IN7_4Gray_Clear();
-    
-    EPD_3IN7_Sleep();
-
-    DEV_Module_Exit();
-
-    vTaskDelay(10000 / portTICK_PERIOD_MS); //temporär
-
     DEV_Module_Init();
     EPD_3IN7_1Gray_Init();       //init 1 Gray mode
     EPD_3IN7_1Gray_Clear();
@@ -139,7 +132,7 @@ void render_Screen_Task(void *arg)
 
     uint64_t startTime = esp_timer_get_time();
     int counter = 0;
-    while(1)
+    while(screenRefreshing)
     {
         //TODO: Render while Display is refreshing
         uint64_t startTimeRender = esp_timer_get_time();
@@ -147,12 +140,33 @@ void render_Screen_Task(void *arg)
             ScreenManager_draw_status_bar();
         counter++;
         ScreenManager_update();
-        //printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
-        EPD_3IN7_1Gray_Display(ScreenBuffer, counter % 150 == 0 ? FULL_G_T_BW : PART_BW_T_BW);
+        printf("RenderTime: %i ms \n", (int)((esp_timer_get_time() - startTimeRender) / 1000));
+        ESP_LOGI(TAG, "Fullrefresh: %i", (int)Screen_FullRefresh);
+        Display_RefreshMode refreshMode = counter % 100 == 0 || Screen_FullRefresh ? FULL_G_T_BW : PART_BW_T_BW;
+        EPD_3IN7_1Gray_Display(ScreenBuffer, refreshMode);
+        if(refreshMode == FULL_G_T_BW)
+            Screen_FullRefresh = false;
         // if(esp_timer_get_time() - startTime > 40 * 1000 * 1000)
         //     break;
     }
     vTaskDelete(NULL);
+}
+
+esp_err_t Display_powerOff_Screen()
+{
+    screenRefreshing = false;
+    EPD_3IN7_4Gray_Init();
+    EPD_3IN7_4Gray_Clear();
+    EPD_3IN7_Sleep();
+    DEV_Module_Exit();
+    return ESP_OK;
+}
+
+esp_err_t Display_SetFullRefresh()
+{
+    ESP_LOGI(TAG, "Full Refresh");
+    Screen_FullRefresh = true;
+    return ESP_OK;
 }
 
 esp_err_t init_Display()

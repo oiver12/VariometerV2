@@ -4,6 +4,9 @@
 #include <string.h>
 #include <math.h>
 #include "DeviceContext.h"
+#include "esp_sleep.h"
+#include "driver/gpio.h"
+#include "Display_Vario.h"
 
 const unsigned char gImage_lautsprecher_an[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFC,0XFF,0XFF,0XEC,0X3F,0XFF,
@@ -315,6 +318,7 @@ static void draw_Settings_Scrollbar()
         element = element->next;
     }
     vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element);
+    Display_SetFullRefresh();
 }
 
 static void settings_enter_press()
@@ -419,11 +423,11 @@ static void settings_down_press()
 /*
 * Wenn der PowerButton gedrüct wird, kann entweder das Menu oder das Abschalten angezeigt werden
 */
-void ScreenManager_powerButtonPressed(uint32_t pressTimeMS)
+void ScreenManager_powerButtonPressed(bool longPress)
 {
     if (screenManagerInstance.screenMode != ScreenMode_PowerAccept)
     {
-        if (pressTimeMS > LONGPRESS_TIMEPERIOD)
+        if (longPress)
         {
             screenManagerInstance.screenMode = ScreenMode_PowerAccept;
             return;
@@ -442,6 +446,10 @@ void ScreenManager_powerButtonPressed(uint32_t pressTimeMS)
     else
     {
         //PowerOff
+        ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(2, 0));
+        Display_powerOff_Screen();
+        gpio_set_level(13, 0);
+        esp_deep_sleep_start();
     }
 }
 

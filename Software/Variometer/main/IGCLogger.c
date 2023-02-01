@@ -103,7 +103,8 @@ static void IGCLogger_gps_event_handler(void *event_handler_arg, esp_event_base_
 			logger.gps_data.time = gps->tim;
 			logger.gps_data.fix3D = gps->fix_mode == GPS_MODE_3D;
 			//ESP_LOGI(TAG, "GPS Update: %lli ms", (int64_t)((esp_timer_get_time() - logger.gpsLastTimeUpdate)/1000));
-			logger.gpsLastTimeUpdate = esp_timer_get_time();
+			if(logger.gps_data.fix3D)
+				logger.gpsLastTimeUpdate = esp_timer_get_time();
 			break;
 		default:
 			break;
@@ -150,14 +151,18 @@ static void igcLogget_Task(void *params)
 	if(!(card->cardInit))
     {
         if(init_sdcard(card, sdcard_Mount_Point) != ESP_OK)
+		{
+			vTaskDelete(NULL);
             return;
+		}
     }
 	const char* FileName = makeFileName(buffer, 26 + strlen(directory), card);
 	ESP_LOGI(TAG, "File Name: %s", FileName);
 	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, true);
 	if(!f)
 	{
-		printf("Cannot opne IGC File!\n");
+		printf("Cannot open IGC File!\n");
+		vTaskDelete(NULL);
 		return;
 	}
 

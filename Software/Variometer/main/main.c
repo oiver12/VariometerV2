@@ -385,8 +385,6 @@ void app_main(void)
     
     init_SoundManager();
 
-    ButtonInput_Init();
-
     init_Battery_Manager(4);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     
@@ -395,5 +393,6 @@ void app_main(void)
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
 
     init_Display();
+    ButtonInput_Init();
     return;
 }
