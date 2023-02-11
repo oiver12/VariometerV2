@@ -27,7 +27,7 @@
 
 typedef enum {
     Button_Direction_up,
-	Button_Direction_down,
+    Button_Direction_down,
 } Button_Direction;
 
 typedef enum {
@@ -48,7 +48,7 @@ typedef enum
     Widget_Settings_PageButton,
     Widget_settings_BackButton,
     Widget_Settings_Slider,
-	Widget_Settings_Checkbox,
+    Widget_Settings_Checkbox,
     Widget_Settings_SoundThreshold,
 } WidgetStyle;
 
@@ -71,17 +71,17 @@ typedef enum
 
     /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,
-    
+
     /* Compass Widgets */
     WidgetContent_CompassSensor,
 
     /* Settings Widget */
-	WidgetContent_Settings_PageButton,
-	WidgetContent_Settings_PageButton_Audio,
+    WidgetContent_Settings_PageButton,
+    WidgetContent_Settings_PageButton_Audio,
     WidgetContent_Settings_PageButton_Config,
-	WidgetContent_Settings_VolumeSlider,
-	WidgetContent_Settings_SoundLiftThreshold,
-	WidgetContent_Settings_SoundSinkThreshold,
+    WidgetContent_Settings_VolumeSlider,
+    WidgetContent_Settings_SoundLiftThreshold,
+    WidgetContent_Settings_SoundSinkThreshold,
 } WidgetContentType;
 
 typedef struct
@@ -90,7 +90,7 @@ typedef struct
     uint32_t			extraStyle;
     WidgetContentType	type;
     uint16_t			x, y, w, h;
-    void*               extr_data; //Widget_specific_data
+    void* extr_data; //Widget_specific_data
 } WidgetData;
 
 /***** Text Box Widget Data *****/

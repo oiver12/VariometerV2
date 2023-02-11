@@ -11,6 +11,7 @@
 #include "driver/gpio.h"
 #include <inttypes.h>
 #include "E_Ink/GUI_Paint.h"
+#include "RenderSystem.h"
 
 #ifdef EInk_DoubleBuffer
 #define DISP_BUF_SIZE 19200
@@ -112,24 +113,7 @@ void LVGL_TaskHandle_Task(void *arg)
 
 void render_Screen_Task(void *arg)
 {
-    DEV_Module_Init();
-    EPD_3IN7_1Gray_Init();       //init 1 Gray mode
-    EPD_3IN7_1Gray_Clear();
-
-    ScreenManager_init();
     
-    static WidgetData widgetDataScreen0[7] = {
-        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
-        {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 87},
-        {.extraStyle = WS_FONT_20_CONTENT, .h = 193, .w = 180, .style = Widget_Chart, .type = WidgetContent_Altitude_Baro, .x = 100, .y = 87},
-        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 160, .y = 27},
-        {.extraStyle = WS_FONT_16_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Pressure, .x = 320, .y = 27},
-        {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
-		{.extraStyle = WS_FONT_24_CONTENT, .h = 63, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 280, .y = 187},
-    };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 7);
-    ScreenManager_show_Screen(0);
-
     uint64_t startTime = esp_timer_get_time();
     int counter = 0;
     while(screenRefreshing)
@@ -146,8 +130,6 @@ void render_Screen_Task(void *arg)
         EPD_3IN7_1Gray_Display(ScreenBuffer, refreshMode);
         if(refreshMode == FULL_G_T_BW)
             Screen_FullRefresh = false;
-        // if(esp_timer_get_time() - startTime > 40 * 1000 * 1000)
-        //     break;
     }
     vTaskDelete(NULL);
 }
@@ -226,14 +208,12 @@ esp_err_t init_Display()
         return ESP_ERR_NO_MEM;
     }
 
-    printf("Paint_NewImage \r\n");
     Paint_NewImage(ScreenBuffer, EPD_3IN7_WIDTH, EPD_3IN7_HEIGHT, 270, WHITE);
 
     Paint_SelectImage(ScreenBuffer);
     Paint_SetScale(2);
 
     Paint_Clear(WHITE);
-
-    xTaskCreate(render_Screen_Task, "Screen Render", 4 * 1024, NULL, TASK_SCREEN_RENDER_PRIORITY, NULL);
+    startRendering(ScreenBuffer);
     return ESP_OK;
 }

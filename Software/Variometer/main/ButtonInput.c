@@ -145,6 +145,7 @@ static void Button_Task(void *arg)
         }
         if(bits & ButtonUp_Short)
         {
+            printf("first %i\n", (int)esp_timer_get_time());
             ScreenManager_UpArrowPressed();
             ESP_LOGI(TAG, "Button Up Short Press");
         }

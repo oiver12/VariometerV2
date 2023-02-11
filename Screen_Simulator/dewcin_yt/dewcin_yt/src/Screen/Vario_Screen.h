@@ -11,8 +11,6 @@
 
 #define MAX_SCREENS 5
 #define MAX_WIDGETS_SCREEN 10
-//wie lange, bis ein langer Button Press ausgelöst wird (z.B. bei Power Off)
-#define LONGPRESS_TIMEPERIOD 500 //ms
 
 //In welchem Ansichtsmodus man sich befinden
 typedef enum {
@@ -47,7 +45,7 @@ typedef struct {
 
 typedef struct {
     VarioScreen_t screens[MAX_SCREENS];
-	VarioScreen_Settings_t settingsScreen;
+    VarioScreen_Settings_t settingsScreen;
     size_t screensAdded;
     uint8_t curr_Screen;
     ScreenMode screenMode;
@@ -63,7 +61,7 @@ void ScreenManager_draw_status_bar();
 //void ScreenManager_set_sdcard(int enabled);
 //void ScreenManager_set_Battery(int percentage);
 void ScreenManager_update();
-void ScreenManager_powerButtonPressed(uint32_t pressTimeMS);
+void ScreenManager_powerButtonPressed(bool longPress);
 void ScreenManager_DownArrowPressed();
 void ScreenManager_UpArrowPressed();
 void ScreenManager_EnterKeyPressed();

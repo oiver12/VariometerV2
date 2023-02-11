@@ -244,21 +244,23 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-	if(Paint.Scale == 2 || Paint.Scale == 4){
-		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
-			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
-				UDOUBLE Addr = X + Y*Paint.WidthByte;
-				Paint.Image[Addr] = Color;
-			}
-		}		
-	}else if(Paint.Scale == 7){
-		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
-			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {
-				UDOUBLE Addr = X + Y*Paint.WidthByte;
-				Paint.Image[Addr] = (Color<<4)|Color;
-			}
-		}		
-	}
+    //TODO: Use Memset
+	// if(Paint.Scale == 2 || Paint.Scale == 4){
+	// 	for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
+	// 		for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
+	// 			UDOUBLE Addr = X + Y*Paint.WidthByte;
+	// 			Paint.Image[Addr] = Color;
+	// 		}
+	// 	}		
+	// }else if(Paint.Scale == 7){
+	// 	for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
+	// 		for (UWORD X = 0; X < Paint.WidthByte; X++ ) {
+	// 			UDOUBLE Addr = X + Y*Paint.WidthByte;
+	// 			Paint.Image[Addr] = (Color<<4)|Color;
+	// 		}
+	// 	}		
+	// }
+    memset(Paint.Image, Color, Paint.WidthByte * Paint.HeightByte);
 }
 
 /******************************************************************************

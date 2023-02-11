@@ -673,7 +673,8 @@ void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
     //   }
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
-    EPD_3IN7_ReadBusy_HIGH();  
+    EPD_3IN7_ReadBusy_HIGH(); 
+    return refreshMode == FULL_G_T_BW; 
 }
 
 /******************************************************************************
@@ -729,6 +730,34 @@ void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xsta
     UDOUBLE Addr = Xstart / 8 + Ystart * 35;
     EPD_3IN7_1Gray_Display_Part(&Image[Addr], Xstart, Ystart, Xend, Yend, refreshMode);
 }
+
+void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
+{
+    UWORD i;
+    UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
+
+    EPD_3IN7_SendCommand(0x4E);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendCommand(0x4F);
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendData(0x00);
+
+    EPD_3IN7_SendCommand(0x24);
+    EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
+    //   for (i = 0; i < IMAGE_COUNTER; i++)
+    //   {
+    //     EPD_3IN7_SendData(Image[i]);
+    //   }
+    EPD_3IN7_Load_LUT(refreshMode);
+    EPD_3IN7_SendCommand(0x20);
+    return refreshMode == FULL_G_T_BW; 
+}
+void EPD_3IN7_1Gray_WaitBusy()
+{
+    EPD_3IN7_ReadBusy_HIGH();
+}
+
 
 /******************************************************************************
 function :	Enter sleep mode

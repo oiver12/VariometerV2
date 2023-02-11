@@ -7,6 +7,7 @@
 #include "esp_sleep.h"
 #include "driver/gpio.h"
 #include "Display_Vario.h"
+#include "RenderSystem.h"
 
 const unsigned char gImage_lautsprecher_an[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFC,0XFF,0XFF,0XEC,0X3F,0XFF,
@@ -90,6 +91,7 @@ WidgetData widgetData_Audio_Settings[2] = {
 };
 
 Vario_Screen_Manager_t screenManagerInstance;
+static SemaphoreHandle_t buffer_Mutex = NULL;
 
 //Zeichne die Status Bar am oberen Rand.
 void ScreenManager_draw_status_bar()
@@ -199,8 +201,9 @@ static void init_SettingsWidgets()
 /* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
 * Zeichne auch die Status Bar
 */
-void ScreenManager_init()
+void ScreenManager_init(SemaphoreHandle_t semaphore)
 {
+    buffer_Mutex = semaphore;
     memset(screenManagerInstance.screens, 0, sizeof(screenManagerInstance.screens));
     screenManagerInstance.curr_Screen = 0;
     screenManagerInstance.screensAdded = 0;
@@ -268,16 +271,19 @@ void ScreenManager_add_Screen_add_widgets(WidgetData* widgets, size_t size)
 /*
 * Update den Screen je nach screenMode momentan
 */
-void ScreenManager_update()
+bool ScreenManager_update()
 {
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
         screenManagerInstance.isRendering = TRUE;
         for (size_t i = 0; i < screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgetsAdded; i++)
         {
+            if(screenManagerInstance.screenMode != ScreenMode_Widget)
+                return false;
             vario_update_widget(&screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgets[i]);
         }
         screenManagerInstance.isRendering = FALSE;
+        return true;
     }
     //TODO: muss nicht jeden Frame refreshen
     else if (screenManagerInstance.screenMode == ScreenMode_PowerAccept)
@@ -293,7 +299,9 @@ void ScreenManager_update()
         Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 220, nextString, &Font12, WHITE, BLACK, FALSE);
         stringLength = strlen(nextString1) * Font12.Width;
         Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
+        return true;
     }
+    return false;
 }
 
 static void draw_Settings_Scrollbar()
@@ -313,12 +321,11 @@ static void draw_Settings_Scrollbar()
     {
         element->data.y = currY;
         if(screenManagerInstance.settingsScreen.hoveredField != element)
-            vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false,screenManagerInstance.settingsScreen.selectedField == element);
+            vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false,screenManagerInstance.settingsScreen.selectedField == element, false);
         currY += element->data.h;
         element = element->next;
     }
-    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element);
-    Display_SetFullRefresh();
+    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element, false);
 }
 
 static void settings_enter_press()
@@ -331,6 +338,7 @@ static void settings_enter_press()
         case WidgetContent_Settings_PageButton:
             screenManagerInstance.screenMode = ScreenMode_Widget;
             Screen_redraw_Screen();
+            rendering_Normal(true);
             return;
         case WidgetContent_Settings_PageButton_Audio:
             screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
@@ -344,7 +352,10 @@ static void settings_enter_press()
             printf("Page Button not found\n");
             break;
         }
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         draw_Settings_Scrollbar();
+        xSemaphoreGive(buffer_Mutex);
+        rendering_Settings(false);
     }
     else
     {
@@ -352,7 +363,10 @@ static void settings_enter_press()
         if (screenManagerInstance.settingsScreen.selectedField)
         {
             screenManagerInstance.settingsScreen.selectedField = NULL;
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
+            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
+            xSemaphoreGive(buffer_Mutex);
+            rendering_Settings(false);
         }
         else
         {
@@ -360,18 +374,25 @@ static void settings_enter_press()
             {
                 screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
                 screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
+                xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
                 draw_Settings_Scrollbar();
+                xSemaphoreGive(buffer_Mutex);
+                rendering_Settings(false);
                 return;
             }
             //select field
             screenManagerInstance.settingsScreen.selectedField = screenManagerInstance.settingsScreen.hoveredField;
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true);
+            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true, false);
+            xSemaphoreGive(buffer_Mutex);
+            rendering_Settings(false);
         }
     }
 }
 
 static void ScreenManager_openSettings()
 {
+    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
     Paint_Clear(WHITE);
     ScreenManager_draw_status_bar();
     screenManagerInstance.screenMode = ScreenMode_Settings;
@@ -380,6 +401,8 @@ static void ScreenManager_openSettings()
     screenManagerInstance.settingsScreen.selectedField = NULL;
 
     draw_Settings_Scrollbar();
+    xSemaphoreGive(buffer_Mutex);
+    rendering_Settings(true);
 }
 
 static void settings_up_press()
@@ -388,16 +411,22 @@ static void settings_up_press()
     {
         if (screenManagerInstance.settingsScreen.hoveredField->prev)
         {
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
+            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
             screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->prev;
             //we are hovering a field
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
+            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
+            xSemaphoreGive(buffer_Mutex);
+            rendering_Settings(false);
         }
     }
     else
     {
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         //change Value in Field
 		vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_up);
+        xSemaphoreGive(buffer_Mutex);
+        rendering_Settings(false);
     }
 }
 
@@ -408,15 +437,21 @@ static void settings_down_press()
 		//we are hovering a field
 		if (screenManagerInstance.settingsScreen.hoveredField->next)
 		{
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
+            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
 			screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->next;
-			vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
-		}
+			vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
+            xSemaphoreGive(buffer_Mutex);
+            rendering_Settings(false);
+        }
     }
     else
     {
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
 		//change Value in Field
         vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_down);
+        xSemaphoreGive(buffer_Mutex);
+        rendering_Settings(false);
     }
 }
 
@@ -439,6 +474,7 @@ void ScreenManager_powerButtonPressed(bool longPress)
             else if (screenManagerInstance.screenMode == ScreenMode_Settings)
             {
                 screenManagerInstance.screenMode = ScreenMode_Widget;
+                rendering_Normal(true);
                 Screen_redraw_Screen();
             }
         }
@@ -526,18 +562,16 @@ void ScreenManager_EnterKeyPressed()
 */
 void Screen_redraw_Screen()
 {
-    //while (screenManagerInstance.isRendering)
-    //{
-    //    //wait vTaskDelay..
-    //}
     //Clear Screen and redraw all widgets
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         Paint_Clear(WHITE);
         ScreenManager_draw_status_bar();
         for (size_t i = 0; i < screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgetsAdded; i++)
         {
             vario_display_add_widget(&screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgets[i]);
         }
+        xSemaphoreGive(buffer_Mutex);
     }
 }

@@ -85,9 +85,12 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image);
 
 void EPD_3IN7_1Gray_Clear(void);
 void EPD_3IN7_1Gray_Init(void);
+//returns if full refresh has been made
 void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode);
 void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode);
 void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode);
+void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode);
+void EPD_3IN7_1Gray_WaitBusy();
 
 void EPD_3IN7_Sleep(void);
 

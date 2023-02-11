@@ -133,7 +133,8 @@ void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
 /*** Settings Implemented in "Settings_Widget_Vario.c" ***/
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected, bool reRenderRectangle);
+void vario_display_select_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
 void vario_display_settings_widget_handle_input(WidgetData* widget, Button_Direction direction);
 
 #endif

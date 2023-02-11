@@ -111,6 +111,6 @@ void MenuKeyReleased()
     {
         float difference = ((float)clock() / CLOCKS_PER_SEC) - startTimeDown;
         startedDown = FALSE;
-        ScreenManager_powerButtonPressed(difference * 1000);
+        ScreenManager_powerButtonPressed(difference > 0.5f);
     }
 }

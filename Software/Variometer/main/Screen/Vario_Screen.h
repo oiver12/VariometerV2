@@ -8,6 +8,8 @@
 */
 
 #include "Widget_Vario.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 #define MAX_SCREENS 5
 #define MAX_WIDGETS_SCREEN 10
@@ -52,7 +54,7 @@ typedef struct {
     uint8_t isRendering;
 } Vario_Screen_Manager_t;
 
-void ScreenManager_init();
+void ScreenManager_init(SemaphoreHandle_t semaphore);
 void ScreenManager_deinit();
 void ScreenManager_show_Screen(size_t screenIndex);
 void ScreenManager_draw_status_bar();
@@ -60,7 +62,9 @@ void ScreenManager_draw_status_bar();
 //void ScreenManager_set_volume(int value);
 //void ScreenManager_set_sdcard(int enabled);
 //void ScreenManager_set_Battery(int percentage);
-void ScreenManager_update();
+
+//gives back, if the screen should be full redrawn
+bool ScreenManager_update();
 void ScreenManager_powerButtonPressed(bool longPress);
 void ScreenManager_DownArrowPressed();
 void ScreenManager_UpArrowPressed();

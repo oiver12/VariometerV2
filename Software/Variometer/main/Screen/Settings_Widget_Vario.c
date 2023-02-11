@@ -21,10 +21,10 @@ static void Slider_Get_Value(WidgetContentType contentType ,uint16_t* currValue,
     }
 }
 
-static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, Settings_Page_t currPage)
+static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, Settings_Page_t currPage, bool reRenderRectangle)
 {
     //clear old rectangle
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
     if (widget->type == WidgetContent_Settings_PageButton_Audio)
@@ -40,10 +40,10 @@ static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, Set
     Paint_DrawBitMap_Paste(gImage_RightArrow, widget->x + widget->w - 30, widget->y + widget->h / 2 - 7, 15, 15, false);
 }
 
-static void add_Settings_BackButton_Widget(WidgetData* widget, bool hovered)
+static void add_Settings_BackButton_Widget(WidgetData* widget, bool hovered, bool reRenderRectangle)
 {
 	//clear old rectangle
-	Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
+	Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
 
 	Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
     Paint_DrawBitMap_Paste(gImage_LeftArrow, widget->x + 10, widget->y + widget->h / 2 - 7, 15, 15, false);
@@ -51,9 +51,9 @@ static void add_Settings_BackButton_Widget(WidgetData* widget, bool hovered)
 }
 
 //here selected means, that this field is selected. If its hovered, then it should display a thicker border
-static void add_Settings_Slider_Widget(WidgetData* widget, bool hovered, bool selected)
+static void add_Settings_Slider_Widget(WidgetData* widget, bool hovered, bool selected, bool reRenderRectangle)
 {
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered && !selected ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, selected ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Volume", &Font12, selected ? BLACK : WHITE, selected ? WHITE : BLACK, TRUE);
     uint16_t currValue, maxVolume;
@@ -70,32 +70,39 @@ static void add_Settings_Slider_Widget(WidgetData* widget, bool hovered, bool se
     Paint_DrawString_EN(widget->x + widget->w - 40, widget->y + 18, buffer, &Font16, selected ? BLACK : WHITE, selected ? WHITE : BLACK, true);
 }
 
-static void add_Settings_SoundThreshold(WidgetData* widget, bool hovered, bool selected)
+static void add_Settings_SoundThreshold(WidgetData* widget, bool hovered, bool selected, bool reRenderRectangle)
 {
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_FULL);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered && !selected ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, selected ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     Paint_DrawString_EN(widget->x + 5, widget->y + 5, "Sink Threshold", &Font12, selected ? BLACK : WHITE, selected ? WHITE : BLACK, TRUE);
 }
 
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected)
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected, bool reRenderRectangle)
 {
     switch (widget->style)
     {
     case Widget_settings_BackButton:
-		add_Settings_BackButton_Widget(widget, hovered);
+		add_Settings_BackButton_Widget(widget, hovered, reRenderRectangle);
 		break;
     case Widget_Settings_PageButton:
-        add_Settings_PageButton_Widget(widget, hovered, currPage);
+        add_Settings_PageButton_Widget(widget, hovered, currPage, reRenderRectangle);
         break;
     case Widget_Settings_Slider:
-        add_Settings_Slider_Widget(widget, hovered, selected);
+        add_Settings_Slider_Widget(widget, hovered, selected, reRenderRectangle);
         break;
     case Widget_Settings_SoundThreshold:
-        add_Settings_SoundThreshold(widget, hovered, selected);
+        add_Settings_SoundThreshold(widget, hovered, selected, reRenderRectangle);
         break;
     default:
         printf("Setting Widget not implemented!\n");
     }
+}
+
+void vario_display_select_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected)
+{
+    if(!hovered)
+        Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, DRAW_FILL_EMPTY);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
 }
 
 void vario_handle_Slider(WidgetData* widget, Button_Direction direction)
