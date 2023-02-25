@@ -1,18 +1,20 @@
 #include "RenderSystem.h"
 #include "E_Ink/EPD_3in7.h"
 #include "E_Ink/GUI_Paint.h"
-#include "Vario_Screen.h"
+#include "ScreenManager.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
+#include "SoundManager.h"
 
-RenderModes_t currentRenderMode = RenderMode_Normal;
+RenderModes_t currentRenderMode = RenderMode_Update;
 bool isSending = false;
-bool settingsRender = false;
 bool fullRedraw = true;
 static SemaphoreHandle_t buffer_Mutex = NULL;
 QueueHandle_t renderQueue = NULL;
+
+static const char *TAG = "RENDER";
 
 void rendering_Task(void *pvParameters)
 {
@@ -21,7 +23,7 @@ void rendering_Task(void *pvParameters)
     Display_RefreshMode refreshMode = PART_G_T_BW;
     while (1)
     {
-        if (currentRenderMode == RenderMode_Normal)
+        if (currentRenderMode == RenderMode_Update)
         {
             if(counter % 10 == 0)
                 ScreenManager_draw_status_bar();
@@ -49,11 +51,8 @@ void displayRefreshTask(void *pvParameters)
     while(1)
     {
         xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
-        printf("sixth %i\n", (int)esp_timer_get_time());
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        printf("seventh %i\n", (int)esp_timer_get_time());
         EDP_3IN7_1Gray_Start(ScreenBuffer, refreshMode);
-        printf("eight %i\n", (int)esp_timer_get_time());
         xSemaphoreGive(buffer_Mutex);
         EPD_3IN7_1Gray_WaitBusy();
     }
@@ -68,7 +67,7 @@ void startRendering(uint8_t* ScreenBuffer)
     buffer_Mutex = xSemaphoreCreateMutex();
     ScreenManager_init(buffer_Mutex);
     
-    static WidgetData widgetDataScreen0[7] = {
+        static WidgetData widgetDataScreen0[7] = {
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 87},
         {.extraStyle = WS_FONT_20_CONTENT, .h = 193, .w = 180, .style = Widget_Chart, .type = WidgetContent_Altitude_Baro, .x = 100, .y = 87},
@@ -78,6 +77,12 @@ void startRendering(uint8_t* ScreenBuffer)
 		{.extraStyle = WS_FONT_24_CONTENT, .h = 63, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 280, .y = 187},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 7);
+    static WidgetData widgetDataScreen1[3] = {
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_GPS, .x = 0, .y = 27},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
+		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
+    };
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 3);
     ScreenManager_show_Screen(0);
     
     renderQueue = xQueueCreate(1, sizeof(Display_RefreshMode));
@@ -88,17 +93,14 @@ void startRendering(uint8_t* ScreenBuffer)
 void stopRendering_disableScreen()
 {
 }
-void rendering_Settings(bool varfullRedraw)
+void rendering_Push(bool varfullRedraw)
 {
-    currentRenderMode = RenderMode_Settings;
-    settingsRender = true;
-    fullRedraw = varfullRedraw;
-    Display_RefreshMode refreshMode = fullRedraw ? FULL_G_T_BW : PART_BW_T_BW;
-    printf("fifth %i\n", (int)esp_timer_get_time());
+    currentRenderMode = RenderMode_Push;
+    Display_RefreshMode refreshMode = varfullRedraw ? FULL_G_T_BW : PART_BW_T_BW;
     xQueueOverwrite(renderQueue, &refreshMode);
 }
-void rendering_Normal(bool varfullRedraw)
+void rendering_Update(bool varfullRedraw)
 {
-    currentRenderMode = RenderMode_Normal;
+    currentRenderMode = RenderMode_Update;
     fullRedraw = varfullRedraw;
 }

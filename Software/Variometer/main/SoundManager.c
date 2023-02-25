@@ -4,6 +4,7 @@
 #include <string.h>
 #include <driver/gpio.h>
 #include "DeviceContext.h"
+#include <esp_log.h>
 
 #define BUFF_SIZE   2048
 #define PDM_TX_FREQ_HZ          44100           // I2S PDM TX frequency
@@ -16,14 +17,38 @@
 #define AUDIO_EN 21
 #define AUDIO_GAIN 47
 
+#define Sound_Size_Queue 10
+
 //#define WAVE_AMPTITUDE          (6000.0)        // 1~32767
 #define SINE_WAVE_LEN(tone)     (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
 #define BYTE_NUM_EVERY_TONE(duration)     (duration * PDM_TX_FREQ_HZ / 1000)
 
+static const char *TAG = "SoundManager";
+
 int16_t *buffer;
 int16_t bufferZero[200];
 
+QueueHandle_t soundQueue = NULL;
 SoundManager_t soundManager_instance; 
+
+//349, 440, 523
+SoundManager_Tone_t startSeqeunce[3] = {
+    {349, 500},
+    {440, 500},
+    {523, 500}
+};
+
+static void SoundManager_NoSound()
+{
+    size_t w_bytes = 0;
+    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(100); tot_bytes += w_bytes) 
+    {
+        if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
+        {
+            printf("Write Task: i2s write failed\n");
+        }
+    }
+}
 
 void SoundManager_Task(void *parameters)
 {
@@ -31,8 +56,25 @@ void SoundManager_Task(void *parameters)
     float lastFreqeuncy = soundManager_instance.frequencyNow-1;
     size_t w_bytes = 0;
     int tone_point = 0;
+    SoundManager_playToneArray(startSeqeunce, 3);
     while(true)
     {
+        if(uxQueueMessagesWaiting(soundQueue) != 0)
+        {
+            SoundManager_Tone_t tempTone;
+            xQueueReceive(soundQueue, &tempTone, 0);
+            if(tempTone.frequency == 0)
+            {
+                SoundManager_NoSound();
+                continue;
+            }
+            SoundManager_playSinWave(tempTone.frequency, tempTone.duration);
+            if(uxQueueMessagesWaiting(soundQueue) == 0)
+            {
+                SoundManager_NoSound();
+            }
+            continue;
+        }
         if(soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state == no_Sound)
         {
             vTaskDelay(20 / portTICK_PERIOD_MS);
@@ -156,6 +198,9 @@ esp_err_t init_SoundManager()
     soundManager_instance.indexCurrentToneArray = 1;
     uint16_t volume = 6000;
     vario_settings_set_member(&volume, vario_settings_soundVolume);
+    
+    soundQueue = xQueueCreate(Sound_Size_Queue, sizeof(SoundManager_Tone_t));
+
     xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, NULL, 7, NULL);
     return ESP_OK;
 }
@@ -166,6 +211,20 @@ esp_err_t deinit_SoundManager()
     free(soundManager_instance.ToneArray);
     free(buffer);
     return ESP_OK;
+}
+
+void SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray)
+{
+    for (size_t i = 0; i < sizeToneArray; i++)
+    {
+        BaseType_t returnValue = xQueueSend(soundQueue, &toneArray[i], 3);
+        if(returnValue != pdTRUE)
+        {
+            ESP_LOGI(TAG, "SoundManager: Queue is full");
+            return;
+        }
+    }
+    
 }
 
 esp_err_t SoundManager_playSinWave(int frequency, int duration)

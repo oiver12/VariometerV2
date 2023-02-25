@@ -1,6 +1,6 @@
 //DRIVER
 #define BMI088_I2C
-#define NotifyNMEASentence
+//#define NotifyNMEASentence
 #define MAGNETIC_DEVIATION 15
 
 //SCREEN
@@ -14,3 +14,7 @@
 #define TASK_ACC_PRIORITY 2
 #define TASK_LV_TASK_HANDLE_PRIORITY 2
 #define TASK_SCREEN_RENDER_PRIORITY 8
+
+#define TakeOffSpeed 6 //km/h
+#define LandingSpeed 2 //km/h
+#define LandingTimout 10 //s

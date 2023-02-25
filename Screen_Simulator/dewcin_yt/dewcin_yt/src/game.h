@@ -5,7 +5,7 @@
 #include <string>
 #include <functional>
 extern "C" {
-#include "Screen/E-Ink/GUI_Paint.h"
+#include "Screen/E_Ink/GUI_Paint.h"
 }
 
 extern "C" {

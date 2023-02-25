@@ -19,6 +19,7 @@ typedef enum {
     ScreenMode_Widget = 0,
     ScreenMode_Settings = 1,
     ScreenMode_PowerAccept = 2,
+    ScreenMode_PopUp = 3,
 } ScreenMode;
 
 typedef struct {
@@ -47,21 +48,16 @@ typedef struct {
 
 typedef struct {
     VarioScreen_t screens[MAX_SCREENS];
-	VarioScreen_Settings_t settingsScreen;
+    VarioScreen_Settings_t settingsScreen;
     size_t screensAdded;
     uint8_t curr_Screen;
     ScreenMode screenMode;
-    uint8_t isRendering;
 } Vario_Screen_Manager_t;
 
 void ScreenManager_init(SemaphoreHandle_t semaphore);
 void ScreenManager_deinit();
 void ScreenManager_show_Screen(size_t screenIndex);
 void ScreenManager_draw_status_bar();
-//void ScreenManager_set_gps(int enabled);
-//void ScreenManager_set_volume(int value);
-//void ScreenManager_set_sdcard(int enabled);
-//void ScreenManager_set_Battery(int percentage);
 
 //gives back, if the screen should be full redrawn
 bool ScreenManager_update();
@@ -71,5 +67,7 @@ void ScreenManager_UpArrowPressed();
 void ScreenManager_EnterKeyPressed();
 void Screen_redraw_Screen();
 void ScreenManager_add_Screen_add_widgets(WidgetData* widgets, size_t size);
+void ScreenManager_showPopUp(PopUpConfig_t config);
+void ScreenManager_closePopUp();
 
 #endif

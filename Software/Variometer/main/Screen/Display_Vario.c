@@ -3,7 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "DeviceContext.h"
-#include "Vario_Screen.h"
+#include "ScreenManager.h"
 #include <esp_log.h>
 #ifdef SCREEN_EINK
 #include "E_Ink/EPD_3in7.h"

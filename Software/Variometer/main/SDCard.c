@@ -107,7 +107,7 @@ esp_err_t deinit_sdcard(sdcard_t *sdcard)
 }
 
 //TODO: directory not working
-FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool createNew)
+FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool writeToFile)
 {
     char buffer[100];
     strcpy(buffer, sdcard->Mount_Point);
@@ -138,16 +138,21 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
     // {
     //     ESP_LOGE(TAG, "File already exists");
     // }
-    if(createNew)
+    if(writeToFile)
         return fopen(buffer, "w");
     else
-        return fopen(buffer, "a");
+        return fopen(buffer, "r");
 }
 
-bool fileExists_sdcard(sdcard_t *sdcard, const char *fileName)
+bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *fileName)
 {
-    char buffer[strlen(sdcard->Mount_Point) + strlen(fileName) + 1];
+    char buffer[strlen(sdcard->Mount_Point) + strlen(directory) + strlen(fileName) + 2];
     strcpy(buffer, sdcard->Mount_Point);
+    if(directory != NULL)
+    {
+        strcat(buffer, directory);
+        strcat(buffer, "/");
+    }
     strcat(buffer, fileName);
     struct stat st = {0};   
     return stat(buffer, &st) != -1;
@@ -181,6 +186,6 @@ uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard)
 
     state.freeSpace = tmp_free_bytes;
     state.maxSpace = tmp_total_bytes;
-    device_state_set_member(&state, device_state_statusGPS);
+    device_state_set_member(&state, device_state_statusSDCard);
     return tmp_free_bytes;
 }

@@ -1,6 +1,9 @@
-﻿#include <stdint.h>
+﻿#pragma once
+
+#include <stdint.h>
 #include <stdbool.h>
 #include "FIFO.h"
+#include "nmea_parser.h"
 
 /*
 * Speicher für alle Device Information. Auf diese können alle zugreifen (z.B. wird vertVel gespeichert, welche vom Bildschirm gelesen wird und
@@ -15,27 +18,31 @@
 
 typedef struct {
     float vertVelocity; //m/s  0. bit (0x1)
-    float groundSpeed; //km/h  1. bit (0x2)
     fifo_t vertVel_Fifo;
-    float vertVel_Sum; // 2. bit (0x4)
-    float vertAcc; //m/s^2  3. bit (0x8)
-    float pressure; //hPa   4. bit (0x10)
-    float temperature; //C° 5. bit (0x20)
-    int heading; //0-360° 6. bit (0x40)
-    float altitudeBaro; //m 7. bit(0x80)
+    float vertVel_Sum; // 1. bit (0x4)
+    float vertAcc; //m/s^2  2. bit (0x8)
+    float pressure; //hPa   3. bit (0x10)
+    float temperature; //C° 4. bit (0x20)
+    int heading; //0-360° 5. bit (0x40)
+    float altitudeBaro; //m 6. bit(0x80)
+    gps_t gps_data;
+    float groundLevel;
+    float agl;
 
     uint16_t stateChange;
 } vario_state_t;
 
 typedef enum {
     vario_state_vertVel = 1 << 0,
-    vario_state_groundSpeed = 1 << 1,
-    vario_state_vertVelLazy = 1 << 2,
-    vario_state_vertAcc = 1 << 3,
-    vario_state_pressure = 1 << 4,
-    vario_state_temperature = 1 << 5,
-    vario_state_heading = 1 << 6,
-    vario_state_altitudeBaro = 1 << 7,
+    vario_state_vertVelLazy = 1 << 1,
+    vario_state_vertAcc = 1 << 2,
+    vario_state_pressure = 1 << 3,
+    vario_state_temperature = 1 << 4,
+    vario_state_heading = 1 << 5,
+    vario_state_altitudeBaro = 1 << 6,
+    vario_state_gps_data = 1 << 7,
+    vario_state_groundLevel = 1 << 8,
+    vario_state_agl = 1 << 9,
 } vario_state_member_t;
 
 typedef struct {
@@ -74,22 +81,16 @@ typedef struct {
     SD_CARD_STATE status;
 } sd_card_state_t;
 
-typedef enum {
-    GPS_STATE_FIX_INVALID, /*!< Not fixed */
-    GPS_STATE_FIX_GPS,     /*!< GPS */
-    GPS_STATE_FIX_DGPS,    /*!< Differential GPS */
-} GPS_State;
-
 typedef struct {
-    float batteryPercentage;
-    GPS_State statusGPS;
+    float batteryPercentage; //from 0 to 100
+    gps_fix_mode_t statusGPS;
     sd_card_state_t status_sd_card;
 
     uint16_t stateChange;
 } device_state_t;
 
 typedef enum {
-    device_state_batteryPercentage = 1 << 0,
+    device_state_batteryPercentage = 1 << 0, //from 0 to 100
     device_state_statusGPS = 1 << 1,
     device_state_statusSDCard = 1 << 2,
 } device_state_member_t;
@@ -104,7 +105,7 @@ typedef struct {
     uint16_t stateChange;
 } flight_stats_t;
 
-void init_DeviceContext();
+void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle);
 
 /*
 * Vario State. value has to be the right type for the returnValue!!!

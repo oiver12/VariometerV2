@@ -1,9 +1,17 @@
 ﻿#include "DeviceContext.h"
 #include <math.h>
-#include "../../SemaphorTemp.h"
-#include "../../SoundManager.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "SoundManager.h"
 
 //#define portMAX_DELAY 10
+
+SoundManager_Tone_t gpsFix_ToneArray[3] =
+{
+    {262, 500},
+    {339, 500},
+    {392, 500},
+};
 
 vario_state_t vario_state;
 vario_settings_t vario_settings;
@@ -17,7 +25,32 @@ SemaphoreHandle_t semaphore_paraglider_info;
 SemaphoreHandle_t semaphore_device_state;
 SemaphoreHandle_t semaphore_flight_stats;
 
-void init_DeviceContext()
+static void device_state_gps_handle(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
+    gps_t* gps = NULL;
+    gps_t* gps_old = NULL;
+    switch (event_id)
+    {
+    case GPS_UPDATE:
+        xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
+        gps = (gps_t*)event_data;
+        gps_old = &vario_state.gps_data;
+        vario_state.gps_data = *gps;
+        device_state_set_member(&gps->fix_mode, device_state_statusGPS);
+        //Fix GPS New
+        xSemaphoreGive(semaphore_vario_state);
+        if (gps->fix_mode != GPS_MODE_INVALID && gps->fix_mode != gps_old->fix_mode)
+        {
+            SoundManager_playToneArray(gpsFix_ToneArray, 3);
+        }
+        break;
+    default:
+        printf("GPS Event konnte nicht gefunden werden!\n");
+        break;
+    }
+}
+
+void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
 {
     semaphore_vario_state = xSemaphoreCreateMutex();
     semaphore_vario_settings = xSemaphoreCreateMutex();
@@ -27,7 +60,8 @@ void init_DeviceContext()
     vario_state.vertVel_Fifo = fifo_create(FIFO_VERTLAZY_SIZE, sizeof(float));
 
     vario_settings.soundVolume = 10000;
-    device_state.statusGPS = GPS_STATE_FIX_INVALID;
+    device_state.statusGPS = GPS_MODE_INVALID;
+    nmea_parser_add_handler(nmea_parser_handle, device_state_gps_handle, NULL, GPS_UPDATE);
 }
 
 void vario_state_set_member(void* value, vario_state_member_t member)
@@ -46,9 +80,6 @@ void vario_state_set_member(void* value, vario_state_member_t member)
         vario_state.vertVel_Sum += vario_state.vertVelocity;
         fifo_add(vario_state.vertVel_Fifo, &vario_state.vertVelocity);
         vario_state.stateChange |= vario_state_vertVelLazy;
-        break;
-    case vario_state_groundSpeed:
-        vario_state.groundSpeed = *((float*)value);
         break;
     case vario_state_vertVelLazy:
         printf("Cant set vertVelLazy set vertVel, and then get vertVelLazy\n");
@@ -72,8 +103,18 @@ void vario_state_set_member(void* value, vario_state_member_t member)
     case vario_state_altitudeBaro:
         vario_state.altitudeBaro = *((float*)value);
         break;
+    case vario_state_gps_data:
+        vario_state.gps_data = *((gps_t*)value);
+        break;
+    case vario_state_groundLevel:
+        vario_state.groundLevel = *((float*)value);
+        break;
+    case vario_state_agl:
+        vario_state.agl = *((float*)value);
+        break;
     default:
         printf(" Member von Vario State konnte nicht gefunden werden!\n");
+        break;
     }
     vario_state.stateChange |= member;
     xSemaphoreGive(semaphore_vario_state);
@@ -86,9 +127,6 @@ bool vario_state_get_member(void* value, vario_state_member_t member, bool state
     {
     case vario_state_vertVel:
         *(float*)value = vario_state.vertVelocity;
-        break;
-    case vario_state_groundSpeed:
-        *(float*)value = vario_state.groundSpeed;
         break;
     case vario_state_vertVelLazy:
         *(float*)value = vario_state.vertVel_Sum / FIFO_VERTLAZY_SIZE;
@@ -108,8 +146,18 @@ bool vario_state_get_member(void* value, vario_state_member_t member, bool state
     case vario_state_altitudeBaro:
         *(float*)value = vario_state.altitudeBaro;
         break;
+    case vario_state_gps_data:
+        *(gps_t*)value = vario_state.gps_data;
+        break;
+    case vario_state_groundLevel:
+        *(float*)value = vario_state.groundLevel;
+        break;
+    case vario_state_agl:
+        *(float*)value = vario_state.agl;
+        break;
     default:
         printf("Member von Vario State konnte nicht gefunden werden!\n");
+        break;
     }
     bool returnValue = vario_state.stateChange & member;
     if (stateChange)
@@ -127,7 +175,7 @@ void device_state_set_member(void* value, device_state_member_t member)
         device_state.batteryPercentage = *((float*)value);
         break;
     case device_state_statusGPS:
-        device_state.statusGPS = *((GPS_State*)value);
+        device_state.statusGPS = *((gps_fix_mode_t*)value);
         break;
     case device_state_statusSDCard:
         device_state.status_sd_card = *((sd_card_state_t*)value);
@@ -149,7 +197,7 @@ bool device_state_get_member(void* value, device_state_member_t member, bool sta
         *(float*)value = device_state.batteryPercentage;
         break;
     case device_state_statusGPS:
-        *(GPS_State*)value = device_state.statusGPS;
+        *(gps_fix_mode_t*)value = device_state.statusGPS;
         break;
     case device_state_statusSDCard:
         *(sd_card_state_t*)value = device_state.status_sd_card;

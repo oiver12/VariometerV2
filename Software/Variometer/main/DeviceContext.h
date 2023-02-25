@@ -24,7 +24,12 @@ typedef struct {
     float temperature; //C° 5. bit (0x20)
     int heading; //0-360° 6. bit (0x40)
     float altitudeBaro; //m 7. bit(0x80)
+    float altitudeGps; //m 8. bit(0x100)
     gps_t gps_data;
+    float groundLevel;
+    float agl;
+    float longitude;
+    float latitude;
 
     uint16_t stateChange;
 } vario_state_t;
@@ -38,7 +43,12 @@ typedef enum {
     vario_state_temperature = 1 << 5,
     vario_state_heading = 1 << 6,
     vario_state_altitudeBaro = 1 << 7,
-    vario_state_gps_data = 1 << 8,
+    vario_state_altitudeGPS = 1 << 8,
+    vario_state_gps_data = 1 << 9,
+    vario_state_groundLevel = 1 << 10,
+    vario_state_agl = 1 << 11,
+    vario_state_longitude = 1 << 12,
+    vario_state_latitude = 1 << 13,
 } vario_state_member_t;
 
 typedef struct {
@@ -77,15 +87,9 @@ typedef struct {
     SD_CARD_STATE status;
 } sd_card_state_t;
 
-typedef enum {
-    GPS_STATE_FIX_INVALID, /*!< Not fixed */
-    GPS_STATE_FIX_GPS,     /*!< GPS */
-    GPS_STATE_FIX_DGPS,    /*!< Differential GPS */
-} GPS_State;
-
 typedef struct {
     float batteryPercentage; //from 0 to 100
-    GPS_State statusGPS;
+    gps_fix_mode_t statusGPS;
     sd_card_state_t status_sd_card;
 
     uint16_t stateChange;
@@ -98,14 +102,42 @@ typedef enum {
 } device_state_member_t;
 
 typedef struct {
+    float lon;
+    float lat;
+    float alt;
+} Position_t;
+
+typedef struct {
     float altitudeMax;
     float altitudeMin;
 
     float maxVelX;
     float minVelX;
 
+    uint32_t takeOffTime; //in ms
+    uint32_t flightTime; //in ms
+    Position_t takeOffPosition;
+    
+    float distTakeOff;
+    float distFlight;
+    Position_t lastPosition;
+
+    uint32_t landingStartTime; //in ms
     uint16_t stateChange;
 } flight_stats_t;
+
+typedef enum {
+    flight_stats_altitudeMax = 1 << 0,
+    flight_stats_altitudeMin = 1 << 1,
+    flight_stats_maxVelX = 1 << 2,
+    flight_stats_minVelX = 1 << 3,
+    flight_stats_takeOffTime = 1 << 4,
+    flight_stats_flightTime = 1 << 5,
+    flight_stats_takeOffPosition = 1 << 6,
+    flight_stats_distTakeOff = 1 << 7,
+    flight_stats_distFlight = 1 << 8,
+    flight_stats_lastPosition = 1 << 9,
+} flight_stats_member_t;
 
 void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle);
 
@@ -124,3 +156,8 @@ bool vario_settings_get_member(void* value, vario_settings_member_t member, bool
 */
 void device_state_set_member(void* value, device_state_member_t member);
 bool device_state_get_member(void* value, device_state_member_t member, bool stateChange);
+/*
+* Flight Stats
+*/
+void flight_stats_set_member(void* value, flight_stats_member_t member);
+bool flight_stats_get_member(void* value, flight_stats_member_t member, bool stateChange);

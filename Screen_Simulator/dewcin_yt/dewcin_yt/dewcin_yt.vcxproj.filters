@@ -5,41 +5,50 @@
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\renderer.cpp" />
+    <ClCompile Include="src\UI_Demo.c" />
+    <ClCompile Include="src\Screen\freertos\semphr.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\RenderSystem.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\nmea_parser.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
     <ClCompile Include="src\Screen\DeviceContext.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\Vario_Screen.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\Widget_Vario.c">
       <Filter>Screen</Filter>
     </ClCompile>
     <ClCompile Include="src\Screen\FIFO.c">
       <Filter>Screen</Filter>
     </ClCompile>
-    <ClCompile Include="src\UI_Demo.c" />
-    <ClCompile Include="src\Screen\E-Ink\font8.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\E-Ink\font12.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\E-Ink\font16.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\E-Ink\font20.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\E-Ink\font24.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Screen\E-Ink\GUI_Paint.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
-    <ClCompile Include="SemaphorTemp.c">
-      <Filter>Screen</Filter>
-    </ClCompile>
     <ClCompile Include="src\Screen\Settings_Widget_Vario.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\Widget_Vario.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\font8.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\font12.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\font16.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\font20.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\font24.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\E_Ink\GUI_Paint.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\PopUp_Widget_Vario.c">
+      <Filter>Screen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Screen\Vario_Screen.c">
       <Filter>Screen</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,10 +57,37 @@
     <ClInclude Include="src\game.h" />
     <ClInclude Include="src\input.h" />
     <ClInclude Include="src\renderer.h" />
+    <ClInclude Include="src\Screen\vario_config.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\freertos\semphr.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\freertos\FreeRTOS.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\nmea_parser.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\esp_sleep.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\driver\gpio.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\RenderSystem.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
     <ClInclude Include="src\Screen\DeviceContext.h">
       <Filter>Screen</Filter>
     </ClInclude>
-    <ClInclude Include="src\Screen\vario_config.h">
+    <ClInclude Include="src\Screen\Display_Vario.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\FIFO.h">
+      <Filter>Screen</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Screen\SoundManager.h">
       <Filter>Screen</Filter>
     </ClInclude>
     <ClInclude Include="src\Screen\Vario_Screen.h">
@@ -60,19 +96,10 @@
     <ClInclude Include="src\Screen\Widget_Vario.h">
       <Filter>Screen</Filter>
     </ClInclude>
-    <ClInclude Include="src\Screen\FIFO.h">
+    <ClInclude Include="src\Screen\E_Ink\fonts.h">
       <Filter>Screen</Filter>
     </ClInclude>
-    <ClInclude Include="src\Screen\E-Ink\fonts.h">
-      <Filter>Screen</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Screen\E-Ink\GUI_Paint.h">
-      <Filter>Screen</Filter>
-    </ClInclude>
-    <ClInclude Include="SemaphorTemp.h">
-      <Filter>Screen</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundManager.h">
+    <ClInclude Include="src\Screen\E_Ink\GUI_Paint.h">
       <Filter>Screen</Filter>
     </ClInclude>
   </ItemGroup>

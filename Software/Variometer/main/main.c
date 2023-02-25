@@ -24,6 +24,7 @@
 #include "DeviceContext.h"
 #include "Screen/Display_Vario.h"
 #include "ButtonInput.h"
+#include "AGL.h"
 
 #define POWSW_ENABLE 13
 
@@ -374,25 +375,30 @@ void app_main(void)
     gps_config.uart.rx_pin = USART2_RX;
     nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
     ESP_LOGI(TAG, "GPS started");
-    // sdcard_t sdcard;
-    pressure_temperature_Mutex = xSemaphoreCreateMutex();
-    acc_Mutex = xSemaphoreCreateMutex();
+
     init_DeviceContext(gps_nmea_hdl);
+
+    init_SoundManager();
+
+    init_Display();
 
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     startLogging(sdcard, gps_nmea_hdl);
     start_IGCLogger(sdcard, gps_nmea_hdl);
-    
-    init_SoundManager();
 
     init_Battery_Manager(4);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    ButtonInput_Init();
+
+    AGL_startAGL(sdcard, gps_nmea_hdl);
     
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    
+    pressure_temperature_Mutex = xSemaphoreCreateMutex();
+    acc_Mutex = xSemaphoreCreateMutex();
+
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
-
-    init_Display();
-    ButtonInput_Init();
     return;
 }

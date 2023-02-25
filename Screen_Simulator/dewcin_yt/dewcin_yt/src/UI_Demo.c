@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "Screen/DeviceContext.h"
 #include "Screen/Vario_Screen.h"
-#include "Screen/E-Ink/GUI_Paint.h"
+#include "Screen/E_Ink/GUI_Paint.h"
 #include <time.h>
+#include <math.h>
+#include "Screen/DeviceContext.h"
 
 float startTimeDown = 0.0f;
 uint8_t startedDown = FALSE;
@@ -10,9 +12,93 @@ uint8_t startedLeft = FALSE;
 uint8_t startedRight = FALSE;
 uint8_t startedEnter = FALSE;
 
+static const int secondsPerPx = 1;  //arc seconds per pixel (3 equals cca 90m)
+static const int totalPx = 3601;
+
+static void readPixel(FILE* file, int y, int x, int* height)
+{
+    int row = (totalPx - 1) - y;
+    int col = x;
+    int pos = (row * totalPx + col) * 2;
+    
+    uint8_t temp[2];
+    fseek(file, pos, SEEK_SET);
+    fread(temp, sizeof(uint8_t), 2, file);
+	*height = 0 | (temp[0] << 8) | temp[1];
+}
+
+void readAGL(double latitude, double longitude)
+{
+    //float height = srtmGetElevation(latitude, longitude);
+    
+	int latDec = (int)floor(latitude);
+	int lonDec = (int)floor(longitude);
+    char fileName[50];
+    sprintf(fileName, "%s/%c%02d%c%03d.hgt", "AGL",
+        latitude > 0 ? 'N' : 'S', abs(latDec),
+        longitude > 0 ? 'E' : 'W', abs(lonDec));
+    
+    FILE* fileptr;
+
+    size_t bufferSize;
+    fileptr = fopen(fileName, "r"); 
+
+    if (!fileptr)
+        bufferSize = 0;
+
+    float secondsLat = (latitude - latDec) * 60 * 60;
+    float secondsLon = (longitude - lonDec) * 60 * 60;
+    int y = secondsLat / secondsPerPx;
+	int x = secondsLon / secondsPerPx;
+    
+    int height[4];
+    readPixel(fileptr, y, x, &height[2]);
+    readPixel(fileptr, y + 1, x, &height[0]);
+    readPixel(fileptr, y, x + 1, &height[3]);
+    readPixel(fileptr, y + 1, x + 1, &height[1]);
+
+    //ratio where X lays
+    float dy = fmod(secondsLat, secondsPerPx) / secondsPerPx;
+    float dx = fmod(secondsLon, secondsPerPx) / secondsPerPx;
+
+    // Bilinear interpolation
+    // h0------------h1
+    // |
+    // |--dx-- .
+    // |       |
+    // |      dy
+    // |       |
+    // h2------------h3   
+     
+    float rightHeight = height[0] * dy * (1 - dx) +
+        height[1] * dy * (dx)+
+        height[2] * (1 - dy) * (1 - dx) +
+        height[3] * (1 - dy) * dx;
+    /*double lat = latitude - (int)latitude;
+    double lon = longitude - (int)longitude;
+    
+    double latitudeSeconds = lat * 3600;
+	double longitudeSeconds = lon * 3600;
+
+	double foundLat = ((double)round(latitudeSeconds / 3) * 3.0) / 3600.0;
+    double foundLong = ((double)round(longitudeSeconds / 3) * 3.0) / 3600.0;
+
+    int i = 1201 - round(latitudeSeconds / 3);
+	int j = round(longitudeSeconds / 3);
+
+    uint8_t temp[2];
+    
+    fseek(fileptr, ((i - 1) * 1201 + (j - 1)) * 2, SEEK_SET);
+    fread(temp, sizeof(uint8_t), 2, fileptr);
+
+    uint16_t alt122 = (temp[0] << 8) + temp[1];*/
+}
+
 void startRender()
 {
-    init_DeviceContext();
+    readAGL(46.840812059784795, 8.41060546239144);
+    static nmea_parser_handle_t parser_hdl;
+    init_DeviceContext(parser_hdl);
 
     sd_card_state_t sdcard_state = {
         .status = SD_CARD_STATE_INIT | SD_CARD_STATE_IGC_LOGGING,
@@ -27,7 +113,9 @@ void startRender()
     uint16_t volume = 10000;
     vario_settings_set_member(&volume, vario_settings_soundVolume);
 
-    ScreenManager_init();
+    static SemaphoreHandle_t semphr;
+
+    ScreenManager_init(semphr);
     
     static WidgetData widgetDataScreen0[7] = {
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
@@ -39,10 +127,12 @@ void startRender()
 		{.extraStyle = WS_FONT_24_CONTENT, .h = 63, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 280, .y = 187},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 7);
-    static WidgetData widgetDataScreen1[1] = {
-        {.extraStyle = WS_FONT_32_CONTENT, .h = 90, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 1, .y = 27},
+    static WidgetData widgetDataScreen1[3] = {
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_GPS, .x = 0, .y = 27},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
+		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
     };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 1);
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 3);
     ScreenManager_show_Screen(0);
 }
 
@@ -113,4 +203,31 @@ void MenuKeyReleased()
         startedDown = FALSE;
         ScreenManager_powerButtonPressed(difference > 0.5f);
     }
+}
+
+void PKeyPressed()
+{
+	gps_time_t time = {
+		.hour = 12,
+		.minute = 34,
+		.second = 56
+	};
+	gps_t gps = {
+		.altitude = 1000,
+		.latitude = 46.840812059784795,
+		.longitude = 8.41060546239144,
+		.speed = 10,
+		.tim = time,
+		.valid = 1
+	};
+	vario_state_set_member(&gps, vario_state_gps_data);
+    PopUpConfig_t config = {
+        .x = 150,
+        .y = 100,
+        .w = 100,
+        .h = 60,
+        .type = PopUpType_TakeOff,
+        .timeToDisplay = 3000,
+    };
+    ScreenManager_showPopUp(config);
 }

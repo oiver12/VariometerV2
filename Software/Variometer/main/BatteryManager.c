@@ -6,6 +6,9 @@
 #include "DeviceContext.h"
 
 #define BAT_MS 3
+
+#define maxVoltage 4 //nicht 4.2, weil der ESP nur bis 3.1V und nicht bis 3.3v lesen kann
+#define minVoltage 3.3
 static const char *TAG = "Battery Manager";
 
 Battery_Manager_t battery_Manager;
@@ -22,7 +25,7 @@ static bool adc_calibration_init()
         ESP_LOGW(TAG, "eFuse not burnt, skip software calibration");
     } else if (ret == ESP_OK) {
         cali_enable = true;
-        esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_DEFAULT, 0, battery_Manager.adc_chars);
+        esp_adc_cal_value_t temp = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_DEFAULT, 0, battery_Manager.adc_chars);
     } else {
         ESP_LOGE(TAG, "Invalid arg");
     }
@@ -40,7 +43,8 @@ esp_err_t deinit_Battery_Manager()
 esp_err_t readPercentage_Battery()
 {
     gpio_set_level(BAT_MS, 1);
-    int sumValue = 0;
+    vTaskDelay(20 / portTICK_PERIOD_MS);
+    uint sumValue = 0;
     for (size_t i = 0; i < battery_Manager.oversampling; i++)
     {
         int tempValue = 0;
@@ -51,8 +55,13 @@ esp_err_t readPercentage_Battery()
     if(battery_Manager.cali_enable)
     {
         sumValue = esp_adc_cal_raw_to_voltage(sumValue,battery_Manager.adc_chars);
-        battery_Manager.voltage = ((float)sumValue / 1000.0f) * (1.0f + (10000.0f / 33000.0f));
-        //ESP_LOGI(TAG, "Voltage: %.2f", battery_Manager.voltage);
+        ESP_LOGI(TAG, "SumValue: %i", sumValue);
+        float voltageBattery = ((float)sumValue / 1000.0f) * (1.0f + (10000.0f / 33000.0f));
+        if(voltageBattery > 3.0f && voltageBattery < 4.2f)
+        {
+            battery_Manager.voltage = voltageBattery;
+        }
+        ESP_LOGI(TAG, "Voltage: %.2f", battery_Manager.voltage);
     }
     else{
         return ESP_ERR_INVALID_RESPONSE;
@@ -66,7 +75,8 @@ static void BatteryManagerTask(void *parameters)
     while (1)
     {
         readPercentage_Battery();
-        float percentage = (battery_Manager.voltage - 3.2f) * 100.0f;
+        //float percentage = (battery_Manager.voltage - 3.2f) * 100.0f;
+        float percentage = (battery_Manager.voltage - minVoltage) * 100.0f / (maxVoltage - minVoltage);
         if(percentage > 100.0f)
             percentage = 100.0f;
         else if(percentage < 0.0f)

@@ -33,10 +33,17 @@ typedef struct{
     float lastBeepVelocity;
 } SoundManager_t;
 
+typedef struct {
+    int frequency;
+    int duration;
+} SoundManager_Tone_t;
+
+
 esp_err_t init_SoundManager();
 esp_err_t deinit_SoundManager();
 void SoundManager_calculateNewBiep(float newVelocity);
 esp_err_t SoundManager_playSinWave(int frequency, int duration);
+void SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray);
 
 void SoundManager_setVolume(uint16_t volume);
 

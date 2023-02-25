@@ -66,8 +66,8 @@ typedef enum
     WidgetContent_Pressure,
     WidgetContent_Temperature,
     WidgetContent_Altitude_Baro,	// QNE
-    /*WidgetContent_Altitude_GPS,		// QNH
-    WidgetContent_Altitude_AGL,		// QFE*/
+    WidgetContent_Altitude_GPS,		// QNH
+    WidgetContent_Altitude_AGL,		// QFE
 
     /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,
@@ -128,12 +128,31 @@ typedef struct
     int32_t angleDifferenceToShow;
 } Compass_Widget_Data;
 
+typedef enum {
+    PopUpType_GPSFix = 0,
+    PopUpType_BatteryWarning = 1,
+    PopUpType_WidgetSettings = 2,
+    PopUpType_TakeOff = 3,
+    PopUpType_Landing = 4,
+} PopUpType;
+
+typedef struct {
+    uint16_t x, y, w, h;
+    float timeToDisplay;
+    PopUpType type;
+    WidgetData* widgetToEdit; //needs to be set, if PopUpType_WidgetSettings
+} PopUpConfig_t;
+
 void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
 /*** Settings Implemented in "Settings_Widget_Vario.c" ***/
-void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
+void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected, bool reRenderRectangle);
+void vario_display_select_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
 void vario_display_settings_widget_handle_input(WidgetData* widget, Button_Direction direction);
+
+/*** PopUps Implemented in "PopUp_Widget_Vario.c" ***/
+void vario_display_showPopUp(PopUpConfig_t configData);
 
 #endif

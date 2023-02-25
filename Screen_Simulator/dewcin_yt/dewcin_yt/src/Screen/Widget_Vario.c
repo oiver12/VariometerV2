@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "E-Ink/GUI_Paint.h"
+#include "E_Ink/GUI_Paint.h"
 
 #define BUFFER_TEXT_SIZE 20
 #define Compass_Method1
@@ -62,6 +62,10 @@ static const char* get_Info_Text(WidgetContentType contentType)
         return "Temperature";
     case WidgetContent_Altitude_Baro:
         return "Barometer Altitude";
+    case WidgetContent_Altitude_GPS:
+        return "GPS Altitude";
+    case WidgetContent_Altitude_AGL:
+        return "AGL";
     default:
         return "";
     }
@@ -71,10 +75,12 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
 {
     float temp;
     bool returnValue = false;
+    gps_t tempGps;
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:
-        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, shouldReset);
+        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
+		temp = tempGps.speed * 3.6f;
         break;
     case WidgetContent_Vario_Active:
         returnValue = vario_state_get_member(&temp, vario_state_vertVel, shouldReset);
@@ -93,6 +99,13 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         break;
     case WidgetContent_Altitude_Baro:
         returnValue = vario_state_get_member(&temp, vario_state_altitudeBaro, shouldReset);
+        break;
+    case WidgetContent_Altitude_GPS:
+        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
+        temp = tempGps.altitude;
+        break;
+    case WidgetContent_Altitude_AGL:
+        returnValue = vario_state_get_member(&temp, vario_state_agl, shouldReset);
         break;
     default:
         return;
@@ -126,6 +139,8 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Temperature:
         return 'C°';
     case WidgetContent_Altitude_Baro:
+    case WidgetContent_Altitude_GPS:
+    case WidgetContent_Altitude_AGL:
         return "m";
     default:
         return "";

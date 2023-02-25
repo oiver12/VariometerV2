@@ -12,12 +12,12 @@
 
 static const char *TAG = "IGCLogger";
 
-const char *directory = "/Tracklogs";
-const char *sdcard_Mount_Point = "/sdcard";
+static const char *directory = "/Tracklogs";
+static const char *sdcard_Mount_Point = "/sdcard";
 
-const char *nameManufacture = "MIN";
-const char *serialNumber = "XXX";
-const char *tailOfFileName = "01.igc";
+static const char *nameManufacture = "MIN";
+static const char *serialNumber = "XXX";
+static const char *tailOfFileName = "01.igc";
 
 igc_logger_t logger;
 
@@ -71,15 +71,15 @@ static const char * makeFileName(char *buf, size_t buflength, sdcard_t *sdcard)
 		buf[pos++] = *ptr;
 	buf[pos] = '\0'; // null-terminate
 	
-    char pathBuf[64];
+    //char pathBuf[64];
 
 	for (i = 2; i < 101; i++) // valid number : 01 ~ 99
 	{
-		strcpy(pathBuf, directory);
-		strcat(pathBuf, "/");
-		strcat(pathBuf, buf);
+		// strcpy(pathBuf, directory);
+		// strcat(pathBuf, "/");
+		// strcat(pathBuf, buf);
 
-		if (!fileExists_sdcard(sdcard, pathBuf))
+		if (!fileExists_sdcard(sdcard, directory, buf))
 			return buf;
 		
 		buf[19] = (i / 10) + '0';
