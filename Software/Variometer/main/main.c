@@ -344,6 +344,7 @@ static void TaskKalmanFilter(void *parameters)
 
 void app_main(void)
  {
+    uint32_t heapSize = esp_get_free_heap_size();
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,

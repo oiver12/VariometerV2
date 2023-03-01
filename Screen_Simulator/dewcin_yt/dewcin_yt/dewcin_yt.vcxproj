@@ -122,7 +122,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -148,6 +148,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="airspaceParcer.c" />
+    <ClCompile Include="cJSON.c" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -168,8 +170,10 @@
     <ClCompile Include="src\Screen\Vario_Screen.c" />
     <ClCompile Include="src\Screen\Widget_Vario.c" />
     <ClCompile Include="src\UI_Demo.c" />
+    <ClCompile Include="Util.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cJSON.h" />
     <ClInclude Include="src\dewcin.h" />
     <ClInclude Include="src\game.h" />
     <ClInclude Include="src\input.h" />
@@ -189,6 +193,7 @@
     <ClInclude Include="src\Screen\vario_config.h" />
     <ClInclude Include="src\Screen\Vario_Screen.h" />
     <ClInclude Include="src\Screen\Widget_Vario.h" />
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

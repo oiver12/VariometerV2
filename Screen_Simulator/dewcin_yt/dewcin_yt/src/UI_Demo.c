@@ -14,6 +14,7 @@ uint8_t startedEnter = FALSE;
 
 static const int secondsPerPx = 1;  //arc seconds per pixel (3 equals cca 90m)
 static const int totalPx = 3601;
+extern void airspaceParcer();
 
 static void readPixel(FILE* file, int y, int x, int* height)
 {
@@ -96,6 +97,8 @@ void readAGL(double latitude, double longitude)
 
 void startRender()
 {
+    airspaceParcer();
+
     readAGL(46.840812059784795, 8.41060546239144);
     static nmea_parser_handle_t parser_hdl;
     init_DeviceContext(parser_hdl);

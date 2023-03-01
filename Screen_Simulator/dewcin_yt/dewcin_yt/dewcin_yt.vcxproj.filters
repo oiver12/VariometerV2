@@ -51,6 +51,13 @@
     <ClCompile Include="src\Screen\Vario_Screen.c">
       <Filter>Screen</Filter>
     </ClCompile>
+    <ClCompile Include="cJSON.c">
+      <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="airspaceParcer.c">
+      <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\dewcin.h" />
@@ -102,10 +109,17 @@
     <ClInclude Include="src\Screen\E_Ink\GUI_Paint.h">
       <Filter>Screen</Filter>
     </ClInclude>
+    <ClInclude Include="cJSON.h">
+      <Filter>JSON</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Screen">
       <UniqueIdentifier>{033ca043-d659-4999-b6dd-7d5fe1bac0c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JSON">
+      <UniqueIdentifier>{fe89ec88-a63e-497c-b3dd-d56d50f9b89f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
