@@ -68,6 +68,7 @@ typedef enum
     WidgetContent_Altitude_Baro,	// QNE
     WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_AGL,		// QFE
+    WidgetContent_Time_GPS,
 
     /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,

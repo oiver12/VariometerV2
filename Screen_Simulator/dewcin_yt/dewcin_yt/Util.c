@@ -102,6 +102,33 @@ void nearestPointOnSegment(vectorEarth* startPoint, vectorEarth* endPoint, vecto
 	}
 }
 
+float distandeToNearestPointOnSegment(vectorEarth* startPoint, vectorEarth* endPoint, vectorEarth* point)
+{
+	if (pointIsWithtinExtent(startPoint, endPoint, point) && !vectorEquals(startPoint, endPoint))
+	{
+		const vectorEarth c1;
+		cross(startPoint, endPoint, &c1);
+		const vectorEarth c2;
+		cross(point, &c1, &c2);
+		const vectorEarth n;
+		cross(&c1, &c2, &n);
+		return GET_DISTANCEVECTOR(&n, point);
+	}
+	else
+	{
+		const double d1 = GET_DISTANCEVECTOR(point, startPoint);
+		const double d2 = GET_DISTANCEVECTOR(point, endPoint);
+		if (d1 < d2)
+		{
+			return GET_DISTANCEVECTOR(startPoint, point);
+		}
+		else
+		{
+			return GET_DISTANCEVECTOR(endPoint, point);
+		}
+	}
+}
+
 bool isEnclosedByPolygon(polygonSide* polyArray, int numPolygons, float lat, float lon)
 {
 	if (numPolygons < 3) return false;
@@ -180,4 +207,59 @@ double GET_DISTANCEFAST(double lat1, double lon1, double lat2, double lon2)
 	double x = TO_RADIAN(lon1 - lon2) * cos(TO_RADIAN(lat1 + lat2) / 2);
 	double y = TO_RADIAN(lat1 - lat2);
 	return sqrt(x * x + y * y) * 6371e3; //meters
+}
+
+bool overlappBoundingBox(BoundingBox_LatLong_t* box1, BoundingBox_LatLong_t* box2)
+{
+	//return (x1min < x2max AND x2min < x1max AND y1min < y2max AND y2min < y1max)
+	return !(box1->minLat < box2->maxLat && box2->minLat < box1->maxLat && box1->minLong < box2->maxLong && box2->minLong < box1->maxLong);
+}
+
+void boundingBoxFromPoint(BoundingBox_LatLong_t* box, float lat, float lon, float distanceMeters)
+{
+	double latAccuracy = 180.0 * distanceMeters / 40075017;
+	double lngAccuracy = latAccuracy / cos((PI / 180.0) * lat);
+	
+	double lat1 = lat - latAccuracy;
+	double lon1 = lon - lngAccuracy;
+	double lat2 = lat + latAccuracy;
+	double lon2 = lon + lngAccuracy;
+	if (lat1 > lat2)
+	{
+		box->maxLat = lat1;
+		box->minLat = lat2;
+	}
+	else
+	{
+		box->maxLat = lat2;
+		box->minLat = lat1;
+	}
+	if (lon1 > lon2)
+	{
+		box->maxLong = lon1;
+		box->minLong = lon2;
+	}
+	else
+	{
+		box->maxLong = lon2;
+		box->minLong = lon1;
+	}
+}
+
+float minimumDistancePointToLineSqr(float startLat, float startLon, float endLat, float endLon, float pointLat, float pointLon)
+{
+	const float l2 = (startLat - endLat) * (startLat - endLat) + (startLon - endLon) * (startLon - endLon);
+	if (l2 == 0.0)
+		return 0.0f;
+	//pointLat - startLat, pointLon - startLon
+	//endLat - startLat, endLon - startLon
+	const float latVec = endLat - startLat;
+	const float lonVec = endLon - startLon;
+	const float t = fmax(0, fmin(1, (pointLat - startLat) * latVec + (pointLon - startLon) * lonVec));
+	const float latProj = startLat + t * latVec;
+	const float lonProj = startLon + t * latVec;
+	float distance = GET_DISTANCE(latProj, lonProj, pointLat, pointLon);
+	float distance1 = GET_DISTANCE(latProj, lonProj, startLat, startLon);
+	float distance2 = GET_DISTANCE(latProj, lonProj, endLat, endLon);
+	return 0.0f;
 }

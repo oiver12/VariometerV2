@@ -384,8 +384,11 @@ void app_main(void)
     init_Display();
 
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
-    startLogging(sdcard, gps_nmea_hdl);
-    start_IGCLogger(sdcard, gps_nmea_hdl);
+    init_sdcard(sdcard, "/sdcard");
+    init_IGCLogger(sdcard, gps_nmea_hdl);
+    initLogging(sdcard, gps_nmea_hdl);
+    //startLogging(sdcard, gps_nmea_hdl);
+    //start_IGCLogger(sdcard, gps_nmea_hdl);
 
     init_Battery_Manager(4);
 

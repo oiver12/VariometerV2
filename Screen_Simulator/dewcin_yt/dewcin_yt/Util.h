@@ -15,6 +15,14 @@ typedef struct
 
 typedef struct
 {
+    float minLat;
+    float maxLat;
+    float minLong;
+    float maxLong;
+} BoundingBox_LatLong_t;
+
+typedef struct
+{
     float latitude;
     float longitude;
 } polygonSide;
@@ -37,7 +45,13 @@ void getVectorRep(double lat1, double lon1, vectorEarth* v);
 void getLatLon(vectorEarth* v, float* lat, float* lon);
 bool pointIsWithtinExtent(vectorEarth* startPoint, vectorEarth* endPoint, vectorEarth* point);
 void nearestPointOnSegment(vectorEarth* startPoint, vectorEarth* endPoint, vectorEarth* point, float* nearetsLon, float* nearestLat);
+float distandeToNearestPointOnSegment(vectorEarth* startPoint, vectorEarth* endPoint, vectorEarth* point);
 bool isEnclosedByPolygon(polygonSide* polyArray, int numPolygons, float lat, float lon);
+
+float minimumDistancePointToLineSqr(float startLat, float startLon, float endLat, float endLon, float pointLat, float pointLon);
+
+bool overlappBoundingBox(BoundingBox_LatLong_t* box1, BoundingBox_LatLong_t* box2);
+void boundingBoxFromPoint(BoundingBox_LatLong_t* box, float lat, float lon, float distanceMeters);
 //float initzialBearing(vectorEarth* v1, vectorEarth* v2);
 
 #endif

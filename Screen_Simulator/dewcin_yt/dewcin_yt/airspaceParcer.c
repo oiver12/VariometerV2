@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdbool.h>
 
+#define BOUNDINGBOX_OPTIMIZATION
+
 #define MAXDISTANCETOSEARCH 10000
 
 typedef enum
@@ -57,6 +59,7 @@ void airspaceCalculateValues(airspace* nearestAirspace, int indexNearestPolygon,
 	int16_t bearing = GET_BEARING(myLat, myLon, nearestLat, nearestLon);
 }
 
+//TODO: Nearest Point from Polygon doesn't correspond to the nearest Line. Check all Lines?
 void searchNearestAirspace(double myLat, double myLon, float altitude, airspace* airspaces)
 {
 	airspace* nearestAirspace = NULL;
@@ -64,7 +67,9 @@ void searchNearestAirspace(double myLat, double myLon, float altitude, airspace*
 	float nearestDistanceToAirspace = MAXDISTANCETOSEARCH;
 	while (airspaces != NULL)
 	{
-		//TODO: https://rosettacode.org/wiki/Ray-casting_algorithm
+#ifdef BOUNDINGBOX_OPTIMIZATION
+		minimumDistancePointToLineSqr(airspaces->polygons[0].latitude, airspaces->polygons[0].longitude, airspaces->polygons[1].latitude, airspaces->polygons[1].longitude, myLat, myLon);
+#else
 		int nearestPolyIndex = 0;
 		float nearestDistance = INFINITY;
 		
@@ -96,7 +101,8 @@ void searchNearestAirspace(double myLat, double myLon, float altitude, airspace*
 				nearestAirspaceNearestPoly = nearestPolyIndex;
 			}
 		}
-		airspaceCalculateValues(nearestAirspace, nearestAirspaceNearestPoly, myLat, myLon);
+		airspaceCalculateValues(airspaces, nearestPolyIndex, myLat, myLon);
+#endif
 		airspaces = airspaces->next;
 	}
 	if (nearestAirspace != NULL)
@@ -152,13 +158,42 @@ void readToBufferTillNextChar(FILE* file, char character, char* buffer, int buff
 	buffer[i] = '\0';
 }
 
+#ifdef BOUNDINGBOX_OPTIMIZATION
+airspace* readPolygonsFirst(FILE* fileptr, bool* hasNext, BoundingBox_LatLong_t* myBoundingBox)
+#else
 //TODO: Optimize this function
 airspace* readPolygonsFirst(FILE* fileptr, bool* hasNext, float myLat, float myLon)
+#endif
 {
 	double minDistance = 1E+10;
 	char nextChar = ',';
 	int polygonSize = 0;
 	long posPolyStart = ftell(fileptr);
+#ifdef BOUNDINGBOX_OPTIMIZATION
+	BoundingBox_LatLong_t boundingBoxAirspace = { .maxLat = 0, .maxLong = 0, .minLat = INFINITY, .minLong = INFINITY };
+	while (nextChar == ',')
+	{
+		polygonSize++;
+		readTilCharacter(fileptr, '[');
+		float lonitude;
+		fscanf(fileptr, "%f", &lonitude);
+		boundingBoxAirspace.maxLong = fmax(boundingBoxAirspace.maxLong, lonitude);
+		boundingBoxAirspace.minLong = fmin(boundingBoxAirspace.minLong, lonitude);
+		fgetc(fileptr);
+		float latitude;
+		fscanf(fileptr, "%f", &latitude);
+		boundingBoxAirspace.maxLat = fmax(boundingBoxAirspace.maxLat, latitude);
+		boundingBoxAirspace.minLat = fmin(boundingBoxAirspace.minLat, latitude);
+
+		fgetc(fileptr);
+		nextChar = fgetc(fileptr);
+	}
+	if (overlappBoundingBox(myBoundingBox, &boundingBoxAirspace))
+	{
+		*hasNext = readTilCharacter(fileptr, '{');
+		return NULL;
+	}
+#else
 	while (nextChar == ',')
 	{
 		polygonSize++;
@@ -168,7 +203,7 @@ airspace* readPolygonsFirst(FILE* fileptr, bool* hasNext, float myLat, float myL
 		fgetc(fileptr);
 		float latitude;
 		fscanf(fileptr, "%f", &latitude);
-		double distance = GET_DISTANCEFAST(myLat, myLon, latitude, lonitude);
+		float distance = GET_DISTANCEFAST(myLat, myLon, latitude, lonitude);
 		minDistance = fmin(minDistance, distance);
 		fgetc(fileptr);
 		nextChar = fgetc(fileptr);
@@ -178,6 +213,7 @@ airspace* readPolygonsFirst(FILE* fileptr, bool* hasNext, float myLat, float myL
 		*hasNext = readTilCharacter(fileptr, '{');
 		return NULL;
 	}
+#endif
 	//airspacesCount++;
 	airspace* tempAirspace = calloc(sizeof(airspace), 1);
 	tempAirspace->polygonSize = polygonSize;
@@ -213,8 +249,8 @@ void airspaceParserNew()
 	QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&start);
 
-	double myLat = 47.5099482;
-	double myLon = 7.5206331;
+	double myLat = 46.837584144302504;
+	double myLon = 8.38808530535814;
 
 	FILE* fileptr;
 	fileptr = fopen("airspace/airspaces.json", "rb");
@@ -233,6 +269,8 @@ void airspaceParserNew()
 	airspace* headerAirspace = NULL;
 	airspace* prev = NULL;
 	uint32_t airspacesCounted = 0;
+	BoundingBox_LatLong_t myBoundingBox;
+	boundingBoxFromPoint(&myBoundingBox, myLat, myLon, MAXDISTANCETOSEARCH);
 	while (hasNext)
 	{
 		airspacesCounted++;
@@ -240,7 +278,7 @@ void airspaceParserNew()
 		readTilCharacter(fileptr, ':');
 		fgetc(fileptr);
 		readToBufferTillNextChar(fileptr, '"', nameBuffer, 50);
-		if(strcmp(nameBuffer, "TMA Bale LANGEN SW1") == 0)
+		if(strcmp(nameBuffer, "LS-R13 Axalp") == 0)
 			printf("Found");
 		char test30 = fgetc(fileptr);
 		readTilCharacterTimes(fileptr, ',', 5);
@@ -328,12 +366,15 @@ void airspaceParserNew()
 		readTilCharacter(fileptr, '[');
 		readTilCharacter(fileptr, '[');
 		
+#ifdef BOUNDINGBOX_OPTIMIZATION
+		airspace* tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox);
+#else
 		airspace* tempAirspace = readPolygonsFirst(fileptr, &hasNext, myLat, myLon);
-
+#endif
 		if (!tempAirspace)
 			continue;
 		
-		airspacesCounted++;
+		airspacesCount++;
 		
 		if (!headerAirspace)
 			headerAirspace = tempAirspace;
@@ -344,7 +385,7 @@ void airspaceParserNew()
 		tempAirspace->name = calloc(strlen(nameBuffer) + 1, 1);
 		strcpy(tempAirspace->name, nameBuffer);
 
-		bool isEnclosed = isEnclosedByPolygon(tempAirspace->polygons, tempAirspace->polygonSize, myLat, myLon);
+		//bool isEnclosed = isEnclosedByPolygon(tempAirspace->polygons, tempAirspace->polygonSize, myLat, myLon);
 		
 		if (prev)
 		{
@@ -372,8 +413,9 @@ void airspaceParcer()
 	QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&start);
 	
-	double myLat = 47.5099482;
-	double myLon = 7.5206331;
+	//46.837584144302504, 8.38808530535814
+	double myLat = 46.837584144302504;
+	double myLon = 8.38808530535814;
 
 	FILE* fileptr;
 	fileptr = fopen("airspace/airspaces.json", "rb");

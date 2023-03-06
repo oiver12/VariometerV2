@@ -59,7 +59,7 @@ typedef enum
     WidgetContent_Empty,
 
     /* Text Box Widgets / Chart Widgets */
-    WidgetContent_Speed_Ground,
+     WidgetContent_Speed_Ground,
     WidgetContent_Vario_Active,
     WidgetContent_Vario_Lazy,
     WidgetContent_VertAcc,
@@ -68,7 +68,8 @@ typedef enum
     WidgetContent_Altitude_Baro,	// QNE
     WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_AGL,		// QFE
-
+    WidgetContent_Time_GPS,
+    
     /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,
 

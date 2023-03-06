@@ -13,5 +13,6 @@ void startRendering(uint8_t* screenBuffer);
 void stopRendering_disableScreen();
 void rendering_Push(bool varfullRedraw);
 void rendering_Update(bool varfullRedraw);
+bool screenIsInit();
 
 #endif

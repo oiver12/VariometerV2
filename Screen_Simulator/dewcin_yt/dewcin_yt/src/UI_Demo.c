@@ -97,8 +97,12 @@ void readAGL(double latitude, double longitude)
 
 void startRender()
 {
-    airspaceParcer();
-
+    //airspaceParcer();
+    gps_t gsp;
+    vario_state_get_member(&gsp, vario_state_gps_data, false);
+    gsp.tim.hour = 12;
+    gsp.tim.minute = 40;
+    vario_state_set_member(&gsp, vario_state_gps_data);
     readAGL(46.840812059784795, 8.41060546239144);
     static nmea_parser_handle_t parser_hdl;
     init_DeviceContext(parser_hdl);
@@ -120,22 +124,24 @@ void startRender()
 
     ScreenManager_init(semphr);
     
-    static WidgetData widgetDataScreen0[7] = {
+    static WidgetData widgetDataScreen0[8] = {
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 87},
-        {.extraStyle = WS_FONT_20_CONTENT, .h = 193, .w = 180, .style = Widget_Chart, .type = WidgetContent_Altitude_Baro, .x = 100, .y = 87},
+        {.extraStyle = WS_FONT_20_CONTENT, .h = 193, .w = 220, .style = Widget_Chart, .type = WidgetContent_Altitude_Baro, .x = 100, .y = 87},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 160, .y = 27},
         {.extraStyle = WS_FONT_16_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Pressure, .x = 320, .y = 27},
-        {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
-		{.extraStyle = WS_FONT_24_CONTENT, .h = 63, .w = 200, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 280, .y = 187},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_GPS, .x = 320, .y = 87},
+		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 147},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 73, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 320, .y = 207},
     };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 7);
-    static WidgetData widgetDataScreen1[3] = {
-        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_GPS, .x = 0, .y = 27},
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 8);
+    static WidgetData widgetDataScreen1[4] = {
+        {.extraStyle = WS_FONT_32_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Time_GPS, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
 		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
+        {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
     };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 3);
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 4);
     ScreenManager_show_Screen(0);
 }
 

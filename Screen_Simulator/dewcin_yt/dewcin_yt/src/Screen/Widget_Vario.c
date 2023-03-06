@@ -66,6 +66,8 @@ static const char* get_Info_Text(WidgetContentType contentType)
         return "GPS Altitude";
     case WidgetContent_Altitude_AGL:
         return "AGL";
+    case WidgetContent_Time_GPS:
+        return "Time";
     default:
         return "";
     }
@@ -73,9 +75,18 @@ static const char* get_Info_Text(WidgetContentType contentType)
 
 float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t bufferSize, bool shouldRender, bool shouldReset)
 {
+    gps_t tempGps;
+    if (contentType == WidgetContent_Time_GPS)
+    {
+        static int countGPS = 20;
+        vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
+        if(countGPS % 20 == 0)
+            snprintf(buffer, bufferSize, "%i:%i", tempGps.tim.hour, tempGps.tim.minute);
+        countGPS++;
+        return true;
+    }
     float temp;
     bool returnValue = false;
-    gps_t tempGps;
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:

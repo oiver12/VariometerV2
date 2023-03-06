@@ -242,6 +242,7 @@ void ScreenManager_show_Screen(size_t screenIndex)
     }
     screenManagerInstance.curr_Screen = screenIndex;
     Screen_redraw_Screen();
+    rendering_Update(true);
 }
 
 /*
@@ -575,14 +576,15 @@ void Screen_redraw_Screen()
     }
 }
 
-void ScreenManager_showPopUp(PopUpConfig_t config)
+bool ScreenManager_showPopUp(PopUpConfig_t config)
 {
     //TODO: add Posibility to do Pop Up over Pop Up or save PopUp in Queue or something like that.
-    if (screenManagerInstance.screenMode == ScreenMode_PopUp)
-        return;
+    if (screenManagerInstance.screenMode == ScreenMode_PopUp || !screenIsInit())
+        return false;
     screenManagerInstance.screenMode = ScreenMode_PopUp; 
     vario_display_showPopUp(config);
-    rendering_Push(false);  
+    rendering_Push(false); 
+    return true; 
 }
 
 void ScreenManager_closePopUp()

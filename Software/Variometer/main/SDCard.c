@@ -11,6 +11,16 @@ static const char *TAG = "SDCard";
 
 #define SDCARD_DETECT 14
 
+void sdcard_storageCheck(void* params)
+{
+    sdcard_t* sdcard = (sdcard_t*)params;
+    while(1)
+    {
+        sdcard_remainingSpace_update(sdcard);
+        vTaskDelay(20000 / portTICK_PERIOD_MS);
+    }
+}
+
 esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
 {
     if(sdcard->cardInit)
@@ -96,6 +106,8 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     sdcard_state_vario.maxSpace = tmp_total_bytes;
     sdcard_state_vario.freeSpace = tmp_free_bytes;
     device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
+
+    xTaskCreate(sdcard_storageCheck, "Storage Check", 1024 * 2, sdcard, 2, NULL);
     return ret;
 }
 
@@ -186,6 +198,7 @@ uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard)
 
     state.freeSpace = tmp_free_bytes;
     state.maxSpace = tmp_total_bytes;
+    printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
     device_state_set_member(&state, device_state_statusSDCard);
     return tmp_free_bytes;
 }

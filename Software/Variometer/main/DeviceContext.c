@@ -6,6 +6,8 @@
 #include "Screen/ScreenManager.h"
 #include "esp_log.h"
 #include "Util.h"
+#include "TestTools/FlightLogger.h"
+#include "IGCLogger.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
 {
@@ -38,6 +40,27 @@ SemaphoreHandle_t semaphore_paraglider_info;
 SemaphoreHandle_t semaphore_device_state;
 SemaphoreHandle_t semaphore_flight_stats;
 
+static void TakeOff(gps_t* gps)
+{
+    //Take Off detected
+    flight_stats.takeOffTime = esp_timer_get_time() / 1000;
+    flight_stats.takeOffPosition.lat = gps->latitude;
+    flight_stats.takeOffPosition.lon = gps->longitude;
+    flight_stats.takeOffPosition.alt = gps->altitude;
+    PopUpConfig_t config = {
+        .x = 150,
+        .y = 100,
+        .w = 100,
+        .h = 60,
+        .type = PopUpType_TakeOff,
+        .timeToDisplay = 3000,
+    };
+    ScreenManager_showPopUp(config);
+    SoundManager_playToneArray(takeOffMelody, 8);
+    startLogging();
+    start_IGCLogger();
+}
+
 static void updateFlightStats(gps_t* gps)
 {
     xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
@@ -57,21 +80,7 @@ static void updateFlightStats(gps_t* gps)
     {
         if(gps->speed * 3.6f > TakeOffSpeed)
         {
-            //Take Off detected
-            flight_stats.takeOffTime = esp_timer_get_time() / 1000;
-            flight_stats.takeOffPosition.lat = gps->latitude;
-            flight_stats.takeOffPosition.lon = gps->longitude;
-            flight_stats.takeOffPosition.alt = gps->altitude;
-            PopUpConfig_t config = {
-                .x = 150,
-                .y = 100,
-                .w = 100,
-                .h = 60,
-                .type = PopUpType_TakeOff,
-                .timeToDisplay = 3000,
-            };
-            ScreenManager_showPopUp(config);
-            SoundManager_playToneArray(takeOffMelody, 8);
+            TakeOff(gps);
         }
     }
     flight_stats.lastPosition.lat = gps->latitude;
@@ -91,6 +100,7 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;
         vario_state_set_member(&speedGroundKMH, vario_state_groundSpeed);
+        vario_state_set_member(gps, vario_state_gps_data);
         
         xSemaphoreTake(semaphore_device_state, portMAX_DELAY);
         oldFixMode = device_state.statusGPS;

@@ -193,5 +193,5 @@ void ButtonInput_Init()
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1 * 1000)); //one time all 1 ms
 
-    xTaskCreate(Button_Task, "Input Button Task", 1024 * 2, NULL, 3, NULL);
+    xTaskCreate(Button_Task, "Input Button Task", 1024 * 3, NULL, 3, NULL);
 }

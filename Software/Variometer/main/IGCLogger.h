@@ -26,7 +26,8 @@ typedef struct {
     igc_gps_data_t gps_data;
 } igc_logger_t;
 
-void start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle);
+void init_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle);
+void start_IGCLogger();
 void updatePressureAltitude_IGCLogger(float height);
 esp_err_t stop_IGCLogger();
 

@@ -141,7 +141,7 @@ static void logICGSentence(void *arg)
 
 static void igcLogget_Task(void *params)
 {
-	sdcard_t *card = (sdcard_t *)params;
+	sdcard_t *card = logger.sdcard;
 	while(logger.gpsLastTimeUpdate == 0)
 	{
 		vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -167,11 +167,10 @@ static void igcLogget_Task(void *params)
 	}
 
 	sd_card_state_t sdstate;
-    device_state_get_member(&sdstate, device_state_statusSDCard, true);
+    device_state_get_member(&sdstate, device_state_statusSDCard, false);
     sdstate.status |= SD_CARD_STATE_IGC_LOGGING;
     device_state_set_member(&sdstate, device_state_statusSDCard);
 
-	logger.sdcard = card;
 	logger.file = f;
 	if(f)
 	{
@@ -208,11 +207,16 @@ static void igcLogget_Task(void *params)
 	vTaskDelete(NULL);
 }
 
-void start_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle)
+void init_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle)
 {
 	nmea_parser_add_handler(nmea_parser_handle, IGCLogger_gps_event_handler, NULL, GPS_UPDATE);
 	logger.nmea_parser_handle = nmea_parser_handle;
-	xTaskCreate(igcLogget_Task, "igcLogget_Task", 1024 * 3, card, 5, NULL);
+	logger.sdcard = card;
+}
+
+void start_IGCLogger()
+{
+	xTaskCreate(igcLogget_Task, "igcLogget_Task", 1024 * 3, NULL, 5, NULL);
 }
 
 esp_err_t stop_IGCLogger()
