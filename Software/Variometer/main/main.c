@@ -182,6 +182,9 @@ static void TaskMeasureAcc(void *parameters)
         count++;
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
+        //za = 2.0*(q[1]*q[3] - q[0]*q[2])*ax + 2.0*(q[0]*q[1] + q[2]*q[3])*ay + (q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3])*az - 1.0;
+	    //return (abs(za) < 0.1) ? 0 : za * 9.81f;
+        
         //printf("%.2f \n", accX-9.81);
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
