@@ -31,7 +31,7 @@ static void AGL_gps_event_handler(void *event_handler_arg, esp_event_base_t even
 	{
 		case GPS_UPDATE:
             gps = (gps_t*)event_data;
-            if(gps->fix_mode != GPS_MODE_INVALID)
+            if(gps->fix_mode != GPS_MODE_INVALID && agl_context.sdcard->cardInit)
             {
                 gps = (gps_t *)event_data;
                 int latDec = (int)floor(gps->latitude);

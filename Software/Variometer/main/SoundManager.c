@@ -30,6 +30,7 @@ int16_t bufferZero[200];
 
 QueueHandle_t soundQueue = NULL;
 SoundManager_t soundManager_instance; 
+//SemaphoreHandle_t soundManager_Semaphore = NULL;
 
 //349, 440, 523
 SoundManager_Tone_t startSeqeunce[3] = {
@@ -38,10 +39,10 @@ SoundManager_Tone_t startSeqeunce[3] = {
     {523, 500}
 };
 
-static void SoundManager_NoSound()
+static void SoundManager_NoSound(float duration)
 {
     size_t w_bytes = 0;
-    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(100); tot_bytes += w_bytes) 
+    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration); tot_bytes += w_bytes) 
     {
         if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
         {
@@ -54,45 +55,57 @@ void SoundManager_Task(void *parameters)
 {
     //TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
     float lastFreqeuncy = soundManager_instance.frequencyNow-1;
+    biepState_t lastBiepState = no_Sound;
     size_t w_bytes = 0;
     int tone_point = 0;
     SoundManager_playToneArray(startSeqeunce, 3);
     while(true)
     {
+        //Spielen von anderen Tönen. Gegeben über SoundManager_playToneArray
         if(uxQueueMessagesWaiting(soundQueue) != 0)
         {
             SoundManager_Tone_t tempTone;
             xQueueReceive(soundQueue, &tempTone, 0);
             if(tempTone.frequency == 0)
             {
-                SoundManager_NoSound();
+                SoundManager_NoSound(100);
                 continue;
             }
             SoundManager_playSinWave(tempTone.frequency, tempTone.duration);
             if(uxQueueMessagesWaiting(soundQueue) == 0)
             {
-                SoundManager_NoSound();
+                SoundManager_NoSound(100);
             }
             continue;
         }
-        if(soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state == no_Sound)
+
+        biepState_t currentBiepState = soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state;
+        float frequencyNow = soundManager_instance.frequencyNow;
+        float durationNow = soundManager_instance.durationNow;
+        float volume = soundManager_instance.volume;
+
+        if(currentBiepState == no_Sound)
         {
+            if(lastBiepState == constant_Deep)
+                SoundManager_NoSound(100);
             vTaskDelay(20 / portTICK_PERIOD_MS);
+            lastBiepState = currentBiepState;
             continue;
         }
+        lastBiepState = currentBiepState;
         //Buffer neu berechnen, wenn Frequenz geändert wurde
-        if(lastFreqeuncy != soundManager_instance.frequencyNow)
+        if(lastFreqeuncy != frequencyNow)
         {
-            tone_point = SINE_WAVE_LEN(soundManager_instance.frequencyNow);
+            tone_point = SINE_WAVE_LEN(frequencyNow);
             /* Generate the tone buffer (needs 1.2ms for it)*/
             for (int i = 0; i < tone_point; i++) {
-                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * soundManager_instance.volume);
+                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * volume);
             }
-            lastFreqeuncy = soundManager_instance.frequencyNow;
+            lastFreqeuncy = frequencyNow;
         }
         w_bytes = 0;
         //evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
-        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(soundManager_instance.durationNow); tot_bytes += w_bytes) 
+        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes) 
         {
             if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
             {
@@ -100,9 +113,9 @@ void SoundManager_Task(void *parameters)
             }
         }
         //spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
-        if(soundManager_instance.ToneArray[soundManager_instance.indexCurrentToneArray].state != constant_Deep)
+        if(currentBiepState != constant_Deep)
         {
-            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(soundManager_instance.durationNow); tot_bytes += w_bytes) 
+            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes) 
             {
                 if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
                 {
@@ -117,34 +130,34 @@ void SoundManager_Task(void *parameters)
 void SoundManager_calculateNewBiep(float newVelocity)
 {
     //in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
-  for (size_t i = 0; i < soundManager_instance.sizeToneArray; i++)
-  {
-    if(newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)
+    for (size_t i = 0; i < soundManager_instance.sizeToneArray; i++)
     {
-        volatile float difference = soundManager_instance.lastBeepVelocity - newVelocity;
-        //Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
-        if(fabs(difference) < VELOCITY_THRESHOLD && !(soundManager_instance.indexCurrentToneArray > 1 && i == 1) && !(soundManager_instance.indexCurrentToneArray  <= 1 && i > 1))
+        if(newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)
         {
-            return;
-        }
-        soundManager_instance.lastBeepVelocity = newVelocity;
-        soundManager_instance.indexCurrentToneArray = i;
-        //wenn letzter Ton, dann einfach Geschwindigkeit nehemn
-        if((soundManager_instance.sizeToneArray - 1) == i || i == 0)
-        {
-            soundManager_instance.frequencyNow = soundManager_instance.ToneArray[i].frequency;
-            soundManager_instance.durationNow = soundManager_instance.ToneArray[i].duration;
-        }
-        //sonst linear Interplorieren
-        else
-        {
-            //linear zwischen zwei States machen
-            float factor = (newVelocity - soundManager_instance.ToneArray[i].lowerVelocity)/(soundManager_instance.ToneArray[i].upVelocity-soundManager_instance.ToneArray[i].lowerVelocity);
-            soundManager_instance.frequencyNow = factor * (soundManager_instance.ToneArray[i+1].frequency - soundManager_instance.ToneArray[i].frequency) + soundManager_instance.ToneArray[i].frequency;
-            soundManager_instance.durationNow = factor * (soundManager_instance.ToneArray[i+1].duration - soundManager_instance.ToneArray[i].duration) + soundManager_instance.ToneArray[i].duration;
+            float difference = soundManager_instance.lastBeepVelocity - newVelocity;
+            //Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
+            if(fabs(difference) < VELOCITY_THRESHOLD && !(soundManager_instance.indexCurrentToneArray > 1 && i == 1) && !(soundManager_instance.indexCurrentToneArray  <= 1 && i > 1))
+            {
+                return;
+            }
+            soundManager_instance.lastBeepVelocity = newVelocity;
+            soundManager_instance.indexCurrentToneArray = i;
+            //wenn letzter Ton, dann einfach Geschwindigkeit nehmen
+            if((soundManager_instance.sizeToneArray - 1) == i || i == 0)
+            {
+                soundManager_instance.frequencyNow = soundManager_instance.ToneArray[i].frequency;
+                soundManager_instance.durationNow = soundManager_instance.ToneArray[i].duration;
+            }
+            //sonst linear Interplorieren
+            else
+            {
+                //linear zwischen zwei States machen
+                float factor = (newVelocity - soundManager_instance.ToneArray[i].lowerVelocity)/(soundManager_instance.ToneArray[i].upVelocity-soundManager_instance.ToneArray[i].lowerVelocity);
+                soundManager_instance.frequencyNow = factor * (soundManager_instance.ToneArray[i+1].frequency - soundManager_instance.ToneArray[i].frequency) + soundManager_instance.ToneArray[i].frequency;
+                soundManager_instance.durationNow = factor * (soundManager_instance.ToneArray[i+1].duration - soundManager_instance.ToneArray[i].duration) + soundManager_instance.ToneArray[i].duration;
+            }
         }
     }
-  }
 }
 
 esp_err_t init_SoundManager()
@@ -200,7 +213,6 @@ esp_err_t init_SoundManager()
     vario_settings_set_member(&volume, vario_settings_soundVolume);
     
     soundQueue = xQueueCreate(Sound_Size_Queue, sizeof(SoundManager_Tone_t));
-
     xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, NULL, 7, NULL);
     return ESP_OK;
 }

@@ -166,7 +166,7 @@ parameter:
 void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
     if(Xpoint > Paint.Width || Ypoint > Paint.Height){
-        printf("Exceeding display boundaries\r\n");
+        //printf("Exceeding display boundaries\r\n");
         return;
     }      
     UWORD X, Y;
@@ -295,9 +295,9 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
                      DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
 {
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
-        printf("Paint_DrawPoint Input exceeds the normal display range\r\n");
-				printf("Xpoint = %d , Paint.Width = %d  \r\n ",Xpoint,Paint.Width);
-				printf("Ypoint = %d , Paint.Height = %d  \r\n ",Ypoint,Paint.Height);
+        // printf("Paint_DrawPoint Input exceeds the normal display range\r\n");
+		// 		printf("Xpoint = %d , Paint.Width = %d  \r\n ",Xpoint,Paint.Width);
+		// 		printf("Ypoint = %d , Paint.Height = %d  \r\n ",Ypoint,Paint.Height);
         return;
     }
 
@@ -947,8 +947,8 @@ void Paint_DrawBitMap_Paste_Rotated_Circle(const unsigned char* image_buffer, UW
 
             int xs = (int)((cosma * xt - sinma * yt) + hwidth);
             int ys = (int)((sinma * xt + cosma * yt) + hheight);
-            uint8_t firstT = (xs >= 0 && xs < imageWidth&& ys >= 0 && ys < imageHeight);
-            uint8_t secondT = (xt * xt + yt * yt < radius* radius);
+            //uint8_t firstT = (xs >= 0 && xs < imageWidth&& ys >= 0 && ys < imageHeight);
+            //uint8_t secondT = (xt * xt + yt * yt < radius* radius);
             if (xs >= 0 && xs < imageWidth && ys >= 0 && ys < imageHeight && xt * xt + yt * yt < radius * radius) {
                 uint32_t addr1 = xs / 8 + ys * widthBytes;
                 /* set target pixel (x,y) to color at (xs,ys) */
