@@ -25,6 +25,9 @@
 #include "Screen/Display_Vario.h"
 #include "ButtonInput.h"
 #include "AGL.h"
+#include <compass.h>
+#include "flashMemory.h"
+#include "TestTools/performance.h"
 
 #define POWSW_ENABLE 13
 
@@ -64,6 +67,8 @@ float temperature;
 SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
 
 volatile bool hasMeasuredStartPressure = false;
+
+float headingCalc = 0.0f;
 
 IRAM_ATTR void dps310ISR(TaskHandle_t taskHandle)
 {
@@ -146,9 +151,26 @@ static void TaskMeasureAcc(void *parameters)
     bmi088_init(&BMI088_Data, i2c_master_port, 0x18, 0x68);
 
     /* Init QMC588L */
-    qmc588l_t QMC588L_Data;
-    qmc588l_init(&QMC588L_Data, i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_8G);
-
+    qmc588l_t* QMC588L_Data;
+    QMC588L_Data = qmc588l_init(i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_2G);
+    // bool hasFound = flashMemoryReadInt32("MagCaliMinX", &QMC588L_Data->_vCalibration[0][0]);
+    // if(hasFound)
+    // {
+    //     hasFound &= flashMemoryReadInt32("MagCaliMaxX", &QMC588L_Data->_vCalibration[0][1]);
+    //     hasFound &= flashMemoryReadInt32("MagCaliMinY", &QMC588L_Data->_vCalibration[1][0]);
+    //     hasFound &= flashMemoryReadInt32("MagCaliMaxY", &QMC588L_Data->_vCalibration[1][1]);
+    //     hasFound &= flashMemoryReadInt32("MagCaliMinZ", &QMC588L_Data->_vCalibration[2][0]);
+    //     hasFound &= flashMemoryReadInt32("MagCaliMaxZ", &QMC588L_Data->_vCalibration[2][1]);
+    //     if(hasFound)
+    //     {
+    //         ESP_LOGI(TAG, "Found Calibration Data");
+    //         QMC588L_Data->useCalibration = true;
+    //     }
+    // }
+    // if(!hasFound)
+    // {
+    //     ESP_LOGI(TAG, "No Calibration Data found");
+    // }
     QuaternionFilter_init();
     //reset Rotation
     rotation[0] = 1.0f;
@@ -157,31 +179,41 @@ static void TaskMeasureAcc(void *parameters)
     rotation[3] = 0.0f;
 
     float lastTime = esp_timer_get_time();
-    // volatile float roll = 0;
-    // volatile float pitch = 0;
-    // volatile float yaw = 0;
     int count = 0;
     while(1)
     {
-        qmc588l_readMag(&QMC588L_Data);
-        int32_t magN =  -QMC588L_Data.magnValue[0];
-        int32_t magE = QMC588L_Data.magnValue[1];
-        int32_t magD = QMC588L_Data.magnValue[2];
-
+        qmc588l_readMag();
         bmi088_ReadAccelerometer(&BMI088_Data);
         bmi088_ReadGyroskop(&BMI088_Data);
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
-        //TODO: wahrscheinlich ein Vorzeichen oder sonstiges falsch mit Mag.
-        QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], magN, magE, magD, deltaT, rotation);
         //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
-        //Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
-        // if(count % 10 == 0)
-        //     printf("%.2f \n", yaw);
+        //QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], QMC588L_Data.magnValue[0], QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[2], deltaT, rotation);
+        float an = BMI088_Data.acc_mps2[1] / 9.81;
+        float ae = BMI088_Data.acc_mps2[0] / 9.81f;
+        float ad = BMI088_Data.acc_mps2[2] / 9.81f;
+        float gn = -BMI088_Data.gyr_rps[1];
+        float ge = -BMI088_Data.gyr_rps[0];
+        float gd = -BMI088_Data.gyr_rps[2];
+        float mn = -QMC588L_Data->CorrectedMagnValuemG[0];
+        float me =  QMC588L_Data->CorrectedMagnValuemG[1];
+        float md = -QMC588L_Data->CorrectedMagnValuemG[2];
+        QuaternionFilter_Madgwick(an, ae, ad, gn, ge, gd, mn, me, md, deltaT, rotation);
+        //float heading;
+        //compass_get(QMC588L_Data.magnValue, rotation, &heading);
+        //int headingInt = (int)heading;
+        //vario_state_set_member(&headingInt, vario_state_heading);
+        //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
         count++;
+        //if(count % 10 == 0)
+            //printf("Yaw: %.2f\n", atan2(QMC588L_Data->rawMagnValue[1], QMC588L_Data->rawMagnValue[0]) * 180.0f / 3.14159265358979323846f);
+            //printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)mn, (int)me, (int)md);
         /* Calculate global Acc in X Direction */
-        float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
+        float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * an + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * ae + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*ad;
+        accX *= 9.81f;
+        //float accX =  2.0*(rotation[1]*rotation[3] - rotation[0]*rotation[2])*an + 2.0*(rotation[0]*rotation[1] + rotation[2]*rotation[3])*ae + (rotation[0]*rotation[0] - rotation[1]*rotation[1] - rotation[2]*rotation[2] + rotation[3]*rotation[3])*ad - 1.0;
+        //float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
         //za = 2.0*(q[1]*q[3] - q[0]*q[2])*ax + 2.0*(q[0]*q[1] + q[2]*q[3])*ay + (q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3])*az - 1.0;
 	    //return (abs(za) < 0.1) ? 0 : za * 9.81f;
         
@@ -191,6 +223,7 @@ static void TaskMeasureAcc(void *parameters)
             accSum += accX;
             accCount++;
             memcpy(rotationVario, rotation, sizeof(rotationVario));
+            //headingCalc = heading;
         }
         xSemaphoreGive(acc_Mutex);
     }
@@ -279,7 +312,7 @@ static void TaskKalmanFilter(void *parameters)
         {
             if(accCount == 0)
             {
-                ESP_LOGI(TAG, "Had no Acc Readings");
+                //ESP_LOGI(TAG, "Had no Acc Readings");
                 acc = 9.81f;
             }
             else
@@ -345,9 +378,38 @@ static void TaskKalmanFilter(void *parameters)
     vTaskDelete(NULL);
 } 
 
+void sendAttitude(void *params)
+{
+    float rotation[4];
+    float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
+    while(1)
+    {
+        xSemaphoreTake(acc_Mutex, portMAX_DELAY);
+        {
+            memcpy(rotation, rotationVario, sizeof(rotationVario));
+            yaw = headingCalc;
+        }
+        xSemaphoreGive(acc_Mutex);
+        float tmep = 0;
+        // Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &tmep);
+        // fwrite(&roll, sizeof(float), 1, stdout);
+        // fwrite(&pitch, sizeof(float), 1, stdout);
+        // fwrite(&yaw, sizeof(float), 1, stdout);
+        fwrite(&rotation, sizeof(float), 4, stdout);
+        // fwrite(&theta, sizeof(float), 1, stdout);
+        // fwrite(&phi, sizeof(float), 1, stdout);
+        char ending = 0xff;
+        fwrite(&ending, sizeof(char), 1, stdout);
+        //printf("%.2f, %.2f", theta, phi);
+        printf("\n");
+        //printf("Test\n");
+        vTaskDelay(200 / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
+}
+
 void app_main(void)
  {
-    uint32_t heapSize = esp_get_free_heap_size();
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -386,18 +448,20 @@ void app_main(void)
 
     init_Display();
 
+    flashMemoryInit();
+
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     init_sdcard(sdcard, "/sdcard");
     init_IGCLogger(sdcard, gps_nmea_hdl);
     initLogging(sdcard, gps_nmea_hdl);
-    //startLogging(sdcard, gps_nmea_hdl);
+    startLogging();
     //start_IGCLogger(sdcard, gps_nmea_hdl);
 
     init_Battery_Manager(4);
 
     ButtonInput_Init();
 
-    AGL_startAGL(sdcard, gps_nmea_hdl);
+    //AGL_startAGL(sdcard, gps_nmea_hdl);
     
     vTaskDelay(100 / portTICK_PERIOD_MS);
     
@@ -407,5 +471,7 @@ void app_main(void)
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
+    //xTaskCreate(sendAttitude, "Send Attitude", 4 * 1024, NULL, 6, NULL);
+    //perfmon_start();
     return;
 }

@@ -104,6 +104,7 @@ void SoundManager_Task(void *parameters)
             lastFreqeuncy = frequencyNow;
         }
         w_bytes = 0;
+        #ifdef SOUND_ON
         //evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
         for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes) 
         {
@@ -112,6 +113,7 @@ void SoundManager_Task(void *parameters)
                 printf("Write Task: i2s write failed\n");
             }
         }
+        #endif
         //spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
         if(currentBiepState != constant_Deep)
         {
@@ -201,8 +203,8 @@ esp_err_t init_SoundManager()
     soundManager_instance.sizeToneArray = 6;
     Tonestate_t stateBeep[6] = {
         {.state = constant_Deep, .frequency = 250, .duration = 200, .lowerVelocity = -999, .upVelocity = -2.5f},
-        {.state = no_Sound, .frequency = 0, .duration = 0, .lowerVelocity = -2.5f, .upVelocity = 0.1f},
-        {.state = Biepen, .frequency = 700, .duration = 750, .lowerVelocity = 0.1f, .upVelocity = 1.5f},
+        {.state = no_Sound, .frequency = 0, .duration = 0, .lowerVelocity = -2.5f, .upVelocity = 0.3f},
+        {.state = Biepen, .frequency = 700, .duration = 750, .lowerVelocity = 0.3f, .upVelocity = 1.5f},
         {.state = Biepen, .frequency = 850, .duration = 540, .lowerVelocity = 1.5f, .upVelocity = 3.5f},
         {.state = Biepen, .frequency = 1000, .duration = 300, .lowerVelocity = 3.5f, .upVelocity = 10},
         {.state = Biepen, .frequency = 1600, .duration = 90, .lowerVelocity = 10, .upVelocity = 999}

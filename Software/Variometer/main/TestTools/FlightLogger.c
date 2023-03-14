@@ -62,7 +62,7 @@ void startLogging()
     }while(fileExists_sdcard(sdcard, directoryLogs, fileNameVario));
     ESP_LOGI(TAG, "Found file: %s", fileNameVario);
     //snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", --count);
-    fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
+    fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "wb");
     
     #ifdef NotifyNMEASentence
     count = 0;
@@ -78,7 +78,7 @@ void startLogging()
         snprintf(fileNameGPSUpdate, sizeof(fileNameGPSUpdate), "GPS%02d.txt", count++);
     }while(fileExists_sdcard(sdcard, directoryLogs, fileNameGPSUpdate));
     ESP_LOGI(TAG, "Found file: %s", fileNameGPSUpdate);
-    fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, true);
+    fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "wb");
 
     sd_card_state_t sdstate;
     device_state_get_member(&sdstate, device_state_statusSDCard, false);
@@ -113,6 +113,8 @@ void logVarioData(FlightLogger_t state)
     if(countVarioFile % 20 == 0) //save File all 20th time ==> all 600 ms
     {
         fflush(fileVario);
+        // fclose(fileVario);
+        // fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
     }
     countVarioFile++;
 }

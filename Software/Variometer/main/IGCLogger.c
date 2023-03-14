@@ -137,6 +137,7 @@ static void logICGSentence(void *arg)
 	{
 		fflush(logger.file);
 	}
+	count++;
 }
 
 static void igcLogget_Task(void *params)
@@ -158,7 +159,7 @@ static void igcLogget_Task(void *params)
     }
 	const char* FileName = makeFileName(buffer, 26 + strlen(directory), card);
 	ESP_LOGI(TAG, "File Name: %s", FileName);
-	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, true);
+	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, "w");
 	if(!f)
 	{
 		printf("Cannot open IGC File!\n");

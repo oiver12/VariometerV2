@@ -90,6 +90,10 @@ WidgetData widgetData_Audio_Settings[2] = {
         {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
 };
 
+WidgetData widgetData_Config_Settings[1] = {
+        {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
+};
+
 Vario_Screen_Manager_t screenManagerInstance;
 static SemaphoreHandle_t buffer_Mutex = NULL;
 
@@ -196,6 +200,16 @@ static void init_SettingsWidgets()
     backButtonItem->data = backButtonWidget;
     screenManagerInstance.settingsScreen.headListConfig = backButtonItem;
     screenManagerInstance.settingsScreen.topFieldConfig = backButtonItem;
+    prev = backButtonItem;
+    for (size_t i = 0; i < sizeof(widgetData_Config_Settings) / sizeof(WidgetData); i++)
+    {
+        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement->prev = prev;
+        prev->next = listElement;
+        listElement->data = widgetData_Config_Settings[i];
+        listElement->data.x = 10;
+        prev = listElement;
+    }
 }
 
 /* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
@@ -313,7 +327,7 @@ static void draw_Settings_Scrollbar()
 
 static void settings_enter_press()
 {
-    //We have the top Buttons hovered
+    //Erste Page Button Seite
     if (screenManagerInstance.settingsScreen.currPage == Settings_Page_PageButtons)
     {
         switch (screenManagerInstance.settingsScreen.hoveredField->data.type)
@@ -368,9 +382,19 @@ static void settings_enter_press()
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true, false);
             xSemaphoreGive(buffer_Mutex);
+            printf("Finished\n");
             rendering_Push(false);
         }
     }
+}
+
+void ScreenManager_deselctSettingsWidget()
+{
+    screenManagerInstance.settingsScreen.selectedField = NULL;
+    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
+    xSemaphoreGive(buffer_Mutex);
+    rendering_Push(false);
 }
 
 static void ScreenManager_openSettings()
@@ -382,7 +406,6 @@ static void ScreenManager_openSettings()
     screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
     screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
     screenManagerInstance.settingsScreen.selectedField = NULL;
-
     draw_Settings_Scrollbar();
     xSemaphoreGive(buffer_Mutex);
     rendering_Push(true);

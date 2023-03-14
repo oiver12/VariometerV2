@@ -25,10 +25,10 @@ namespace WindowsFormsApp1
             InitializeComponent();
             BitmapPictureBox = new PictureBox();
             Controls.Add(BitmapPictureBox);
-            /*ImageToBitMapBuffer.saveBufferImage("../../Config_Rad.png");
-            BufferGDBConvert.ConvertGDBBuffer("../../OutputFileBuffer.txt", 20, 20);
-            System.Diagnostics.Process.Start("notepad.exe", "../../OutputFileBuffer.txt");*/
-            VarioStateExcelAnalyse.AnalyzeFlug("../../Vario08.txt");
+            ImageToBitMapBuffer.saveBufferImage("../../LogoScreen.png");
+            BufferGDBConvert.ConvertGDBBuffer("../../OutputFileBuffer.txt", 470, 274);
+            System.Diagnostics.Process.Start("notepad.exe", "../../OutputFileBuffer.txt");
+            //VarioStateExcelAnalyse.AnalyzeFlug("../../Vario08.txt");
         }
 
         public static void StartDraw(int sizeX, int sizeY)

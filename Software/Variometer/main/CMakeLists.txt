@@ -2,13 +2,14 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 set(COMPONENT_SRCS  
-                    "main.c" "IGCLogger.c" "SoundManager.c" "BatteryManager.c" "SDCard.c" "nmea_parser.c" "QuaternionFilter.c" "DeviceContext.c" "ButtonInput.c" "AGL.c" "Util.c"
+                    "main.c" "IGCLogger.c" "SoundManager.c" "BatteryManager.c" "SDCard.c" "nmea_parser.c" "QuaternionFilter.c" "DeviceContext.c" "ButtonInput.c" "AGL.c" "Util.c" "compass.c" "flashMemory.c"
                     "Sensor/QMC588L.c" "Sensor/BMI088.c" "Sensor/DPS310.c"
                     "Screen/Display_Vario.c" "Screen/FIFO.c" "Screen/ScreenManager.c" "Screen/Widget_Vario.c" "Screen/Settings_Widget_vario.c" "Screen/RenderSystem.c" "Screen/PopUp_Widget_Vario.c"
                     "Screen/E_Ink/EPD_3in7.c" "Screen/E_Ink/GUI_Paint.c"
                     "Screen/E_Ink/font8.c" "Screen/E_Ink/font12.c" "Screen/E_Ink/font16.c" "Screen/E_Ink/font20.c" "Screen/E_Ink/font24.c"
-                    "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c" 
-                    "TestTools/FlightLogger.c" "TestTools/Simulation.c" 
+                    "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c" "Kalman/Quaternion/matrixSensorFusion.c" "Kalman/Quaternion/SensorFusion.c"
+                    "TestTools/FlightLogger.c" "TestTools/Simulation.c" "TestTools/performance.c"
+                    "Screen/assets/test_logo.c"
                     )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 register_component()

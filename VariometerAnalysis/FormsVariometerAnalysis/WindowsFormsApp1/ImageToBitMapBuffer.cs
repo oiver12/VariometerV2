@@ -17,12 +17,16 @@ namespace WindowsFormsApp1
                 for (int y = 0; y < img.Height; y++)
                 {
                     Color pixel = img.GetPixel(x, y);
-                    ulong argbValue = (ulong)pixel.R << 16 | (ulong)pixel.G << 8 | (ulong)pixel.B;
-                    string hexValue = argbValue.ToString("X");
-                    if(argbValue < 8388608) //Black
-                        buffer[x/8 + y*widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] & ~(0x80 >> (x % 8)));
+                    /* ulong argbValue = (ulong)pixel.R << 16 | (ulong)pixel.G << 8 | (ulong)pixel.B;
+                     if(argbValue < 8388608) //Black
+                         buffer[x/8 + y*widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] & ~(0x80 >> (x % 8)));
+                     else
+                         buffer[x/8+y*widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] | (0x80 >> (x % 8)));*/
+                    double gray = 0.2126 * pixel.R + 0.7152 * pixel.G + 0.0722 * pixel.B;
+                    if (gray < 230) //Black
+                        buffer[x / 8 + y * widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] & ~(0x80 >> (x % 8)));
                     else
-                        buffer[x/8+y*widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] | (0x80 >> (x % 8)));
+                        buffer[x / 8 + y * widthInBytes] = (Byte)(buffer[x / 8 + y * widthInBytes] | (0x80 >> (x % 8)));
                 }
             }
             using (FileStream outputFile = File.Open("../../OutputFileBuffer.txt", FileMode.Open, FileAccess.Write))

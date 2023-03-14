@@ -119,7 +119,7 @@ esp_err_t deinit_sdcard(sdcard_t *sdcard)
 }
 
 //TODO: directory not working
-FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, bool writeToFile)
+FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, const char* openMethod)
 {
     char buffer[100];
     strcpy(buffer, sdcard->Mount_Point);
@@ -150,10 +150,7 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
     // {
     //     ESP_LOGE(TAG, "File already exists");
     // }
-    if(writeToFile)
-        return fopen(buffer, "w");
-    else
-        return fopen(buffer, "r");
+    return fopen(buffer, openMethod);
 }
 
 bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *fileName)

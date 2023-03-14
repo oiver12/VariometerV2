@@ -50,6 +50,7 @@ typedef enum
     Widget_Settings_Slider,
     Widget_Settings_Checkbox,
     Widget_Settings_SoundThreshold,
+    Widget_Settings_CalibrationPageButton,
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -83,6 +84,7 @@ typedef enum
     WidgetContent_Settings_VolumeSlider,
     WidgetContent_Settings_SoundLiftThreshold,
     WidgetContent_Settings_SoundSinkThreshold,
+    WidgetContent_Settings_MagnCalibrationPageButton,
 } WidgetContentType;
 
 typedef struct
@@ -143,6 +145,11 @@ typedef struct {
     PopUpType type;
     WidgetData* widgetToEdit; //needs to be set, if PopUpType_WidgetSettings
 } PopUpConfig_t;
+
+typedef struct {
+    void (*returnFunction)(WidgetData*);
+    WidgetData *widget;
+} ReturnFunctionData_t;
 
 void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);

@@ -15,6 +15,8 @@
 #define TASK_LV_TASK_HANDLE_PRIORITY 2
 #define TASK_SCREEN_RENDER_PRIORITY 8
 
-#define TakeOffSpeed 6 //km/h
+#define TakeOffSpeed 1 //km/h
 #define LandingSpeed 2 //km/h
 #define LandingTimout 10 //s
+
+//#define SOUND_ON

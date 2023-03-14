@@ -55,13 +55,13 @@ esp_err_t readPercentage_Battery()
     if(battery_Manager.cali_enable)
     {
         sumValue = esp_adc_cal_raw_to_voltage(sumValue,battery_Manager.adc_chars);
-        ESP_LOGI(TAG, "SumValue: %i", sumValue);
+        //ESP_LOGI(TAG, "SumValue: %i", sumValue);
         float voltageBattery = ((float)sumValue / 1000.0f) * (1.0f + (10000.0f / 33000.0f));
         if(voltageBattery > 3.0f && voltageBattery < 4.2f)
         {
             battery_Manager.voltage = voltageBattery;
         }
-        ESP_LOGI(TAG, "Voltage: %.2f", battery_Manager.voltage);
+        //ESP_LOGI(TAG, "Voltage: %.2f", battery_Manager.voltage);
     }
     else{
         return ESP_ERR_INVALID_RESPONSE;

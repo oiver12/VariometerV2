@@ -3,6 +3,7 @@
 
 #include <esp_err.h>
 #include <stdbool.h>
+#include "Screen/Widget_Vario.h"
 
 typedef enum
 {
@@ -29,18 +30,20 @@ typedef enum
 typedef struct {
     int I2C_Master_Num;
     uint8_t qmc588l_i2c_addr;
-    int16_t magnValue[3];
+    int16_t rawMagnValue[3];
+    float CorrectedMagnValuemG[3];
     int _vCalibration[3][2];
     bool useCalibration;
     qmc588l_mr_t measurement_rate;
     qmc588l_osr_t oversampling;
     qmc588l_scale_t scale;
+    bool isCalibrating;
 } qmc588l_t;
 
-esp_err_t qmc588l_init(qmc588l_t *dev, int I2C_Master_Num, uint8_t i2c_addr, qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale);
-esp_err_t qmc588l_setMode(qmc588l_t *dev, qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale);
-esp_err_t qmc588l_setCalibration(qmc588l_t *dev, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max);
-esp_err_t qmc588l_calculateCalibration(qmc588l_t *dev);
-esp_err_t qmc588l_readMag(qmc588l_t *dev);
+qmc588l_t* qmc588l_init(int I2C_Master_Num, uint8_t i2c_addr, qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale);
+esp_err_t qmc588l_setMode(qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale);
+esp_err_t qmc588l_setCalibration(int x_min, int x_max, int y_min, int y_max, int z_min, int z_max);
+void qmc588l_calculateCalibration();
+esp_err_t qmc588l_readMag();
 
 #endif

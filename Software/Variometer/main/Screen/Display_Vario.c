@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include "E_Ink/GUI_Paint.h"
 #include "RenderSystem.h"
+#include "Screen/assets/assets.h"
 
 #ifdef EInk_DoubleBuffer
 #define DISP_BUF_SIZE 19200
@@ -137,8 +138,10 @@ void render_Screen_Task(void *arg)
 esp_err_t Display_powerOff_Screen()
 {
     screenRefreshing = false;
-    EPD_3IN7_4Gray_Init();
-    EPD_3IN7_4Gray_Clear();
+    //EPD_3IN7_4Gray_Init();
+    //EPD_3IN7_4Gray_Clear();
+    Paint_DrawBitMap_Paste(logo_img_buffer, 0, 0, 470, 274, 0);
+    EPD_3IN7_1Gray_Display(ScreenBuffer, FULL_G_T_BW);
     EPD_3IN7_Sleep();
     DEV_Module_Exit();
     return ESP_OK;
@@ -212,8 +215,8 @@ esp_err_t init_Display()
 
     Paint_SelectImage(ScreenBuffer);
     Paint_SetScale(2);
-
     Paint_Clear(WHITE);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
     startRendering(ScreenBuffer);
     return ESP_OK;
 }

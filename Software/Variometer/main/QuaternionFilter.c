@@ -1,6 +1,10 @@
 #include <math.h>
 #include <stdio.h>
+#include "QuaternionFilter.h"
 #define PI 3.14159265358979323846
+
+#define QUATERNIONV1
+
 // für Madgwick
 float GyroMeasError = PI * (40.0f / 180.0f);     // gyroscope measurement error in rads/s (start at 40 deg/s)
 float GyroMeasDrift = PI * (0.0f / 180.0f);      // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
@@ -28,14 +32,68 @@ void QuaternionFilter_KalmanInit(KalmanRollPitch_t *klm, float Pinit, float *Q, 
     klm->R[0] = R[0]; klm->R[1] = R[1]; klm->R[2] = R[2];
 }
 
-void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *klm, float *gyr_rps, float T)
+void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *kal, float *gyr_rps, float T)
 {
+    float p = gyr_rps[0];
+    float q = gyr_rps[1];
+    float r = gyr_rps[2];
 
+    float sp = sin(kal->phi_rad); float cp = cos(kal->phi_rad);
+    float tt = tan(kal->theta_rad);
+
+    kal->phi_rad = kal->phi_rad + T * (p + tt * (q * sp + r * cp));
+    kal->theta_rad = kal->theta_rad + T * (q * cp - r * sp);
+
+    sp = sin(kal->phi_rad); cp = cos(kal->phi_rad);
+    float st = sin(kal->theta_rad); float ct = cos(kal->theta_rad); tt = st / ct;
+
+    float A[4] = { tt * (q * cp - r * sp), (r * cp + q * sp) * (tt * tt + 1.0f),
+                   -(r * cp + q * sp),      0.0f };
+    float Ptmp[4] = { T*(kal->Q[0] + 2.0f*A[0]*kal->P[0] + A[1]*kal->P[1] + A[1]*kal->P[2]), T*(A[0] * kal->P[1] + A[2]*kal->P[0] + A[1]*kal->P[3] + A[3]*kal->P[1]),
+                      T*(A[0]*kal->P[2] + A[2]*kal->P[0] + A[1]*kal->P[3] + A[3]*kal->P[2]), T*(kal->Q[1] + A[2]*kal->P[1]+A[2]*kal->P[2] + 2.0f*A[3]*kal->P[3]) };
+    
+    kal->P[0] = kal->P[0] + Ptmp[0]; kal->P[1] = kal->P[1] + Ptmp[1];
+    kal->P[2] = kal->P[2] + Ptmp[2]; kal->P[3] = kal->P[3] + Ptmp[3];
 }
 
-void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *klm, float *acc_mps2)
+void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *kal, float *acc_mps2)
 {
+    float ax = acc_mps2[0];
+    float ay = acc_mps2[1];
+    float az = acc_mps2[2];
 
+    float sp = sin(kal->phi_rad); float cp = cos(kal->phi_rad);
+    float st = sin(kal->theta_rad); float ct = cos(kal->theta_rad);
+
+    float h[3] = { g * st,
+                   -g * ct * sp,
+                   -g * ct * cp };
+    float C[6] = { 0.0f, g * ct, 
+                   -g * cp * ct, g * sp * st,
+                   g * sp * ct, g * cp * st };
+    
+    float G[9] = { kal->P[3]*C[1]*C[1] + kal->R[0], C[1]*C[2]*kal->P[2] + C[1]*C[3]*kal->P[3], 0.0f,
+                   C[1]*(C[2]*kal->P[1] + C[3]*kal->P[3]), kal->R[1] + C[2]*(C[2]*kal->P[0] + C[3]*kal->P[2]) + C[3]*(C[2]*kal->P[1] + C[3]*kal->P[3]), C[4],
+                   C[1]*(C[4]*kal->P[1] + C[5]*kal->P[3]), C[2]*(C[4]*kal->P[0] + C[5]*kal->P[2]) + C[3]*(C[4]*kal->P[1] + C[5]*kal->P[3]),             kal->R[2]};
+
+    float Gdetinv = 1.0f / (G[0]*G[4]*G[8] - G[0]*G[5]*G[7] - G[1]*G[3]*G[8] + G[1]*G[5]*G[6] + G[2]*G[3]*G[7] - G[2]*G[4]*G[6]);
+
+    float Ginv[9] = { Gdetinv * (G[4]*G[8] - G[5]*G[7]), -Gdetinv * (G[1]*G[8] - G[2]*G[7]), Gdetinv * (G[1]*G[5] - G[2]*G[4]),
+                     -Gdetinv * (G[3]*G[8] - G[5]*G[6]),  Gdetinv * (G[0]*G[8] - G[2]*G[6]),-Gdetinv * (G[0]*G[5] - G[2]*G[3]),
+                      Gdetinv * (G[3]*G[7] - G[4]*G[6]), -Gdetinv * (G[0]*G[7] - G[1]*G[6]), Gdetinv * (G[0]*G[4] - G[1]*G[3]) };
+
+    float K[6] = {G[0]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[3]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[6]*(C[4]*kal->P[0] + C[5]*kal->P[1]), G[1]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[4]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[7]*(C[4]*kal->P[0] + C[5]*kal->P[1]), G[2]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[5]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[8]*(C[4]*kal->P[0] + C[5]*kal->P[1]),
+                  G[0]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[3]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[6]*(C[4]*kal->P[2] + C[5]*kal->P[3]), G[1]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[4]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[7]*(C[4]*kal->P[2] + C[5]*kal->P[3]), G[2]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[5]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[8]*(C[4]*kal->P[2] + C[5]*kal->P[3])};
+    
+    float Ptmp[4];
+    Ptmp[0] = -kal->P[0]*(C[0]*K[0] + C[2]*K[1] + C[4]*K[2] - 1.0f) - kal->P[2]*(C[1]*K[0] + C[3]*K[1] + C[5]*K[2]); Ptmp[1] = -kal->P[1]*(C[0]*K[0] + C[2]*K[1] + C[4]*K[2] - 1.0f) - kal->P[3]*(C[1]*K[0] + C[3]*K[1] + C[5]*K[2]);
+    Ptmp[2] = -kal->P[0]*(C[0]*K[3] + C[2]*K[4] + C[4]*K[5]) - kal->P[2]*(C[1]*K[3] + C[3]*K[4] + C[5]*K[5] - 1.0f); Ptmp[3] = -kal->P[1]*(C[0]*K[3] + C[2]*K[4] + C[4]*K[5]) - kal->P[3]*(C[1]*K[3] + C[3]*K[4] + C[5]*K[5] - 1.0f);
+
+    kal->P[0] = kal->P[0] + Ptmp[0]; kal->P[1] = kal->P[1] + Ptmp[1];
+    kal->P[2] = kal->P[2] + Ptmp[2]; kal->P[3] = kal->P[3] + Ptmp[3];
+
+    kal->phi_rad = kal->phi_rad + K[0] * (ax - h[0]) + K[1] * (ay - h[1]) + K[2] * (az - h[2]);
+    kal->theta_rad = kal->theta_rad + K[3] * (ax - h[0]) + K[4] * (ay - h[1]) + K[5] * (az - h[2]);
 }
 
 void QuaternionFilter_init()
@@ -154,7 +212,7 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
 	float qa, qb, qc;
 
     float accTotal = sqrt(ax * ax + ay * ay + az * az);
-	bool bUseAccel = accTotal > 0.75 && accTotal < 1.25;
+	int bUseAccel = accTotal > 0.75 && accTotal < 1.25;
 
 	if(bUseAccel) {
 		// Normalise accelerometer measurement
@@ -222,9 +280,9 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
 	}
 
 	// Integrate rate of change of quaternion
-	gx *= (0.5f * dt);		// pre-multiply common factors
-	gy *= (0.5f * dt);
-	gz *= (0.5f * dt);
+	gx *= (0.5f * deltaT);		// pre-multiply common factors
+	gy *= (0.5f * deltaT);
+	gz *= (0.5f * deltaT);
 	qa = q0;
 	qb = q1;
 	qc = q2;

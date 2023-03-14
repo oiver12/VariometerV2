@@ -13,8 +13,8 @@ typedef struct {
 } KalmanRollPitch_t;
 
 void QuaternionFilter_KalmanInit(KalmanRollPitch_t *klm, float Pinit, float *Q, float *R);
-void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *klm, float *gyr_rps, float T);
-void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *klm, float *acc_mps2);
+void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *kal, float *gyr_rps, float T);
+void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *kal, float *acc_mps2);
 
 void QuaternionFilter_init();
 void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz, float deltaT, float* q);
