@@ -167,15 +167,19 @@ static void init_SettingsWidgets()
     screenManagerInstance.settingsScreen.headListPageButtons = backButtonItem;
     screenManagerInstance.settingsScreen.topFielPageButtons = backButtonItem;
     widget_Settings_linkedList* prev = backButtonItem;
+    widget_Settings_linkedList* listElement;
     for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
     {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = pageButtonSettingsWidget[i];
         listElement->data.x = 10;
         prev = listElement;
     }
+    //make it circular (skip to to top when all the way down)
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 
     /* Init Audio Setting Widgets */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
@@ -186,13 +190,15 @@ static void init_SettingsWidgets()
     prev = backButtonItem;
     for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
     {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetData_Audio_Settings[i];
         listElement->data.x = 10;
         prev = listElement;
     }
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 
     /* Init Config Setting Widget */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
@@ -203,13 +209,15 @@ static void init_SettingsWidgets()
     prev = backButtonItem;
     for (size_t i = 0; i < sizeof(widgetData_Config_Settings) / sizeof(WidgetData); i++)
     {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetData_Config_Settings[i];
         listElement->data.x = 10;
         prev = listElement;
     }
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 }
 
 /* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
@@ -304,24 +312,25 @@ bool ScreenManager_update()
 static void draw_Settings_Scrollbar()
 {
     uint32_t currY = 28;
-    widget_Settings_linkedList* element = screenManagerInstance.settingsScreen.topFielPageButtons;
+    widget_Settings_linkedList* startElement = screenManagerInstance.settingsScreen.topFielPageButtons;
     if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Audio)
     {
-        element = screenManagerInstance.settingsScreen.topFieldAudio;
+        startElement = screenManagerInstance.settingsScreen.topFieldAudio;
     }
     else if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Config)
     {
-        element = screenManagerInstance.settingsScreen.topFieldConfig;
+        startElement = screenManagerInstance.settingsScreen.topFieldConfig;
     }
     Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
-    while (element && currY + element->data.h <= Paint.Height)
+    widget_Settings_linkedList* element = startElement;
+    do
     {
         element->data.y = currY;
         if (screenManagerInstance.settingsScreen.hoveredField != element)
             vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false, screenManagerInstance.settingsScreen.selectedField == element, false);
         currY += element->data.h;
         element = element->next;
-    }
+    } while(element != startElement && currY + element->data.h <= Paint.Height);
     vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element, false);
 }
 
@@ -443,6 +452,7 @@ static void settings_down_press()
         //we are hovering a field
         if (screenManagerInstance.settingsScreen.hoveredField->next)
         {
+            //TODO: Go to top of list, when last element
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
             screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->next;

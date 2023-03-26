@@ -86,6 +86,11 @@ static void updateFlightStats(gps_t* gps)
     flight_stats.lastPosition.lat = gps->latitude;
     flight_stats.lastPosition.lon = gps->longitude;
     flight_stats.lastPosition.alt = gps->altitude;
+        /*TrackPoint_t trackPoint = {
+        .lat = gps->latitude,
+        .lon = gps->longitude,
+        .vario = 
+    }*/
     xSemaphoreGive(semaphore_flight_stats);
 }
 
@@ -124,6 +129,7 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
         {
             updateFlightStats(gps);
         }
+        //ESP_LOGI("Device", "%s", gps->infoString);
         break;
     default:
         printf("GPS Event konnte nicht gefunden werden!\n");
@@ -131,7 +137,7 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
     }
 }
 
-void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
+void init_DeviceContext()
 {
     semaphore_vario_state = xSemaphoreCreateMutex();
     semaphore_vario_settings = xSemaphoreCreateMutex();
@@ -139,9 +145,14 @@ void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
     semaphore_device_state = xSemaphoreCreateMutex();
     semaphore_flight_stats = xSemaphoreCreateMutex();
     vario_state.vertVel_Fifo = fifo_create(FIFO_VERTLAZY_SIZE, sizeof(float));
+    flight_stats.fifo_trackPoints = fifo_create(FIFO_TRACKPOINT_SIZE, sizeof(TrackPoint_t));
 
     vario_settings.soundVolume = 10000;
     device_state.statusGPS = GPS_MODE_INVALID;
+}
+
+void startGps_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
+{
     nmea_parser_add_handler(nmea_parser_handle, device_state_gps_handle, NULL, GPS_UPDATE);
 }
 
@@ -454,6 +465,9 @@ bool flight_stats_get_member(void* value, flight_stats_member_t member, bool sta
         break;
     case flight_stats_lastPosition:
         *(Position_t*)value = flight_stats.lastPosition;
+        break;
+    case flight_stats_trackPoints:
+        *(fifo_t*)value = flight_stats.fifo_trackPoints;
         break;
     default:
         printf("Member von Flight Stats konnte nicht gefunden werden!\n");

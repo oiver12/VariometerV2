@@ -11,6 +11,7 @@
 
 #define MAX_STRING_SIZE 16
 #define FIFO_VERTLAZY_SIZE 66 //ca. 2 Sekunde integriert
+#define FIFO_TRACKPOINT_SIZE 30
 
 #define Volume_max_Size 20000 //eig. 2^16 / 2 = 32'768, aber wäre zu viel Leistung für den Lautsprecher (denke ich ausprobieren!)
 
@@ -108,6 +109,14 @@ typedef struct {
 } Position_t;
 
 typedef struct {
+    float lat;
+    float lon;
+    float vario;
+    float dx;
+    float dy;
+} TrackPoint_t;
+
+typedef struct {
     float altitudeMax;
     float altitudeMin;
 
@@ -123,6 +132,8 @@ typedef struct {
     Position_t lastPosition;
 
     uint32_t landingStartTime; //in ms
+
+    fifo_t fifo_trackPoints;
     uint16_t stateChange;
 } flight_stats_t;
 
@@ -137,9 +148,11 @@ typedef enum {
     flight_stats_distTakeOff = 1 << 7,
     flight_stats_distFlight = 1 << 8,
     flight_stats_lastPosition = 1 << 9,
+    flight_stats_trackPoints = 1 << 10,
 } flight_stats_member_t;
 
-void init_DeviceContext(nmea_parser_handle_t nmea_parser_handle);
+void init_DeviceContext();
+void startGps_DeviceContext(nmea_parser_handle_t nmea_parser_handle);
 
 /*
 * Vario State. value has to be the right type for the returnValue!!! 

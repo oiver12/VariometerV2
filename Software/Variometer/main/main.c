@@ -108,6 +108,7 @@ static void TaskMeasureHeight(void *parameters)
     gpio_config(&gpio_config_INT_DPS310);
     //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
     gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+    ESP_LOGI(TAG, "wait");
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     while(1)
@@ -131,7 +132,6 @@ static void TaskMeasureHeight(void *parameters)
         xSemaphoreGive(pressure_temperature_Mutex);
         float pressure = DPS310_Data.Pressure;
         vario_state_set_member(&pressure, vario_state_pressure);
-        //printf("%.2f \n", DPS310_Data.Pressure);
         //notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
         vTaskDelay(30 / portTICK_PERIOD_MS);
@@ -153,6 +153,7 @@ static void TaskMeasureAcc(void *parameters)
     /* Init QMC588L */
     qmc588l_t* QMC588L_Data;
     QMC588L_Data = qmc588l_init(i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_2G);
+    //qmc588l_calculateCalibration();
     // bool hasFound = flashMemoryReadInt32("MagCaliMinX", &QMC588L_Data->_vCalibration[0][0]);
     // if(hasFound)
     // {
@@ -188,8 +189,6 @@ static void TaskMeasureAcc(void *parameters)
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
-        //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
-        //QuaternionFilter_Madgwick(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], QMC588L_Data.magnValue[0], QMC588L_Data.magnValue[1], QMC588L_Data.magnValue[2], deltaT, rotation);
         float an = BMI088_Data.acc_mps2[1] / 9.81;
         float ae = BMI088_Data.acc_mps2[0] / 9.81f;
         float ad = BMI088_Data.acc_mps2[2] / 9.81f;
@@ -204,20 +203,13 @@ static void TaskMeasureAcc(void *parameters)
         //compass_get(QMC588L_Data.magnValue, rotation, &heading);
         //int headingInt = (int)heading;
         //vario_state_set_member(&headingInt, vario_state_heading);
-        //QuaternionFilter_Mahony(-BMI088_Data.acc_mps2[0] / 9.81, BMI088_Data.acc_mps2[1] / 9.81, BMI088_Data.acc_mps2[2] / 9.81, BMI088_Data.gyr_rps[0], -BMI088_Data.gyr_rps[1], -BMI088_Data.gyr_rps[2], deltaT, rotation);
         count++;
-        //if(count % 10 == 0)
-            //printf("Yaw: %.2f\n", atan2(QMC588L_Data->rawMagnValue[1], QMC588L_Data->rawMagnValue[0]) * 180.0f / 3.14159265358979323846f);
-            //printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)mn, (int)me, (int)md);
+        //printf("X: %i, Y: %i, Z: %i\n", (int)mn, (int)me, (int)md);
+        if(count % 10 == 0)
+            printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * an + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * ae + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*ad;
         accX *= 9.81f;
-        //float accX =  2.0*(rotation[1]*rotation[3] - rotation[0]*rotation[2])*an + 2.0*(rotation[0]*rotation[1] + rotation[2]*rotation[3])*ae + (rotation[0]*rotation[0] - rotation[1]*rotation[1] - rotation[2]*rotation[2] + rotation[3]*rotation[3])*ad - 1.0;
-        //float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * -BMI088_Data.acc_mps2[0] + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * BMI088_Data.acc_mps2[1] + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*BMI088_Data.acc_mps2[2];
-        //za = 2.0*(q[1]*q[3] - q[0]*q[2])*ax + 2.0*(q[0]*q[1] + q[2]*q[3])*ay + (q[0]*q[0] - q[1]*q[1] - q[2]*q[2] + q[3]*q[3])*az - 1.0;
-	    //return (abs(za) < 0.1) ? 0 : za * 9.81f;
-        
-        //printf("%.2f \n", accX-9.81);
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
             accSum += accX;
@@ -368,10 +360,16 @@ static void TaskKalmanFilter(void *parameters)
             float roll, pitch, yaw;
             Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
             int heading = (int)yaw;
+            while(heading > 360.0)
+    	        heading -= 360.0;
+            while(heading < 0.0)
+    	        heading += 360.0;
+            //printf("Yaw: %.2f\n", yaw);
             vario_state_set_member(&heading, vario_state_heading);
         }
         logVarioData(flight_state);
         SoundManager_calculateNewBiep(matrix_get(x, 1, 0));
+        //SoundManager_calculateNewBiep(2.5f);
         //printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
@@ -442,20 +440,22 @@ void app_main(void)
     nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
     ESP_LOGI(TAG, "GPS started");
 
-    init_DeviceContext(gps_nmea_hdl);
-
-    init_SoundManager();
-
-    init_Display();
-
-    flashMemoryInit();
-
     sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
+    init_DeviceContext();
+
     init_sdcard(sdcard, "/sdcard");
     init_IGCLogger(sdcard, gps_nmea_hdl);
     initLogging(sdcard, gps_nmea_hdl);
-    startLogging();
-    //start_IGCLogger(sdcard, gps_nmea_hdl);
+
+    //gps handle wird beim DeviceContext erst nach SD Karte gestartet, da wenn direkt abfulg ist, soll
+    //das loggen auf SDKarte direkt starten. Wenn die Sd Karte gestartet wird, muss jedoch device kontext
+    //schon gestartet sein
+    startGps_DeviceContext(gps_nmea_hdl);
+
+    init_SoundManager();
+    init_Display();
+
+    flashMemoryInit();
 
     init_Battery_Manager(4);
 
@@ -467,7 +467,6 @@ void app_main(void)
     
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);

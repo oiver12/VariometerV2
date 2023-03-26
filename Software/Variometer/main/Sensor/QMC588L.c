@@ -8,8 +8,10 @@
 
 #define I2C_MASTER_TIMEOUT_MS       1000
 
-float offsetVector[3] = { -88.92f, -62.73f, 65.55f};
-float magneticMapping[9] = { 0.988f, 0.013f, -0.004f, 0.0013f, 1.002f, -0.016f, -0.004, -0.016f, 1.01f };
+float offsetVector[3] = { 0, 0, 0};
+float magneticMapping[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1};
+//float offsetVector[3] = { 0.11f, 1.26f, 5.65f};
+//float magneticMapping[9] = { 1.006f, -0.007f, -0.009f, -0.007f, 0.983f, 0.008f, -0.009f, 0.008f, 1.011f};
 
 qmc588l_t qmc588l_data;
 
@@ -64,6 +66,7 @@ esp_err_t qmc588l_setCalibration(int x_min, int x_max, int y_min, int y_max, int
 
 static void calibrationTask(void* params)
 {
+    ESP_LOGI(TAG, "Start Calibration");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     qmc588l_data.isCalibrating = true;
     bool changed = false;

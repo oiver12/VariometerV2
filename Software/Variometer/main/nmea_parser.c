@@ -675,7 +675,7 @@ static void nmea_parser_task_entry(void *arg)
                 xQueueReset(esp_gps->event_queue);
                 break;
             case UART_BREAK:
-                ESP_LOGW(GPS_TAG, "Rx Break");
+                //ESP_LOGW(GPS_TAG, "Rx Break");
                 break;
             case UART_PARITY_ERR:
                 ESP_LOGE(GPS_TAG, "Parity Error");
