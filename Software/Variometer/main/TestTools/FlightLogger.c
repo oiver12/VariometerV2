@@ -41,8 +41,12 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
         time = esp_timer_get_time();
         fwrite(&time, sizeof(time), 1, fileGPSUpdate); //write time to file
         fwrite(gps, sizeof(gps_t), 1, fileGPSUpdate); //write gps data to file
-        if(count % 20 == 0)
-            fflush(fileGPSUpdate);
+        fprintf(fileGPSUpdate, "\n"); //new line
+        if(count % 10 == 0)
+        {
+            fclose(fileGPSUpdate);
+            fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "a");
+        }
     default:
         break;
     }
@@ -62,7 +66,7 @@ void startLogging()
     }while(fileExists_sdcard(sdcard, directoryLogs, fileNameVario));
     ESP_LOGI(TAG, "Found file: %s", fileNameVario);
     //snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", --count);
-    fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "wb");
+    fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "w");
     
     #ifdef NotifyNMEASentence
     count = 0;
@@ -78,7 +82,7 @@ void startLogging()
         snprintf(fileNameGPSUpdate, sizeof(fileNameGPSUpdate), "GPS%02d.txt", count++);
     }while(fileExists_sdcard(sdcard, directoryLogs, fileNameGPSUpdate));
     ESP_LOGI(TAG, "Found file: %s", fileNameGPSUpdate);
-    fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "wb");
+    fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "w");
 
     sd_card_state_t sdstate;
     device_state_get_member(&sdstate, device_state_statusSDCard, false);
@@ -110,11 +114,12 @@ void logVarioData(FlightLogger_t state)
     int64_t time = esp_timer_get_time(); 
     fwrite(&time, sizeof(int64_t), 1, fileVario); //write Time since startup to file
     fprintf(fileVario, "\n"); //new line
-    if(countVarioFile % 20 == 0) //save File all 20th time ==> all 600 ms
+    if(countVarioFile % 40 == 0) //save File all 40th time ==> all 1200 ms
     {
-        fflush(fileVario);
-        // fclose(fileVario);
-        // fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
+        //fflush(fileVario);
+        fclose(fileVario);
+        fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "a");
+        //fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
     }
     countVarioFile++;
 }

@@ -18,6 +18,7 @@ typedef struct {
 } igc_gps_data_t;
 
 typedef struct {
+    const char nameBuffer[60];
     float pressureAltitude;
     volatile int64_t gpsLastTimeUpdate;
     sdcard_t *sdcard;

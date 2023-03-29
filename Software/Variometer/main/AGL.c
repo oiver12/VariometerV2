@@ -54,7 +54,7 @@ static void AGL_gps_event_handler(void *event_handler_arg, esp_event_base_t even
                         ESP_LOGW(TAG, "AGL File doens't exist: %s", fileName);
                         return;
                     }
-                    agl_context.currFile = openFile_sdcard(agl_context.sdcard, directory, fileName, false);
+                    agl_context.currFile = openFile_sdcard(agl_context.sdcard, directory, fileName, "r");
                 }
                 if(!agl_context.currFile)
                 {
