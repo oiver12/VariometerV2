@@ -8,10 +8,10 @@
 
 #define I2C_MASTER_TIMEOUT_MS       1000
 
-float offsetVector[3] = { 0, 0, 0};
-float magneticMapping[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1};
-//float offsetVector[3] = { 0.11f, 1.26f, 5.65f};
-//float magneticMapping[9] = { 1.006f, -0.007f, -0.009f, -0.007f, 0.983f, 0.008f, -0.009f, 0.008f, 1.011f};
+//float offsetVector[3] = { 0, 0, 0};
+//float magneticMapping[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1};
+float offsetVector[3] = { -15.06f, -6.4f, 3.94f};
+float magneticMapping[9] = { 1.003f, -0.011f, 0.0f, -0.011f, 0.997f, 0.009f, 0.00f, 0.009f, 1.00f };
 
 qmc588l_t qmc588l_data;
 

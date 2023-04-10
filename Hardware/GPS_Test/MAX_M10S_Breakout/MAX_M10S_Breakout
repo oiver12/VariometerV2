@@ -1,0 +1,13 @@
+Comment,Designator,Footprint,LCSC Part #
+"10nF Unpolarized capacitor, small symbol",C1,C1710
+"100nF Unpolarized capacitor, small symbol","C2,C4",C28233
+"10uF Unpolarized capacitor, small symbol",C3,C15850
+BLUE Light emitting diode,D1,C2296
+U.FL-R-SMT(01) ,J1,
+"Conn_01x10 Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)",J2,
+"JMP Solder Jumper, 2-pole, open",JP1,
+"27nH Inductor, small symbol",L1,C98992
+"10R Resistor, small symbol",R1,C17415
+"4.7k Resistor, small symbol","R2,R3",C17673
+"1k Resistor, small symbol",R4,C17513
+"MAX-M10S GNSS Module MAX M10, VCC 1.65V to 3.6V",U1,

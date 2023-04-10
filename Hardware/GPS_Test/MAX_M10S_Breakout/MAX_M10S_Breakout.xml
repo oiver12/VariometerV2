@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>C:\Users\olive\Documents\VariometerV2\Hardware\GPS_Test\MAX_M10S_Breakout\MAX_M10S_Breakout.kicad_sch</source>
+    <date>08.04.2023 21:32:45</date>
+    <tool>Eeschema 7.0.1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>MAX_M10S_Breakout.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>10nF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C1710</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="LCSC Part" value="C1710"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>81e3f819-710c-4e22-9833-2985c6db035b</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C28233</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="LCSC Part" value="C28233"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>34d1b0b6-bee8-488f-b7cd-7deb17fa8886</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C15850</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="LCSC Part" value="C15850"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1e11ceca-680d-4d75-b8ac-f2b53485d1e1</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>100nF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C28233</field>
+      </fields>
+      <libsource lib="Device" part="C_Small" description="Unpolarized capacitor, small symbol"/>
+      <property name="LCSC Part" value="C28233"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Unpolarized capacitor, small symbol"/>
+      <property name="ki_keywords" value="capacitor cap"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5b464015-ba51-4079-b250-aea6f309e8fe</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>BLUE</value>
+      <footprint>LED_SMD:LED_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C2296</field>
+      </fields>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="LCSC Part" value="C2296"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Light emitting diode"/>
+      <property name="ki_keywords" value="LED diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cadfa41a-68a7-4b11-b5a0-dd88ab03111d</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>U.FL-R-SMT(01)</value>
+      <footprint>HRS_U.FL-R-SMT(01)</footprint>
+      <fields>
+        <field name="AVAILABILITY">Good</field>
+        <field name="DESCRIPTION">U.FL Series 6 Ghz 50 Ohm Ultra-small SMT Coaxial Cable Receptacle</field>
+        <field name="MF">Hirose</field>
+        <field name="MP">U.FL-R-SMT(01)</field>
+        <field name="PACKAGE">None</field>
+        <field name="PRICE">0.84 USD</field>
+      </fields>
+      <libsource lib="Main_Library" part="U.FL-R-SMT(01)" description=""/>
+      <property name="MP" value="U.FL-R-SMT(01)"/>
+      <property name="PACKAGE" value="None"/>
+      <property name="MF" value="Hirose"/>
+      <property name="PRICE" value="0.84 USD"/>
+      <property name="AVAILABILITY" value="Good"/>
+      <property name="DESCRIPTION" value="U.FL Series 6 Ghz 50 Ohm Ultra-small SMT Coaxial Cable Receptacle"/>
+      <property name="LCSC Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5f4d8be5-c30e-47ca-997c-0bcf12579055</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x10</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical</footprint>
+      <libsource lib="Connector_Generic" part="Conn_01x10" description="Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="LCSC Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ebe67279-978e-451a-bb89-3faa5da74ff5</tstamps>
+    </comp>
+    <comp ref="JP1">
+      <value>JMP</value>
+      <footprint>Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm</footprint>
+      <libsource lib="Jumper" part="SolderJumper_2_Open" description="Solder Jumper, 2-pole, open"/>
+      <property name="LCSC Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Solder Jumper, 2-pole, open"/>
+      <property name="ki_keywords" value="solder jumper SPST"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fea7295b-6db0-4f19-a073-a9e508e92af4</tstamps>
+    </comp>
+    <comp ref="L1">
+      <value>27nH</value>
+      <footprint>Inductor_SMD:L_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C98992</field>
+      </fields>
+      <libsource lib="Device" part="L_Small" description="Inductor, small symbol"/>
+      <property name="LCSC Part" value="C98992"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Inductor, small symbol"/>
+      <property name="ki_keywords" value="inductor choke coil reactor magnetic"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d1e408c8-2ea7-446e-b2c0-2f5fa83e8751</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>10R</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C17415</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="LCSC Part" value="C17415"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Resistor, small symbol"/>
+      <property name="ki_keywords" value="R resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>16b78e35-ae82-460e-916f-ce81436f0ac5</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>4.7k</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C17673</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="LCSC Part" value="C17673"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Resistor, small symbol"/>
+      <property name="ki_keywords" value="R resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>af1fceec-05f6-4422-bd29-d398edc71107</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>4.7k</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C17673</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="LCSC Part" value="C17673"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Resistor, small symbol"/>
+      <property name="ki_keywords" value="R resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>29be6916-720e-4054-b898-2fc12206d83e</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>1k</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <fields>
+        <field name="LCSC Part">C17513</field>
+      </fields>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="LCSC Part" value="C17513"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="Resistor, small symbol"/>
+      <property name="ki_keywords" value="R resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>82fd49a6-0b81-4ad9-b6be-bc7fc67126f1</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>MAX-M10S</value>
+      <footprint>RF_GPS:ublox_MAX</footprint>
+      <datasheet>https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf</datasheet>
+      <libsource lib="RF_GPS" part="MAX-M10S" description="GNSS Module MAX M10, VCC 1.65V to 3.6V"/>
+      <property name="LCSC Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="MAX_M10S_Breakout.kicad_sch"/>
+      <property name="ki_description" value="GNSS Module MAX M10, VCC 1.65V to 3.6V"/>
+      <property name="ki_keywords" value="ublox GPS GNSS module"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1854649e-2e0f-42b7-aabf-eacdd9fff106</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector_Generic" part="Conn_01x10">
+      <description>Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x10</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+        <pin num="9" name="Pin_9" type="passive"/>
+        <pin num="10" name="Pin_10" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Small">
+      <description>Unpolarized capacitor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED">
+      <description>Light emitting diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="L_Small">
+      <description>Inductor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Choke_*</fp>
+        <fp>*Coil*</fp>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">L_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Small">
+      <description>Resistor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_2_Open">
+      <description>Solder Jumper, 2-pole, open</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>SolderJumper*Open*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_2_Open</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Main_Library" part="U.FL-R-SMT(01)">
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">U.FL-R-SMT(01)</field>
+        <field name="Footprint">HRS_U.FL-R-SMT(01)</field>
+        <field name="MP">U.FL-R-SMT(01)</field>
+        <field name="PACKAGE">None</field>
+        <field name="MF">Hirose</field>
+        <field name="PRICE">0.84 USD</field>
+        <field name="AVAILABILITY">Good</field>
+        <field name="DESCRIPTION">U.FL Series 6 Ghz 50 Ohm Ultra-small SMT Coaxial Cable Receptacle</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="passive"/>
+        <pin num="2" name="GND" type="passive"/>
+        <pin num="3" name="SIG" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RF_GPS" part="MAX-M10S">
+      <description>GNSS Module MAX M10, VCC 1.65V to 3.6V</description>
+      <docs>https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf</docs>
+      <footprints>
+        <fp>ublox?MAX*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">MAX-M10S</field>
+        <field name="Footprint">RF_GPS:ublox_MAX</field>
+        <field name="Datasheet">https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_in"/>
+        <pin num="2" name="TXD" type="output"/>
+        <pin num="3" name="RXD" type="input"/>
+        <pin num="4" name="TIMEPULSE" type="output"/>
+        <pin num="5" name="EXTINT" type="input"/>
+        <pin num="6" name="V_BCKP" type="power_in"/>
+        <pin num="7" name="VCC_IO" type="power_in"/>
+        <pin num="8" name="VCC" type="power_in"/>
+        <pin num="9" name="~{RESET}" type="input"/>
+        <pin num="10" name="GND" type="passive"/>
+        <pin num="11" name="RF_IN" type="input"/>
+        <pin num="12" name="GND" type="passive"/>
+        <pin num="13" name="LNA_EN" type="output"/>
+        <pin num="14" name="VCC_RF" type="power_out"/>
+        <pin num="15" name="VIO_SEL" type="input"/>
+        <pin num="16" name="SDA" type="bidirectional"/>
+        <pin num="17" name="SCL" type="input"/>
+        <pin num="18" name="~{SAFEBOOT}" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector_Generic">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Connector_Generic.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Device.kicad_sym</uri>
+    </library>
+    <library logical="Jumper">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Jumper.kicad_sym</uri>
+    </library>
+    <library logical="Main_Library">
+      <uri>C:/Users/olive/OneDrive/Dokumente/KiCad/7.0/symbols/Main_Library.kicad_sym</uri>
+    </library>
+    <library logical="RF_GPS">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/RF_GPS.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="+3.3V">
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="7" pinfunction="VCC_IO" pintype="power_in"/>
+      <node ref="U1" pin="8" pinfunction="VCC" pintype="power_in"/>
+    </net>
+    <net code="2" name="+BATT">
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="J2" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="U1" pin="6" pinfunction="V_BCKP" pintype="power_in"/>
+    </net>
+    <net code="3" name="GND">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="GND" pintype="passive"/>
+      <node ref="J1" pin="2" pinfunction="GND" pintype="passive"/>
+      <node ref="J2" pin="10" pinfunction="Pin_10" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="GND" pintype="power_in"/>
+      <node ref="U1" pin="10" pinfunction="GND" pintype="passive"/>
+      <node ref="U1" pin="12" pinfunction="GND" pintype="passive"/>
+    </net>
+    <net code="4" name="INT">
+      <node ref="J2" pin="7" pinfunction="Pin_7" pintype="passive"/>
+      <node ref="U1" pin="5" pinfunction="EXTINT" pintype="input"/>
+    </net>
+    <net code="5" name="Net-(C1-Pad1)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="L1" pin="1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(D1-A)">
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="Net-(J1-SIG)">
+      <node ref="J1" pin="3" pinfunction="SIG" pintype="passive"/>
+      <node ref="JP1" pin="1" pinfunction="A" pintype="passive"/>
+      <node ref="U1" pin="11" pinfunction="RF_IN" pintype="input"/>
+    </net>
+    <net code="8" name="Net-(JP1-B)">
+      <node ref="JP1" pin="2" pinfunction="B" pintype="passive"/>
+      <node ref="L1" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="Net-(U1-VCC_RF)">
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="U1" pin="14" pinfunction="VCC_RF" pintype="power_out"/>
+    </net>
+    <net code="10" name="PPS">
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U1" pin="4" pinfunction="TIMEPULSE" pintype="output"/>
+    </net>
+    <net code="11" name="RX">
+      <node ref="J2" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="RXD" pintype="input"/>
+    </net>
+    <net code="12" name="SCL">
+      <node ref="J2" pin="6" pinfunction="Pin_6" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="U1" pin="17" pinfunction="SCL" pintype="input"/>
+    </net>
+    <net code="13" name="SDA">
+      <node ref="J2" pin="5" pinfunction="Pin_5" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="U1" pin="16" pinfunction="SDA" pintype="bidirectional"/>
+    </net>
+    <net code="14" name="TX">
+      <node ref="J2" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="TXD" pintype="output"/>
+    </net>
+    <net code="15" name="unconnected-(U1-LNA_EN-Pad13)">
+      <node ref="U1" pin="13" pinfunction="LNA_EN" pintype="output+no_connect"/>
+    </net>
+    <net code="16" name="unconnected-(U1-VIO_SEL-Pad15)">
+      <node ref="U1" pin="15" pinfunction="VIO_SEL" pintype="input+no_connect"/>
+    </net>
+    <net code="17" name="~{RESET}">
+      <node ref="J2" pin="9" pinfunction="Pin_9" pintype="passive"/>
+      <node ref="U1" pin="9" pinfunction="~{RESET}" pintype="input"/>
+    </net>
+    <net code="18" name="~{SAFE}">
+      <node ref="J2" pin="8" pinfunction="Pin_8" pintype="passive"/>
+      <node ref="U1" pin="18" pinfunction="~{SAFEBOOT}" pintype="input"/>
+    </net>
+  </nets>
+</export>

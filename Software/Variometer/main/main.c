@@ -204,8 +204,8 @@ static void TaskMeasureAcc(void *parameters)
         //vario_state_set_member(&headingInt, vario_state_heading);
         count++;
         //printf("X: %i, Y: %i, Z: %i\n", (int)mn, (int)me, (int)md);
-        //if(count % 10 == 0)
-        //    printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
+        if(count % 10 == 0)
+            printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * an + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * ae + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*ad;
         accX *= 9.81f;
