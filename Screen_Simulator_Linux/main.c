@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 
 #define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 600
 
 int main(void) {
     SDL_Event event;
@@ -9,7 +10,7 @@ int main(void) {
     int i;
 
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_WIDTH, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
