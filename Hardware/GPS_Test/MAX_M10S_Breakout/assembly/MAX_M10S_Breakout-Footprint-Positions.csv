@@ -1,0 +1,15 @@
+Designator,Value,Footprint,Mid X,Mid Y,Rotation,Layer
+C1,10nF,C_0603_1608Metric,104.806,-48.778,180,top
+C2,100nF,C_0402_1005Metric,87.6,-56,180,top
+C3,10uF,C_0603_1608Metric,87.7,-60.1,-90,top
+C4,100nF,C_0402_1005Metric,87.5,-53.8,90,top
+C5,4.7uF,C_0603_1608Metric,84.25,-54.1,180,top
+D1,BLUE,LED_0603_1608Metric,87.4,-46.55,180,top
+J1,U.FL-R-SMT(01),HRS_U.FL-R-SMT(01),107.1,-56.95,-90,top
+J2,Conn_01x10,PinHeader_1x10_P2.54mm_Vertical,85.075,-68.4,90,top
+L1,27nH,L_0603_1608Metric,104.156,-53.15,0,top
+R1,10R,R_0402_1005Metric,104.106,-51.5,0,top
+R2,4.7k,R_0402_1005Metric,93.98,-62.992,-90,top
+R3,4.7k,R_0402_1005Metric,97.9405,-64.516,180,top
+R4,1k,R_0603_1608Metric,83.95,-46.4,0,top
+U1,MAX-M10S,ublox_MAX,94.85,-53.4,0,top
