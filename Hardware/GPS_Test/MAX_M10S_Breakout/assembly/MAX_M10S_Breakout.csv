@@ -1,0 +1,14 @@
+Comment,Designator,Footprint,LCSC Part #
+"10nF Unpolarized capacitor, small symbol",C1,C_0603_1608Metric,C57112
+"100nF Unpolarized capacitor, small symbol","C2,C4",C_0402_1005Metric,C307331
+"10uF Unpolarized capacitor, small symbol",C3,C_0603_1608Metric,C19702
+"4.7uF Unpolarized capacitor, small symbol",C5,C_0603_1608Metric,C19666
+BLUE Light emitting diode,D1,LED_0603_1608Metric,C72041
+U.FL-R-SMT(01) ,J1,HRS_U.FL-R-SMT(01),
+"Conn_01x10 Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)",J2,PinHeader_1x10_P2.54mm_Vertical,
+"JMP Solder Jumper, 2-pole, open","JP1,JP2",SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm,
+"27nH Inductor, small symbol",L1,L_0603_1608Metric,C148128
+"10R Resistor, small symbol",R1,R_0402_1005Metric,C25077
+"4.7k Resistor, small symbol","R2,R3",R_0402_1005Metric,C25900
+"1k Resistor, small symbol",R4,R_0603_1608Metric,C21190
+"MAX-M10S GNSS Module MAX M10, VCC 1.65V to 3.6V",U1,ublox_MAX,
