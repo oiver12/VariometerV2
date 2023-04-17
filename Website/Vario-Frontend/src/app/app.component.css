@@ -1,0 +1,36 @@
+.button-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.top-row-outer-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.top-row-inner-div {
+    width: 85%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+mat-divider {
+    width: 85%;
+}
+.divider-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.icon-button-right {
+    margin: -12px;
+}
+.icon-button-left {
+    margin: 4%;
+}
+.main-div {
+    display: flex;
+    margin-left: 7.5%;
+    width: 85%;
+}
