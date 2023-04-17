@@ -286,7 +286,7 @@ static void TaskKalmanFilter(void *parameters)
         //wait for new Result from Pressure Sensor
         uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         if (notificationValue > 1) {
-            ESP_LOGW(TAG, "Task Notification higher than 1, value: %d", notificationValue);
+            ESP_LOGW(TAG, "Task Notification higher than 1, value: %lu", (unsigned long)notificationValue);
             continue;
         }
         float heightDifferenz;
