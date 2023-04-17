@@ -251,7 +251,7 @@ static void EPD_3IN7_ReadBusy_HIGH(void)
     //     busy = DEV_Digital_Read(EPD_BUSY_PIN);
     //     DEV_Delay_ms(10);
     // } while(busy);
-    uint64_t startTime = esp_timer_get_time();
+    //uint64_t startTime = esp_timer_get_time();
     gpio_isr_handler_add((gpio_num_t)EPD_BUSY_PIN, gpio_busy_isr_handler, xTaskGetCurrentTaskHandle());
     uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 5000 / portTICK_PERIOD_MS);
     if (notificationValue == 0) {
@@ -655,7 +655,7 @@ parameter:
 ******************************************************************************/
 void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
-    UWORD i;
+    //UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
     EPD_3IN7_SendCommand(0x4E);
@@ -674,7 +674,7 @@ void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
     EPD_3IN7_ReadBusy_HIGH(); 
-    return refreshMode == FULL_G_T_BW; 
+    //return refreshMode == FULL_G_T_BW; 
 }
 
 /******************************************************************************
@@ -733,7 +733,7 @@ void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xsta
 
 void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
-    UWORD i;
+    //UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
     EPD_3IN7_SendCommand(0x4E);
@@ -751,7 +751,7 @@ void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
     //   }
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
-    return refreshMode == FULL_G_T_BW; 
+    //return refreshMode == FULL_G_T_BW; 
 }
 void EPD_3IN7_1Gray_WaitBusy()
 {

@@ -122,7 +122,7 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         returnValue = vario_state_get_member(&temp, vario_state_agl, shouldReset);
         break;
     default:
-        return;
+        return 0;
     }
     if ((returnValue | shouldRender) && bufferSize != 0)
     {

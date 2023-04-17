@@ -1967,7 +1967,7 @@
     (property "Datasheet" "~" (at 77.47 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC Part" "C17513" (at 77.47 104.14 0)
+    (property "LCSC Part" "C21190" (at 77.47 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 51dc8525-9496-4742-8004-88d25735ae57))
