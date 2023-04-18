@@ -9,7 +9,7 @@ set(COMPONENT_SRCS
                     "Screen/E_Ink/font8.c" "Screen/E_Ink/font12.c" "Screen/E_Ink/font16.c" "Screen/E_Ink/font20.c" "Screen/E_Ink/font24.c"
                     "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c" "Kalman/Quaternion/matrixSensorFusion.c" "Kalman/Quaternion/SensorFusion.c"
                     "TestTools/FlightLogger.c" "TestTools/Simulation.c" "TestTools/performance.c"
-                    "Screen/assets/test_logo.c"
+                    "Screen/assets/test_logo.c" "Screen/assets/icons.c"
                     )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 register_component()
