@@ -1,6 +1,6 @@
-#Setup VSCode
+# Setup VSCode
 
-##Compile Path
+## Compile Path
 ```json
 {
     "configurations": [
