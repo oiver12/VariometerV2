@@ -151,7 +151,7 @@ static const char* get_Unit_Text(WidgetContentType contentType)
     case WidgetContent_Pressure:
         return "hPa";
     case WidgetContent_Temperature:
-        return 'C°';
+        return "C°";
     case WidgetContent_Altitude_Baro:
     case WidgetContent_Altitude_GPS:
     case WidgetContent_Altitude_AGL:
@@ -170,7 +170,7 @@ static void add_TextBox_Widget(WidgetData* widget)
     //TODO: Add rounded Corners to Frame
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
 
-    char* informationString = get_Info_Text(widget->type);
+    const char* informationString = get_Info_Text(widget->type);
     uint16_t textWidth = getTextWidth(informationString, &Font12);
     //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
     if (widget->w < textWidth)
@@ -178,7 +178,7 @@ static void add_TextBox_Widget(WidgetData* widget)
     //Text ist oben in der Mitte vom Frame
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
 
-    char* unitText = get_Unit_Text(widget->type);
+    const char* unitText = get_Unit_Text(widget->type);
     textWidth = getTextWidth(unitText, &Font16);
     //StartX: Abstand rechts vom Fram ist 5 Pixel
     Paint_DrawString_EN(widget->x + (widget->w - textWidth) - 5, widget->y + (widget->h / 2) + 5, unitText, &Font16, WHITE, BLACK, TRUE);
@@ -252,7 +252,7 @@ static void add_Chart_Widget(WidgetData* widget)
     uint32_t chartXWidth = widget->w - 35;
     extr_data->xMoveDelta = chartXWidth / ChartNumDataPoints;
     //Draw Chart
-    char* informationString = get_Info_Text(widget->type);
+    const char* informationString = get_Info_Text(widget->type);
     uint16_t textWidth = getTextWidth(informationString, &Font12);
     //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
     if (widget->w < textWidth)
@@ -261,9 +261,9 @@ static void add_Chart_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
     Paint_DrawLine(widget->x + 8, widget->y + 25, widget->x + 8, widget->y + widget->h - 10, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
     char buffer[6];
-    snprintf(buffer, 6, "%i%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
+    snprintf(buffer, 6, "%lu%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
     Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
-    snprintf(buffer, 6, "%is", extr_data->timePeriod);
+    snprintf(buffer, 6, "%lus", extr_data->timePeriod);
     Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer, &Font12, WHITE, BLACK, TRUE);
 }
 
@@ -308,7 +308,7 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    float tempValue = get_Value_Text(widget->type, tempBuffer, 10, false, true);
+    get_Value_Text(widget->type, tempBuffer, 10, false, true);
     //Update Value Text
     if (tempBuffer[0] != '\0')
     {

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "DeviceContext.h"
 #include "vario_config.h"
+#include <esp_timer.h>
 
 bool sdCard_init = false;
 static const char *TAG = "FlightLogger";

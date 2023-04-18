@@ -13,24 +13,32 @@ static const char *TAG = "Battery Manager";
 
 Battery_Manager_t battery_Manager;
 
-static bool adc_calibration_init()
+static bool adc_calibration_init(adc_unit_t unit, adc_atten_t atten)
 {
-    esp_err_t ret;
-    bool cali_enable = false;
+    adc_cali_handle_t handle = NULL;
+    esp_err_t ret = ESP_FAIL;
+    bool calibrated = false;
 
-    ret = esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP_FIT);
-    if (ret == ESP_ERR_NOT_SUPPORTED) {
-        ESP_LOGW(TAG, "Calibration scheme not supported, skip software calibration");
-    } else if (ret == ESP_ERR_INVALID_VERSION) {
-        ESP_LOGW(TAG, "eFuse not burnt, skip software calibration");
-    } else if (ret == ESP_OK) {
-        cali_enable = true;
-        esp_adc_cal_value_t temp = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_DEFAULT, 0, battery_Manager.adc_chars);
-    } else {
-        ESP_LOGE(TAG, "Invalid arg");
+    adc_cali_curve_fitting_config_t cali_config = {
+        .unit_id = unit,
+        .atten = atten,
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+    };
+    ret = adc_cali_create_scheme_curve_fitting(&cali_config, &handle);
+    if (ret == ESP_OK) {
+        calibrated = true;
     }
 
-    return cali_enable;
+    battery_Manager.adc_chars = handle;
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "Calibration Success");
+    } else if (ret == ESP_ERR_NOT_SUPPORTED || !calibrated) {
+        ESP_LOGW(TAG, "eFuse not burnt, skip software calibration");
+    } else {
+        ESP_LOGE(TAG, "Invalid arg or no memory");
+    }
+
+    return calibrated;
 }
 
 esp_err_t deinit_Battery_Manager()
@@ -44,24 +52,24 @@ esp_err_t readPercentage_Battery()
 {
     gpio_set_level(BAT_MS, 1);
     vTaskDelay(20 / portTICK_PERIOD_MS);
-    uint sumValue = 0;
+    uint64_t sumValue = 0;
     for (size_t i = 0; i < battery_Manager.oversampling; i++)
     {
         int tempValue = 0;
-        ESP_ERROR_CHECK(adc2_get_raw(ADC1_CHANNEL_7, ADC_WIDTH_BIT_DEFAULT, &tempValue));
+        ESP_ERROR_CHECK(adc_oneshot_read(battery_Manager.unit_handle, ADC_CHANNEL_3, &tempValue));
         sumValue += tempValue;
     }
     sumValue /= battery_Manager.oversampling;
     if(battery_Manager.cali_enable)
     {
-        sumValue = esp_adc_cal_raw_to_voltage(sumValue,battery_Manager.adc_chars);
-        //ESP_LOGI(TAG, "SumValue: %i", sumValue);
-        float voltageBattery = ((float)sumValue / 1000.0f) * (1.0f + (10000.0f / 33000.0f));
+        int voltage = 0;
+        ESP_ERROR_CHECK(adc_cali_raw_to_voltage(battery_Manager.adc_chars, sumValue, &voltage));
+        float voltageBattery = ((float)voltage / 1000.0f) * (1.0f + (10000.0f / 33000.0f));
+        //Nicht über 100% oder unter 0%
         if(voltageBattery > 3.0f && voltageBattery < 4.2f)
         {
             battery_Manager.voltage = voltageBattery;
         }
-        //ESP_LOGI(TAG, "Voltage: %.2f", battery_Manager.voltage);
     }
     else{
         return ESP_ERR_INVALID_RESPONSE;
@@ -88,11 +96,25 @@ static void BatteryManagerTask(void *parameters)
 
 esp_err_t init_Battery_Manager(int oversampling)
 {
-    battery_Manager.adc_chars = malloc(sizeof(esp_adc_cal_characteristics_t));
+    //-------------ADC2 Init---------------//
+    adc_oneshot_unit_init_cfg_t init_config2 = {
+        .unit_id = ADC_UNIT_2,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config2, &battery_Manager.unit_handle));
+    
+    //-------------ADC2 Calibration Init---------------//
+    battery_Manager.cali_enable = adc_calibration_init(ADC_UNIT_2, ADC_ATTEN_DB_11);
+
+    //-------------ADC2 Config---------------//
+    adc_oneshot_chan_cfg_t config = {
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+        .atten = ADC_ATTEN_DB_11,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(battery_Manager.unit_handle, ADC_CHANNEL_3, &config));
+    
     battery_Manager.oversampling = oversampling;
-    battery_Manager.cali_enable = adc_calibration_init(&battery_Manager);
-    //ADC1 config
-    ESP_ERROR_CHECK(adc2_config_channel_atten(ADC2_CHANNEL_3, ADC_ATTEN_DB_11));
+
     gpio_config_t gpio_config_t = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -102,6 +124,7 @@ esp_err_t init_Battery_Manager(int oversampling)
     };
     gpio_config(&gpio_config_t);
     gpio_set_level(BAT_MS, 0);
-    xTaskCreatePinnedToCore(BatteryManagerTask, "Battery", 4 * 1024, NULL, 5, NULL, 0);
+
+    xTaskCreate(BatteryManagerTask, "Battery", 4 * 1024, NULL, 5, NULL);
     return ESP_OK;
 }

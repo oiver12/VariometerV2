@@ -1,14 +1,16 @@
 #ifndef BATTERY_MANAGER_H
 #define BATTERY_MANAGER_H
 
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 
 typedef struct{
     int oversampling;
     float voltage;
     float percentage;
-    esp_adc_cal_characteristics_t* adc_chars;
+    adc_cali_handle_t adc_chars;
+    adc_oneshot_unit_handle_t unit_handle;
     bool cali_enable;
 } Battery_Manager_t;
 

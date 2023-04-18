@@ -31,6 +31,7 @@
 #include "EPD_3in7.h"
 #include "driver/spi_master.h"
 #include <esp_log.h>
+#include <esp_timer.h>
 
 #define SPIBUS_READ     (0x80)  /*!< addr | SPIBUS_READ  */
 #define SPIBUS_WRITE    (0x7F)  /*!< addr & SPIBUS_WRITE */
@@ -683,7 +684,7 @@ parameter:
 ******************************************************************************/
 void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
-    UWORD i, Width;
+    UWORD Width;
     //1 bit per Pixel. Pro Byte 8 Pixel. Muss ganzes Byte senden darum 8+1
     Width = (Xend-Xstart)%8 == 0 ? (Xend-Xstart)/8 : (Xend-Xstart)/8+1;
     UWORD IMAGE_COUNTER = Width * (Yend-Ystart);

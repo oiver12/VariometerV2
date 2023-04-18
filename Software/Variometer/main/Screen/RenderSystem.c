@@ -19,7 +19,6 @@ static const char *TAG = "RENDER";
 
 void rendering_Task(void *pvParameters)
 {
-    uint8_t* ScreenBuffer = (uint8_t*)pvParameters;
     uint32_t counter = 0;
     Display_RefreshMode refreshMode = PART_G_T_BW;
     while (1)
@@ -41,7 +40,7 @@ void rendering_Task(void *pvParameters)
             fullRedraw = false;
         }
         else
-            vTaskDelay(20 / portTICK_RATE_MS);
+            vTaskDelay(20 / portTICK_PERIOD_MS);
     }
 }
 
@@ -90,7 +89,7 @@ void startRendering(uint8_t* ScreenBuffer)
     
     renderQueue = xQueueCreate(1, sizeof(Display_RefreshMode));
 
-    xTaskCreate(rendering_Task, "rendering_Task", 4096, ScreenBuffer, 10, NULL);
+    xTaskCreate(rendering_Task, "rendering_Task", 4096, NULL, 10, NULL);
     xTaskCreate(displayRefreshTask, "displayRefreshTask", 4096, ScreenBuffer, 10, NULL);
     displayInit = true;
 }

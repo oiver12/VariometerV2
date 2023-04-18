@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define EXTERN_INLINE_MATRIX INLINE
 #include "matrix.h"
 
 /**
@@ -333,4 +332,206 @@ void print_matrix(const matrix_t *a)
         printf("\n");
     }
     
+}
+
+/*!
+* \brief Gets a matrix element
+* \param[in] mat The matrix to get from
+* \param[in] rows The row
+* \param[in] cols The column
+* \return The value at the given cell.
+*/
+PURE matrix_data_t matrix_get(const matrix_t *const mat, const register uint_fast8_t row, const register uint_fast8_t column)
+{
+    register uint_fast16_t address = row * mat->cols + column;
+    return mat->data[address];
+}
+
+/*!
+* \brief Sets a matrix element
+* \param[in] mat The matrix to set
+* \param[in] rows The row
+* \param[in] cols The column
+* \param[in] value The value to set
+*/
+void matrix_set(matrix_t *mat, const register uint_fast8_t row, const register uint_fast8_t column, const register matrix_data_t value)
+{
+    register uint_fast16_t address = row * mat->cols + column;
+    mat->data[address] = value;
+}
+
+/*!
+* \brief Sets matrix elements in a symmetric matrix
+* \param[in] mat The matrix to set
+* \param[in] rows The row
+* \param[in] cols The column
+* \param[in] value The value to set
+*/
+void matrix_set_symmetric(matrix_t *mat, const register uint_fast8_t row, const register uint_fast8_t column, const register matrix_data_t value)
+{
+    matrix_set(mat, row, column, value);
+    matrix_set(mat, column, row, value);
+}
+
+/*!
+* \brief Gets a pointer to a matrix row
+* \param[in] mat The matrix to get from
+* \param[in] rows The row
+* \param[out] row_data A pointer to the given matrix row
+*/
+void matrix_get_row_pointer(const matrix_t *const mat, const register uint_fast8_t row, matrix_data_t **row_data)
+{
+    register uint_fast16_t address = row * mat->cols;
+    *row_data = &mat->data[address];
+}
+
+/*!
+* \brief Gets a copy of a matrix column
+* \param[in] mat The matrix to initialize
+* \param[in] rows The column
+* \param[in] row_data Pointer to an array of the correct length to hold a column of matrix {\ref mat}.
+*/
+HOT void matrix_get_column_copy(const matrix_t *const mat, const register uint_fast8_t column, register matrix_data_t *const row_data)
+{
+    // start from the back, so target index is equal to the index of the last row.
+    register uint_fast8_t target_index = mat->rows - 1;
+
+    // also, the source index is the column..th index
+    const register int_fast16_t stride = mat->cols;
+    register int_fast16_t source_index = target_index * stride + column;
+
+    // fetch data
+    row_data[target_index] = mat->data[source_index];
+    while (target_index != 0)
+    {
+        --target_index;
+        source_index -= stride;
+
+        row_data[target_index] = mat->data[source_index];
+    }
+}
+
+/*!
+* \brief Gets a copy of a matrix row
+* \param[in] mat The matrix to initialize
+* \param[in] rows The row
+* \param[in] row_data Pointer to an array of the correct length to hold a row of matrix {\ref mat}.
+*/
+void matrix_get_row_copy(const matrix_t *const mat, const register uint_fast8_t row, register matrix_data_t *const row_data)
+{
+    register uint_fast8_t target_index = mat->cols - 1;
+    register int_fast16_t source_index = (row + 1) * mat->cols - 1;
+
+    // fetch data
+    row_data[target_index] = mat->data[source_index];
+    while (target_index != 0)
+    {
+        --target_index;
+        --source_index;
+        row_data[target_index] = mat->data[source_index];
+    }
+}
+
+/*!
+* \brief Copies the matrix from {\ref mat} to {\ref target}
+* \param[in] mat The matrix to copy
+* \param[in] target The matrix to copy to
+*/
+void matrix_copy(const matrix_t *const mat, matrix_t *const target)
+{
+    register const uint_fast16_t count = mat->cols * mat->rows;
+    register int_fast16_t index = 0;
+
+    const matrix_data_t *RESTRICT const A = mat->data;
+    matrix_data_t *RESTRICT const B = target->data;
+
+    // fetch data
+    for (index = count - 1; index >= 0; --index)
+    {
+        B[index] = A[index];
+    }
+}
+
+/*!
+* \brief Subtracts two matrices, using {\ref c} = {\ref a} - {\ref b}
+* \param[in] a The matrix to subtract from
+* \param[in] b The values to subtract
+* \param[in] c The output
+*/
+HOT void matrix_sub(const matrix_t *const a, matrix_t *const b, const matrix_t *c)
+{
+    register const uint_fast16_t count = a->cols * a->rows;
+    register int_fast16_t index = 0;
+
+    matrix_data_t *RESTRICT const A = a->data;
+    matrix_data_t *const B = b->data;
+    matrix_data_t *C = c->data;
+
+    // subtract data
+    for (index = count - 1; index >= 0; --index)
+    {
+        C[index] = A[index] - B[index];
+    }
+}
+
+/*!
+* \brief Subtracts two matrices in place, using {\ref b} = {\ref a} - {\ref b}
+* \param[in] a The matrix to subtract from
+* \param[in] b The values to subtract, also the output
+*/
+HOT void matrix_sub_inplace_b(const matrix_t *RESTRICT const a, const matrix_t *RESTRICT b)
+{
+    register const uint_fast16_t count = a->cols * a->rows;
+    register int_fast16_t index = 0;
+
+    matrix_data_t *RESTRICT const A = a->data;
+    matrix_data_t *RESTRICT B = b->data;
+
+    // subtract data
+    for (index = count - 1; index >= 0; --index)
+    {
+        B[index] = A[index] - B[index];
+    }
+}
+
+/*!
+* \brief Adds two matrices in place, using {\ref a} = {\ref a} + {\ref b}
+* \param[in] a The matrix to add to, also the output
+* \param[in] b The values to add
+*/
+HOT void matrix_add_inplace(const matrix_t * a, const matrix_t *const b)
+{
+    register const uint_fast16_t count = a->cols * a->rows;
+    register int_fast16_t index = 0;
+
+    matrix_data_t *RESTRICT A = a->data;
+    matrix_data_t *RESTRICT const B = b->data;
+
+    // subtract data
+    for (index = count - 1; index >= 0; --index)
+    {
+        A[index] += B[index];
+    }
+}
+
+/*!
+* \brief Adds two matrices, using {\ref c} = {\ref a} + {\ref b}
+* \param[in] a The matrix to add to
+* \param[in] b The values to add
+* \param[in] c The output
+*/
+HOT void matrix_add(const matrix_t * a, const matrix_t *const b,  const matrix_t *c)
+{
+    register const uint_fast16_t count = a->cols * a->rows;
+    register int_fast16_t index = 0;
+
+    matrix_data_t *RESTRICT const A = a->data;
+    matrix_data_t *const B = b->data;
+    matrix_data_t *C = c->data;
+
+    // add data
+    for (index = count - 1; index >= 0; --index)
+    {
+        C[index] = A[index] + B[index];
+    }
 }

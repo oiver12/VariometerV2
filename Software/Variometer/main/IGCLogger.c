@@ -3,6 +3,7 @@
 #include <esp_log.h>
 #include <math.h>
 #include "DeviceContext.h"
+#include "esp_timer.h"
 
 #define IGC_HEADER_DATE			(2)
 #define IGC_HEADER_PILOT		(4)

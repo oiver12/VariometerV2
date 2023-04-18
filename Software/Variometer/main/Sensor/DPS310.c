@@ -1,6 +1,7 @@
 #include "DPS310.h"
 #include "driver/i2c.h"
 #include <esp_log.h>
+#include <esp_timer.h>
 
 #define I2C_MASTER_TIMEOUT_MS       100
 
