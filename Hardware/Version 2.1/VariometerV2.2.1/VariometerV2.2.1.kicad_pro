@@ -344,6 +344,14 @@
     [
       "6f171705-fa97-4c0f-bbde-f97e718855cc",
       "Power"
+    ],
+    [
+      "523adc66-5baf-476b-9937-df31f7f6507b",
+      "Screen"
+    ],
+    [
+      "056f5ab7-9063-4ff0-b10f-d2fc578ffe92",
+      "Sensors"
     ]
   ],
   "text_variables": {}
