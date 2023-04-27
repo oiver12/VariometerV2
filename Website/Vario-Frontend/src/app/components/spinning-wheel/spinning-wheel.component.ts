@@ -26,7 +26,7 @@ export class SpinningWheelComponent {
             const angle = index * 60;
             this.rotate(0, div, angle);
         });
-        getComputedStyle(document.documentElement).setProperty('--rotation-speed', '5s');
+        list.setProperty('--rotation-speed', '5s');
 
         setInterval(() => {
             this.degrees += 60;
