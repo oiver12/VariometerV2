@@ -1232,7 +1232,6 @@
     )
   )
 
-
   (junction (at 227.33 111.76) (diameter 0) (color 0 0 0 0)
     (uuid 15c90fbd-0c57-4d94-b6e8-b7db62dbca59)
   )
@@ -1783,6 +1782,10 @@
   (text "Power LED" (at 236.22 158.75 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid a59db9e4-a46d-4d9b-bf81-c884e4932abc)
+  )
+  (text "USE bq24196 ??" (at 97.79 25.4 0)
+    (effects (font (size 3 3)) (justify left bottom))
+    (uuid b7f848cb-0f7b-4899-9684-d7ce2c31242d)
   )
   (text "Vout = (R1+R2)/R2 * 1.204" (at 234.95 114.3 0)
     (effects (font (size 1.27 1.27) italic) (justify left bottom))
