@@ -19,9 +19,15 @@ body {
   background: var(--bkg-color);
 }
 
-h1, h2, h3, h4, h5, h6, p,
-mat-divider, mat-icon
-{
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+mat-divider,
+mat-icon {
   color: var(--text-color);
 }
 
@@ -29,4 +35,14 @@ button {
   border: none;
   color: var(--btn-txt-color);
   background-color: var(--btn-bg-color);
+}
+
+div.inner-dot {
+  background-color: var(--bkg-color);
+}
+div.inner-information-circle{
+    background-color: var(--bkg-color);
+}
+div.information-text-div{
+    background-color: var(--bkg-color);
 }

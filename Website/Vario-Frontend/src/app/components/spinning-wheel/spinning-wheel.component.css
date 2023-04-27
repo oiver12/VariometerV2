@@ -1,0 +1,125 @@
+:host {
+    --rotating-sphere-color: red;
+    --outer-information-bubble-size: 15%;
+    --inner-information-bubble-size: 8%;
+    --circle-thickness: 5%;
+    --main-div-gap: 5%;
+    --rotation-speed: 0s;
+}
+
+.rotate {
+    position: absolute;
+    transform-origin: calc(50% + 2 * var(--main-div-gap)) 50%;
+    transition: none;
+    height: 100%;
+    width: 100%;
+}
+
+.outer-dot {
+    height: 0;
+    width: 100%;
+    padding-bottom: 100%;
+    background-color: var(--rotating-sphere-color);
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: calc(
+        var(--outer-information-bubble-size) / 2 - var(--circle-thickness) / 2 +
+            var(--main-div-gap)
+    );
+}
+
+.inner-dot {
+    height: 0;
+    width: 90%;
+    padding-bottom: 90%;
+    border-radius: 50%;
+    position: absolute;
+    top: var(--circle-thickness);
+    left: calc(
+        var(--circle-thickness) / 2 + var(--outer-information-bubble-size) / 2 +
+            var(--main-div-gap)
+    );
+    z-index: 10;
+}
+
+.fading-out {
+    --mask: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 1) 0,
+            rgba(0, 0, 0, 1) 10%,
+            rgba(0, 0, 0, 0) 35%,
+            rgba(0, 0, 0, 0) 0
+        )
+        100% 50% / 100% 100% repeat-x;
+
+    -webkit-mask: var(--mask);
+    mask: var(--mask);
+    position: absolute;
+    left: var(--main-div-gap);
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    margin-left: auto;
+    margin-right: 1.5rem;
+    overflow: visible;
+}
+
+.information-circle {
+    position: absolute;
+    height: 0;
+    border-radius: 50%;
+}
+.outer-information-circle {
+    top: calc(50% - var(--outer-information-bubble-size) / 2);
+    padding-bottom: var(--outer-information-bubble-size);
+    width: var(--outer-information-bubble-size);
+    background-color: var(--rotating-sphere-color);
+    z-index: 30;
+    left: var(--main-div-gap);
+}
+.inner-information-circle {
+    top: calc(50% - var(--inner-information-bubble-size) / 2);
+    left: calc(
+        (
+                var(--outer-information-bubble-size) -
+                    var(--inner-information-bubble-size)
+            ) / 2 + var(--main-div-gap)
+    );
+    padding-bottom: var(--inner-information-bubble-size);
+    width: var(--inner-information-bubble-size);
+    z-index: 40;
+}
+.information-text-div {
+    --mask: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0) 0,
+            rgba(0, 0, 0, 0) 10%,
+            rgba(0, 0, 0, 1) 25%,
+            rgba(0, 0, 0, 1) 75%,
+            rgba(0, 0, 0, 0) 90%,
+            rgba(0, 0, 0, 0) 0
+        )
+        100% 50% / 100% 100% repeat-x;
+    -webkit-mask: var(--mask);
+    mask: var(--mask);
+    position: absolute;
+    top: 50%;
+    width: 25%;
+    height: 3rem;
+    transform: translate(0%, -50%);
+    align-content: center;
+    justify-content: center;
+    display: flex;
+    z-index: 50;
+}
+p {
+    --height: 3rem;
+    z-index: 60;
+    white-space: nowrap;
+    margin: auto;
+    transform: translate(0, -15%);
+    box-shadow: 1rem;
+    mask: none;
+    text-shadow: 1px 1px 2px black;
+}
