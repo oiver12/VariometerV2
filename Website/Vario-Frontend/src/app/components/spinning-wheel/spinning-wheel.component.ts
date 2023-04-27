@@ -21,12 +21,22 @@ export class SpinningWheelComponent {
     constructor(private elRef: ElementRef, private renderer: Renderer2) {}
 
     ngAfterViewInit() {
-        const divs = this.elRef.nativeElement.querySelectorAll('.rotate')
+        const divs = this.elRef.nativeElement.querySelectorAll('.rotate');
+
+        // Disable transition for initial rotation
+        for (var i = 0, ii = divs.length; i < ii; i++) {
+            divs[i].style.transition = 'none';
+        }
+
         divs.forEach((div: HTMLElement, index: number) => {
             const angle = index * 60;
             this.rotate(0, div, angle);
         });
-        // list.setProperty('--rotation-speed', '5s');
+
+        // Enable transition after initial rotation
+        for (var i = 0, ii = divs.length; i < ii; i++) {
+            divs[i].style.transition = 'transform 2s ease-in-out';
+        }
 
         setInterval(() => {
             this.degrees += 60;

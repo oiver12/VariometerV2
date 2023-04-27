@@ -7,6 +7,8 @@
 }
 
 .spinning-wheel {
+    max-width: 75vh;
+    max-height: 75vh;
     width: 50vw;
     height: 50vw;
     position: absolute;
