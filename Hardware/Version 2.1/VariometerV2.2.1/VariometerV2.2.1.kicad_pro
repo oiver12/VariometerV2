@@ -235,7 +235,7 @@
       "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "similar_labels": "warning",
-      "simulation_model_issue": "error",
+      "simulation_model_issue": "ignore",
       "unannotated": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
@@ -351,7 +351,7 @@
     ],
     [
       "056f5ab7-9063-4ff0-b10f-d2fc578ffe92",
-      "Sensors"
+      "Devices"
     ]
   ],
   "text_variables": {}
