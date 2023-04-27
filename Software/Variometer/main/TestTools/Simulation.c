@@ -16,5 +16,5 @@ void start_Simulation()
 
 void end_Simulation()
 {
-    vTaskDelete(&taskHandleSimulation);
+    vTaskDelete(taskHandleSimulation);
 }

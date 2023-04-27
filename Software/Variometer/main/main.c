@@ -28,6 +28,7 @@
 #include <compass.h>
 #include "flashMemory.h"
 #include "TestTools/performance.h"
+#include "esp_timer.h"
 
 #define POWSW_ENABLE 13
 
@@ -70,8 +71,9 @@ volatile bool hasMeasuredStartPressure = false;
 
 float headingCalc = 0.0f;
 
-IRAM_ATTR void dps310ISR(TaskHandle_t taskHandle)
-{
+static void IRAM_ATTR dps310ISR(void* arg)
+{   
+    TaskHandle_t taskHandle = *(TaskHandle_t*)arg;
     BaseType_t HPTaskWoken = pdFALSE;
     //unblock TaskMeasureAcc
     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
@@ -378,28 +380,17 @@ static void TaskKalmanFilter(void *parameters)
 void sendAttitude(void *params)
 {
     float rotation[4];
-    float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
+    //float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
     while(1)
     {
-        xSemaphoreTake(acc_Mutex, portMAX_DELAY);
-        {
-            memcpy(rotation, rotationVario, sizeof(rotationVario));
-            yaw = headingCalc;
-        }
-        xSemaphoreGive(acc_Mutex);
-        float tmep = 0;
         // Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &tmep);
         // fwrite(&roll, sizeof(float), 1, stdout);
         // fwrite(&pitch, sizeof(float), 1, stdout);
         // fwrite(&yaw, sizeof(float), 1, stdout);
         fwrite(&rotation, sizeof(float), 4, stdout);
-        // fwrite(&theta, sizeof(float), 1, stdout);
-        // fwrite(&phi, sizeof(float), 1, stdout);
         char ending = 0xff;
         fwrite(&ending, sizeof(char), 1, stdout);
-        //printf("%.2f, %.2f", theta, phi);
         printf("\n");
-        //printf("Test\n");
         vTaskDelay(200 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);

@@ -7,6 +7,7 @@
 #include "driver/gpio.h"
 #include "Screen/ScreenManager.h"
 #include <esp_log.h>
+#include <esp_timer.h>
 
 #define Button_Enter 1 //Button 1
 #define Button_Menu 2 //Button 2
@@ -25,10 +26,10 @@
 #define TAG "ButtonInput"
 #define LONG_PRESS_TIME_MS 500
 
-SemaphoreHandle_t button_press_Up_semaphore;
-SemaphoreHandle_t button_press_Down_semaphore;
-SemaphoreHandle_t button_press_Enter_semaphore;
-SemaphoreHandle_t button_press_Menu_semaphore;
+TimerHandle_t button_press_Up_semaphore;
+TimerHandle_t button_press_Down_semaphore;
+TimerHandle_t button_press_Enter_semaphore;
+TimerHandle_t button_press_Menu_semaphore;
 
 //EventGroup für kommunikation zwischen Interrupt und Task
 EventGroupHandle_t button_press_EventGroup;
@@ -145,7 +146,6 @@ static void Button_Task(void *arg)
         }
         if(bits & ButtonUp_Short)
         {
-            printf("first %i\n", (int)esp_timer_get_time());
             ScreenManager_UpArrowPressed();
             ESP_LOGI(TAG, "Button Up Short Press");
         }

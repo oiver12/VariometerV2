@@ -146,7 +146,7 @@ void* fifo_peekItem(fifo_t fifo, uint16_t index)
     for (size_t i = 0; i < index; i++)
     {
         currAdress += fifo->itemsize;
-        uint16_t spaceNeeded = ((uint8_t*)currAdress - (uint8_t*)fifo->itemspace);
+        //uint16_t spaceNeeded = ((uint8_t*)currAdress - (uint8_t*)fifo->itemspace);
         if (((uint8_t*)currAdress - (uint8_t*)fifo->itemspace) >= fifo->allocatedbytes)
         {
             currAdress = fifo->itemspace;

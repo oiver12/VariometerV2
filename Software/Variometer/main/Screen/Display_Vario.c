@@ -5,6 +5,7 @@
 #include "DeviceContext.h"
 #include "ScreenManager.h"
 #include <esp_log.h>
+#include <esp_timer.h>
 #ifdef SCREEN_EINK
 #include "E_Ink/EPD_3in7.h"
 #include "driver/spi_master.h"
@@ -114,8 +115,6 @@ void LVGL_TaskHandle_Task(void *arg)
 
 void render_Screen_Task(void *arg)
 {
-    
-    uint64_t startTime = esp_timer_get_time();
     int counter = 0;
     while(screenRefreshing)
     {

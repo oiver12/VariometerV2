@@ -5,6 +5,7 @@
 #include <freertos/task.h>
 #include "Screen/ScreenManager.h"
 #include "flashMemory.h"
+#include "esp_timer.h"
 
 #define I2C_MASTER_TIMEOUT_MS       1000
 
@@ -162,31 +163,32 @@ esp_err_t qmc588l_readMag()
     qmc588l_data.CorrectedMagnValuemG[0] = x * magneticMapping[0] + y * magneticMapping[1] + z * magneticMapping[2];
     qmc588l_data.CorrectedMagnValuemG[1] = x * magneticMapping[3] + y * magneticMapping[4] + z * magneticMapping[5];
     qmc588l_data.CorrectedMagnValuemG[2] = x * magneticMapping[6] + y * magneticMapping[7] + z * magneticMapping[8];
-    if(qmc588l_data.useCalibration)
-    {
-        int x_offset = (qmc588l_data._vCalibration[0][0] + qmc588l_data._vCalibration[0][1])/2;
-        int y_offset = (qmc588l_data._vCalibration[1][0] + qmc588l_data._vCalibration[1][1])/2;
-        int z_offset = (qmc588l_data._vCalibration[2][0] + qmc588l_data._vCalibration[2][1])/2;
+    //Was used with old calibration 
+    // if(qmc588l_data.useCalibration)
+    // {
+    //     int x_offset = (qmc588l_data._vCalibration[0][0] + qmc588l_data._vCalibration[0][1])/2;
+    //     int y_offset = (qmc588l_data._vCalibration[1][0] + qmc588l_data._vCalibration[1][1])/2;
+    //     int z_offset = (qmc588l_data._vCalibration[2][0] + qmc588l_data._vCalibration[2][1])/2;
 
-        int x_avg_delta = (qmc588l_data._vCalibration[0][1] - qmc588l_data._vCalibration[0][0])/2;
-        int y_avg_delta = (qmc588l_data._vCalibration[1][1] - qmc588l_data._vCalibration[1][0])/2;
-        int z_avg_delta = (qmc588l_data._vCalibration[2][1] - qmc588l_data._vCalibration[2][0])/2;
+    //     int x_avg_delta = (qmc588l_data._vCalibration[0][1] - qmc588l_data._vCalibration[0][0])/2;
+    //     int y_avg_delta = (qmc588l_data._vCalibration[1][1] - qmc588l_data._vCalibration[1][0])/2;
+    //     int z_avg_delta = (qmc588l_data._vCalibration[2][1] - qmc588l_data._vCalibration[2][0])/2;
 
-        float avg_delta = (x_avg_delta + y_avg_delta + z_avg_delta) / 3.0f;
+    //     float avg_delta = (x_avg_delta + y_avg_delta + z_avg_delta) / 3.0f;
 
-        float x_scale = avg_delta / (float)x_avg_delta;
-        float y_scale = avg_delta / (float)y_avg_delta;
-        float z_scale = avg_delta / (float)z_avg_delta;
+    //     float x_scale = avg_delta / (float)x_avg_delta;
+    //     float y_scale = avg_delta / (float)y_avg_delta;
+    //     float z_scale = avg_delta / (float)z_avg_delta;
 
-        qmc588l_data.rawMagnValue[0] = (qmc588l_data.rawMagnValue[0] - x_offset) * x_scale;
-        qmc588l_data.rawMagnValue[1] = (qmc588l_data.rawMagnValue[1] - y_offset) * y_scale;
-        qmc588l_data.rawMagnValue[2] = (qmc588l_data.rawMagnValue[2] - z_offset) * z_scale;
-        float x = convertTomG(qmc588l_data.rawMagnValue[0]) - offsetVector[0];
-        float y = convertTomG(qmc588l_data.rawMagnValue[1]) - offsetVector[1];
-        float z = convertTomG(qmc588l_data.rawMagnValue[2]) - offsetVector[2];
-        // qmc588l_data.CorrectedMagnValuemG[0] = x * magneticMapping[0] + y * magneticMapping[1] + z * magneticMapping[2];
-        // qmc588l_data.CorrectedMagnValuemG[1] = x * magneticMapping[3] + y * magneticMapping[4] + z * magneticMapping[5];
-        // qmc588l_data.CorrectedMagnValuemG[2] = x * magneticMapping[6] + y * magneticMapping[7] + z * magneticMapping[8];
-    }
+    //     qmc588l_data.rawMagnValue[0] = (qmc588l_data.rawMagnValue[0] - x_offset) * x_scale;
+    //     qmc588l_data.rawMagnValue[1] = (qmc588l_data.rawMagnValue[1] - y_offset) * y_scale;
+    //     qmc588l_data.rawMagnValue[2] = (qmc588l_data.rawMagnValue[2] - z_offset) * z_scale;
+    //     float x = convertTomG(qmc588l_data.rawMagnValue[0]) - offsetVector[0];
+    //     float y = convertTomG(qmc588l_data.rawMagnValue[1]) - offsetVector[1];
+    //     float z = convertTomG(qmc588l_data.rawMagnValue[2]) - offsetVector[2];
+    //     // qmc588l_data.CorrectedMagnValuemG[0] = x * magneticMapping[0] + y * magneticMapping[1] + z * magneticMapping[2];
+    //     // qmc588l_data.CorrectedMagnValuemG[1] = x * magneticMapping[3] + y * magneticMapping[4] + z * magneticMapping[5];
+    //     // qmc588l_data.CorrectedMagnValuemG[2] = x * magneticMapping[6] + y * magneticMapping[7] + z * magneticMapping[8];
+    // }
     return ESP_OK;
 }
