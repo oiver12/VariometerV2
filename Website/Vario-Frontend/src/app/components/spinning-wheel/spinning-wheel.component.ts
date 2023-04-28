@@ -1,6 +1,4 @@
 import { Component, ElementRef, Renderer2 } from '@angular/core';
-import { ViewChildren } from '@angular/core';
-import { QueryList } from '@angular/core';
 
 @Component({
     selector: 'app-spinning-wheel',
@@ -23,22 +21,20 @@ export class SpinningWheelComponent {
     ngAfterViewInit() {
         const divs = this.elRef.nativeElement.querySelectorAll('.rotate');
 
-        // Disable transition for initial rotation
         for (var i = 0, ii = divs.length; i < ii; i++) {
             divs[i].style.transition = 'none';
         }
-
         divs.forEach((div: HTMLElement, index: number) => {
             const angle = index * 60;
             this.rotate(0, div, angle);
         });
-
-        // Enable transition after initial rotation
-        for (var i = 0, ii = divs.length; i < ii; i++) {
-            divs[i].style.transition = 'transform 2s ease-in-out';
-        }
-
+        window.onload = () => {
+            for (var i = 0, ii = divs.length; i < ii; i++) {
+                divs[i].style.transition = 'transform 2s ease-in-out';
+            }
+        };
         setInterval(() => {
+            if (document.hidden) return;
             this.degrees += 60;
             divs.forEach((div: HTMLElement, index: number) => {
                 const angle = index * 60;

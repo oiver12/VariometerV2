@@ -49,7 +49,7 @@ export class ThreejsComponent {
     }
 
     configScene() {
-        this.scene.background = new THREE.Color(0xdddddd);
+        this.scene.background = new THREE.Color(0x111111);
     }
 
     configCamera() {
@@ -93,7 +93,7 @@ export class ThreejsComponent {
 
     createMesh() {
         const loader = new GLTFLoader();
-        loader.load('../../assets/models/case_not_optimized.gltf', (gltf) => {
+        loader.load('../../assets/models/test.gltf', (gltf) => {
             this.mesh = gltf.scene.children[0] as THREE.Mesh;
             this.scene.add(this.mesh);
         });
@@ -102,7 +102,7 @@ export class ThreejsComponent {
     animate() {
         window.requestAnimationFrame(() => this.animate());
         // this.mesh.rotation.x += 0.01;
-        // this.mesh.rotation.y += 0.01;
+        // this.mesh.rotation.y += 0.002;
         // this.mesh.rotation.z += 0.01;
 
         this.controls.update();

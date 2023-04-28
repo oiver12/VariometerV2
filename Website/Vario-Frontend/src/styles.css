@@ -1,22 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-  --text-color: #222;
-  --title-color: #222;
-  --bkg-color: #fff;
-  --btn-txt-color: white;
-  --btn-bg-color: rgb(11, 88, 160);
+    --text-color: #0f093e;
+    --title-color: #0f093e;
+    --bkg-color: #fff;
+    --btn-txt-color: white;
+    --btn-bg-color: rgb(11, 88, 160);
 }
 
 body.dark-theme {
-  --text-color: #eee;
-  --title-color: #eee;
-  --bkg-color: #111;
-  --btn-txt-color: rgb(46, 43, 43);
-  --btn-bg-color: rgb(20, 211, 195);
+    --text-color: #eee;
+    --title-color: #eee;
+    --bkg-color: #111;
+    --btn-txt-color: rgb(46, 43, 43);
+    --btn-bg-color: rgb(20, 211, 195);
 }
 
 body {
-  background: var(--bkg-color);
+    background: var(--bkg-color);
 }
 
 h1,
@@ -28,21 +28,21 @@ h6,
 p,
 mat-divider,
 mat-icon {
-  color: var(--text-color);
+    color: var(--text-color);
 }
 
 button {
-  border: none;
-  color: var(--btn-txt-color);
-  background-color: var(--btn-bg-color);
+    border: none;
+    color: var(--btn-txt-color);
+    background-color: var(--btn-bg-color);
 }
 
 div.inner-dot {
-  background-color: var(--bkg-color);
-}
-div.inner-information-circle{
     background-color: var(--bkg-color);
 }
-div.information-text-div{
+div.inner-information-circle {
+    background-color: var(--bkg-color);
+}
+div.information-text-div {
     background-color: var(--bkg-color);
 }

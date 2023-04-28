@@ -18,9 +18,10 @@
 
 .threejs {
     position: absolute;
-    max-width: 60vh;
-    max-height: 60vh;
-    width: 55vw;
-    height: 55vw;
-    margin: 4rem 0rem;
+    /* max-width: 70vh;
+    max-height: 70vh; */
+    width: calc(100vh - 4.6rem);
+    height: calc(100vh - 4.6rem);
+    /* top: 10%; */
+    /* transform: translate(-0%, -50%); */
 }
