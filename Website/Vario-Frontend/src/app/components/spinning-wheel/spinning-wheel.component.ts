@@ -34,7 +34,9 @@ export class SpinningWheelComponent {
             }
         };
         setInterval(() => {
-            if (document.hidden) return;
+            if (document.hidden) {
+                return;
+            }
             this.degrees += 60;
             divs.forEach((div: HTMLElement, index: number) => {
                 const angle = index * 60;

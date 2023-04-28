@@ -8,6 +8,7 @@ import { MaterialModule } from './material/material.module';
 import { ThreejsComponent } from './components/threejs/threejs.component';
 import { SpinningWheelComponent } from './components/spinning-wheel/spinning-wheel.component';
 import { HomeComponent } from './views/home/home.component';
+import { InfoTextComponent } from './components/info-text/info-text.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { HomeComponent } from './views/home/home.component';
     LoginComponent,
     ThreejsComponent,
     SpinningWheelComponent,
-    HomeComponent
+    HomeComponent,
+    InfoTextComponent
   ],
   imports: [
     BrowserModule,

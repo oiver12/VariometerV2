@@ -11,17 +11,24 @@
     max-height: 75vh;
     width: 50vw;
     height: 50vw;
-    position: absolute;
     top: 10%;
-    left: 80%;
+    position: absolute;
+    margin-left: 100%;
+    transform: translate(-40%, -0%);
 }
 
 .threejs {
     position: absolute;
-    /* max-width: 70vh;
-    max-height: 70vh; */
-    width: calc(100vh - 4.6rem);
-    height: calc(100vh - 4.6rem);
-    /* top: 10%; */
-    /* transform: translate(-0%, -50%); */
+    max-width: calc(100vh - 4.6rem);
+    max-height: calc(100vh - 4.6rem);
+    width: calc(50vw - 2rem);
+    height: calc(50vw - 2rem);
+}
+.info-text {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    font-size: 1.5rem;
+    z-index: 10;
+    transform: translate(-15.2rem, 0);
 }

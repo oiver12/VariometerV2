@@ -49,7 +49,8 @@ export class ThreejsComponent {
     }
 
     configScene() {
-        this.scene.background = new THREE.Color(0x111111);
+        const background = Number('0x'.concat(getComputedStyle(document.body).getPropertyValue('--left-bkg-color').slice(1)));
+        this.scene.background = new THREE.Color(background);
     }
 
     configCamera() {

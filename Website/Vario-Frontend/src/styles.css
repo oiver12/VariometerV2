@@ -1,22 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-    --text-color: #0f093e;
-    --title-color: #0f093e;
-    --bkg-color: #fff;
+    --text-color: #111;
+    --left-bkg-color: #fff;
     --btn-txt-color: white;
     --btn-bg-color: rgb(11, 88, 160);
 }
 
 body.dark-theme {
-    --text-color: #eee;
-    --title-color: #eee;
-    --bkg-color: #111;
+    --text-color: #d6b387;
+    --left-bkg-color: #211c19;
+    --right-bkg-color: #312726;
     --btn-txt-color: rgb(46, 43, 43);
     --btn-bg-color: rgb(20, 211, 195);
 }
 
 body {
-    background: var(--bkg-color);
+    background: var(--left-bkg-color);
 }
 
 h1,
@@ -38,11 +37,23 @@ button {
 }
 
 div.inner-dot {
-    background-color: var(--bkg-color);
+    background-color: var(--right-bkg-color);
+}
+div.outer-dot {
+    background-color: var(--left-bkg-color);
+}
+div.outer-information-circle {
+    background-color: var(--left-bkg-color);
 }
 div.inner-information-circle {
-    background-color: var(--bkg-color);
+    background-color: var(--right-bkg-color);
 }
 div.information-text-div {
-    background-color: var(--bkg-color);
+    background-color: var(--right-bkg-color);
+}
+div.left-main-div {
+    background-color: var(--left-bkg-color);
+}
+div.right-main-div {
+    background-color: var(--right-bkg-color);
 }
