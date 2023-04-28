@@ -3,13 +3,19 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/g++",
+            "command": "/usr/bin/gcc",
             "args": [
+                "-Wall",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}/main.c",
+                "${workspaceFolder}/Screen/*.c",
+                "${workspaceFolder}/Screen/E_Ink/*.c",
+                "${workspaceFolder}/Screen/freertos/*.c",
+                "${workspaceFolder}/UI_Demo.c",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}",
+                "${workspaceFolder}/main",
+                "-lm",
                 "-lSDL2"
             ],
             "options": {
