@@ -1,5 +1,7 @@
 #pragma once
 
+#include "main.h"
+
 void startRender();
 void updateRender();
 void startUpArrow();
@@ -13,3 +15,4 @@ void MenuKeyReleased();
 void PKeyPressed();
 void startRenderTimeProgress();
 void updateRenderTimeProgress(float percentage);
+void startHeightDiagramm(size_t vario_state_Simulation_size, vario_state_Simulation* bufferSimulation);

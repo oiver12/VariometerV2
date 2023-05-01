@@ -3,32 +3,19 @@
 #include "Screen/E_Ink/GUI_Paint.h"
 #include "UI_Demo.h"
 #include "Screen/DeviceContext.h"
+#include "main.h"
 
-#define EPD_3IN7_WIDTH       320
+#define EPD_3IN7_WIDTH       410
 #define EPD_3IN7_HEIGHT      480 
 
 Uint32 lastbufferTime = 0;
 Uint32 lastFrameTime = 0;
 Uint32 lastRenderTime = 0;
+Uint32 startedFKeyTime = 0;
+bool startedFKey = false;
 int currPosStateBuffer = 0;
 
 UBYTE* ScreenBuffer;
-typedef struct
-{
-	float height;
-	float velocity;
-	float accX;
-	float rotation[4];
-}vario_state_file_t;
-
-typedef struct
-{
-	float height;
-	float velocity;
-	float accX;
-	float rotation[4];
-	long long time;
-} vario_state_Simulation;
 
 size_t vario_state_Simulation_size;
 vario_state_Simulation* bufferSimulation;
@@ -38,7 +25,7 @@ void open_ReadFile()
 	FILE* fileptr;
 	
 	size_t bufferSize;
-	fileptr = fopen("Vario08.txt", "rb");  // Open the file in binary mode
+	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
 	fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
 	bufferSize = ftell(fileptr);             // Get the current byte offset in the file
 	rewind(fileptr);                      // Jump back to the beginning of the file
@@ -70,19 +57,27 @@ void open_ReadFile()
 	for (size_t i = 0; i < vario_state_Simulation_size; i++)
 	{
 		vario_state_Simulation temp = bufferSimulation[i];
-		int test1 = 0;
-		test1++;
 	}
 	free(bufferRead);
 }
 
+void fastForwardSimulation(float percentage)
+{
+    int step = vario_state_Simulation_size * percentage;
+    currPosStateBuffer += step;
+    if(currPosStateBuffer > vario_state_Simulation_size)
+    {
+        currPosStateBuffer = vario_state_Simulation_size;
+    }
+    lastbufferTime = bufferSimulation[currPosStateBuffer].time;
+}
+
 int main(void) {
-    SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
 
     SDL_Init(SDL_INIT_VIDEO);
-    int err = SDL_CreateWindowAndRenderer(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH, 0, &window, &renderer);
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // for (i = 0; i < EPD_3IN7_WIDTH; ++i)
     //     SDL_RenderDrawPoint(renderer, i, i);
@@ -97,15 +92,72 @@ int main(void) {
     Paint_SelectImage(ScreenBuffer);
     Paint_SetScale(2);
     Paint_Clear(WHITE);
+    open_ReadFile();
     startRender();
     startRenderTimeProgress();
+    startHeightDiagramm(vario_state_Simulation_size, bufferSimulation);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-    open_ReadFile();
 
     int sizeXBuffer = EPD_3IN7_WIDTH % 8 == 0 ? EPD_3IN7_WIDTH / 8 : EPD_3IN7_WIDTH / 8 + 1;
     while (1) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_KEYDOWN:
+                    switch (event.key.keysym.sym) {
+                        case SDLK_DOWN:
+                            startDownArrow();
+                            break;
+                        case SDLK_UP:
+                            startUpArrow();
+                            break;
+                        case SDLK_m:
+                            startMenuKey();
+                            break;
+                        case SDLK_RETURN:
+                            startEnterKey();
+                            break;
+                        case SDLK_p:
+                            PKeyPressed();
+                            break;
+                        case SDLK_f:
+                            if (!startedFKey)
+                            {
+                                startedFKeyTime = SDL_GetTicks();
+                                startedFKey = true;
+                            }
+                            else
+                            {
+                                fastForwardSimulation(0.005f);
+                            }
+                            break;
+                    }
+                    break;
+                case SDL_KEYUP:
+                    switch (event.key.keysym.sym) {
+                        case SDLK_DOWN:
+                            DownArrowReleased();
+                            break;
+                        case SDLK_UP:
+                            UpArrowReleased();
+                            break;
+                        case SDLK_m:
+                            MenuKeyReleased();
+                            break;
+                        case SDLK_RETURN:
+                            EnterKeyReleased();
+                            break;
+                        case SDLK_f:
+                            startedFKey = false;
+                            break;
+                    }
+                    break;
+                // Handle other event types as needed
+            }
+        }
+
         Uint32 current_time = SDL_GetTicks();
         Uint32 time_since_last_frame = current_time - lastFrameTime;
         lastFrameTime = current_time;
@@ -113,7 +165,6 @@ int main(void) {
         {
             if (lastbufferTime == 0)
             {
-                currPosStateBuffer = vario_state_Simulation_size * 0.5;
                 lastbufferTime = bufferSimulation[currPosStateBuffer].time;
                 currPosStateBuffer++;
             }
