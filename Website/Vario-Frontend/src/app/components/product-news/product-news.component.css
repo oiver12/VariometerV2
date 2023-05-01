@@ -1,0 +1,14 @@
+.product-news {
+    border-radius: 1em;
+    border: 1px dashed #ccc;
+}
+.product-news:hover {
+    background-color: White;
+    --text-color: #000;
+}
+p {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    padding: 0.5em 0.7em;
+}

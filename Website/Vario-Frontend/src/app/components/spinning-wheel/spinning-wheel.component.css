@@ -15,7 +15,6 @@
 }
 
 .outer-dot {
-    /* box-shadow: 0 0 5px 10px #666; */
     height: 0;
     width: 100%;
     padding-bottom: 100%;

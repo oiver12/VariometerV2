@@ -1,4 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
 body {
     --text-color: #111;
     --left-bkg-color: #fff;
@@ -7,11 +6,15 @@ body {
 }
 
 body.dark-theme {
-    --text-color: #d6b387;
-    --left-bkg-color: #211c19;
-    --right-bkg-color: #312726;
+    /* --text-color: #d6b387; */
+    /* --left-bkg-color: #211c19; */
+    --text-color: #c5ccda;
+    --accent-text-color: #d9392b;
+    --left-bkg-color: #03104d;
+    --right-bkg-color: #06187e;
     --btn-txt-color: rgb(46, 43, 43);
     --btn-bg-color: rgb(20, 211, 195);
+    --circle-color: #fc811f;
 }
 
 body {
@@ -36,24 +39,18 @@ button {
     background-color: var(--btn-bg-color);
 }
 
-div.inner-dot {
-    background-color: var(--right-bkg-color);
+span.accent-text-color {
+    color: var(--accent-text-color)
 }
-div.outer-dot {
+div.circle-color {
+    background-color: var(--circle-color);
+}
+div.left-bkg-color {
     background-color: var(--left-bkg-color);
 }
-div.outer-information-circle {
-    background-color: var(--left-bkg-color);
-}
-div.inner-information-circle {
+div.right-bkg-color {
     background-color: var(--right-bkg-color);
 }
-div.information-text-div {
-    background-color: var(--right-bkg-color);
-}
-div.left-main-div {
-    background-color: var(--left-bkg-color);
-}
-div.right-main-div {
-    background-color: var(--right-bkg-color);
+div.product-news:hover{
+    --text-color: var(--right-bkg-color);
 }
