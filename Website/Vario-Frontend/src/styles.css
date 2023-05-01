@@ -40,7 +40,7 @@ button {
 }
 
 span.accent-text-color {
-    color: var(--accent-text-color)
+    color: var(--accent-text-color);
 }
 div.circle-color {
     background-color: var(--circle-color);
@@ -51,6 +51,6 @@ div.left-bkg-color {
 div.right-bkg-color {
     background-color: var(--right-bkg-color);
 }
-div.product-news:hover{
+div.product-news:hover {
     --text-color: var(--right-bkg-color);
 }

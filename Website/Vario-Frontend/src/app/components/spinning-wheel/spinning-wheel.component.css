@@ -118,6 +118,5 @@ p {
     transform: translate(0, -10%);
     box-shadow: 1rem;
     mask: none;
-    text-shadow: 1px 1px 2px black;
     font: 1.2rem 'Roboto', sans-serif;
 }
