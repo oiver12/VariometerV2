@@ -26,9 +26,16 @@
 }
 .info-text {
     position: absolute;
-    top: 20%;
+    top: 5%;
     left: 50%;
     font-size: 1.5rem;
     z-index: 10;
     transform: translate(-15.2rem, 0);
+}
+.product-news {
+    position: absolute;
+    top: 70%;
+    left: 60%;
+    font-size: 1.5rem;
+    z-index: 10;
 }
