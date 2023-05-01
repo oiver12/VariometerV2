@@ -1,10 +1,6 @@
 .whole-div {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
+    position: relative;
+    z-index: 100;
 }
 .left-side {
     position: absolute;
@@ -47,6 +43,7 @@
     width: calc(100% - 2em);
 }
 h1 {
+    position: relative;
     text-align: center;
 }
 .button-div {
@@ -57,4 +54,7 @@ h1 {
 }
 .center {
     text-align: center;
+}
+p {
+    margin: 1rem;
 }

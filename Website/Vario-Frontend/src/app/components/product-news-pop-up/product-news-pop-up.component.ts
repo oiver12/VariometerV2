@@ -7,14 +7,17 @@ import { FormControl, Validators } from '@angular/forms';
     styleUrls: ['./product-news-pop-up.component.css'],
 })
 export class ProductNewsPopUpComponent {
-    email = new FormControl('', [Validators.required, Validators.email]);
-    inputValue: string = '';
+    onClick() {
+        const expression: RegExp =
+            /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
 
-    getErrorMessage() {
-        if (this.email.hasError('required')) {
-            return 'Bitte geben Sie eine E-Mail-Adresse ein';
+        const email = (
+            document.getElementsByClassName(
+                'email-input'
+            )[0] as HTMLInputElement
+        ).value;
+        if(expression.test(email)) {
+            alert('Thank you for subscribing!');
         }
-
-        return this.email.hasError('email') ? 'Bitte geben Sie eine valide E-Mail-Adresse ein' : '';
     }
 }
