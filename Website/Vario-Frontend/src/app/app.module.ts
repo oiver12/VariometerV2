@@ -12,6 +12,7 @@ import { InfoTextComponent } from './components/info-text/info-text.component';
 import { ProductNewsComponent } from './components/product-news/product-news.component';
 import { ProductNewsPopUpComponent } from './components/product-news-pop-up/product-news-pop-up.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { InvalidEmailSnackBarComponent } from './components/invalid-email-snack-bar/invalid-email-snack-bar.component';
 
 @NgModule({
     declarations: [
@@ -23,6 +24,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
         InfoTextComponent,
         ProductNewsComponent,
         ProductNewsPopUpComponent,
+        InvalidEmailSnackBarComponent,
     ],
     imports: [
         BrowserAnimationsModule,
@@ -32,7 +34,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
         FormsModule,
         ReactiveFormsModule,
     ],
-    providers: [],
+    providers: [ ],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
