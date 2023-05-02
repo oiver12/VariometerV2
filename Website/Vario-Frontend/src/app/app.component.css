@@ -33,7 +33,7 @@ mat-divider {
     margin: 1rem;
 }
 .main-div {
-    height: calc(100vh - 4.6rem);
+    height: 100vh;
 }
 h1 {
     margin: 0.6rem 0rem;
@@ -42,7 +42,15 @@ h1 {
     position: absolute;
     top: 0vh;
     right: 0;
-    height: 100vh;
+    height: 110vh;
     width: 50vw;
+    z-index: -1;
+}
+.lower-main-div {
+    position: absolute;
+    left: 0;
+    top: 110vh;
+    height: 100vh;
+    width: 100%;
     z-index: -1;
 }

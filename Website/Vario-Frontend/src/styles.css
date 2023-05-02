@@ -12,6 +12,7 @@ body.dark-theme {
     --accent-text-color: #d9392b;
     --left-bkg-color: #03104d;
     --right-bkg-color: #06187e;
+    --lower-bkg-color: #0a1da9;
     --btn-txt-color: rgb(46, 43, 43);
     --btn-bg-color: rgb(20, 211, 195);
     --circle-color: #fc811f;
@@ -53,4 +54,7 @@ div.right-bkg-color {
 }
 div.product-news:hover {
     --text-color: var(--right-bkg-color);
+}
+div.lower-bkg-color {
+    background-color: var(--lower-bkg-color);
 }

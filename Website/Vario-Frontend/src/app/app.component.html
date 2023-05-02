@@ -4,20 +4,24 @@
             <h1>Vario Name</h1>
             <div class="button-div">
                 <!-- <button mat-icon-button class="icon-button-left" (click)="toggleDarkTheme()">
-                    <mat-icon>{{ darkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
-                </button> -->
-                <button mat-icon-button class="icon-button-right" (click)="goToShop()">
+                            <mat-icon>{{ darkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
+                        </button> -->
+                <button
+                    mat-icon-button
+                    class="icon-button-right"
+                    (click)="goToShop()"
+                >
                     <mat-icon>shopping_cart</mat-icon>
                 </button>
             </div>
         </div>
     </div>
     <!-- <div class="divider-div">
-        <mat-divider></mat-divider>
-    </div> -->
+                <mat-divider></mat-divider>
+            </div> -->
     <div class="main-div">
         <router-outlet></router-outlet>
     </div>
 </div>
-<div class="right-main-div right-bkg-color">
-</div>
+<div class="right-main-div right-bkg-color"></div>
+<div class="lower-main-div lower-bkg-color"></div>

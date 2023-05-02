@@ -9,9 +9,6 @@ import { ProductNewsPopUpComponent } from '../product-news-pop-up/product-news-p
 })
 export class ProductNewsComponent {
     constructor(private dialog: MatDialog) {}
-    ngOnInit(): void {
-        this.productNews();
-    }
 
     productNews() {
         const dialogRef = this.dialog.open(ProductNewsPopUpComponent, {
