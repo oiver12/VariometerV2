@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BQ24196RGER
+D I2C Controlled 2.5A Single Cell USB/Adaptor Charger w/ Narrow VDC Power Path
+K
+F http://www.ti.com/lit/gpn/bq24196
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS22916CNYFPR
+D TPS22916 5.5-V, 2-A Ultra-Low Leakage Load Switch
+K
+F http://www.ti.com/lit/gpn/tps22916
+$ENDCMP
+#
+#End Doc Library
