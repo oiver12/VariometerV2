@@ -4,6 +4,11 @@
 #include "UI_Demo.h"
 #include "Screen/DeviceContext.h"
 #include "main.h"
+#include <errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <libgen.h>
 
 #define EPD_3IN7_WIDTH       410
 #define EPD_3IN7_HEIGHT      480 
@@ -22,10 +27,32 @@ vario_state_Simulation* bufferSimulation;
 
 void open_ReadFile()
 {
+    char cwd[5000];
+    //Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
+    if (getcwd(cwd, sizeof(cwd)) != NULL) 
+    {
+        //printf("Current working dir: %s\n", cwd);
+        char* last_folder = basename(cwd);
+        while(strcmp(last_folder, "Screen_Simulator_Linux") != 0)
+        {
+            if (chdir("..") != 0)
+                return;
+            if (getcwd(cwd, sizeof(cwd)) == NULL)
+                return;
+            last_folder = basename(cwd);
+        }
+    }
+
 	FILE* fileptr;
 	
 	size_t bufferSize;
 	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
+    if (fileptr == NULL)
+    {
+        int error = errno; 
+        printf("Error %d \n", error);
+        return;
+    }
 	fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
 	bufferSize = ftell(fileptr);             // Get the current byte offset in the file
 	rewind(fileptr);                      // Jump back to the beginning of the file
