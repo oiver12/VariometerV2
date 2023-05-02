@@ -1,14 +1,16 @@
 h1 {
     line-height: 1.4em;
     font-family: 'Proxima Nova', sans-serif;
+    width: 20em;
 }
 .line0 {
     padding-left: 0;
+    font-weight: lighter;
 }
 .line1 {
-    color: #b5324b;
     padding-left: 5em;
 }
 .line2 {
-    padding-left: 2em;
+    padding-left: 1.6em;
+    font-weight: lighter;
 }

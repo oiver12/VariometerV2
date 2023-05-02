@@ -2,22 +2,41 @@ import { Component, ViewChild, Input, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { transition, style, animate, trigger } from '@angular/animations';
+
+const leaveTrans = transition(':leave', [
+    style({
+        opacity: 1,
+    }),
+    animate(
+        '0.5s ease-out',
+        style({
+            opacity: 0,
+        })
+    ),
+]);
+
+const fadeOut = trigger('fadeOut', [leaveTrans]);
 
 @Component({
     selector: 'app-threejs',
     templateUrl: './threejs.component.html',
     styleUrls: ['./threejs.component.css'],
+    animations: [
+        fadeOut
+    ]
 })
 export class ThreejsComponent {
     @Input() name!: string;
     @ViewChild('canvas') canvasRef!: ElementRef;
 
     renderer = new THREE.WebGLRenderer();
-    scene: any;
-    camera: any;
-    controls: any;
-    mesh: any;
-    light: any;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    controls!: OrbitControls;
+    mesh: THREE.Mesh | undefined;
+    light: THREE.PointLight | undefined;
+    hintVisible = true;
 
     private calculateAspectRatio(): number {
         const height = this.canvas.clientHeight;
@@ -46,17 +65,26 @@ export class ThreejsComponent {
         this.createMesh();
 
         this.animate();
+        this.canvas.addEventListener('mousedown', () => {
+            this.hintVisible = false;
+        });
     }
 
     configScene() {
-        const background = Number('0x'.concat(getComputedStyle(document.body).getPropertyValue('--left-bkg-color').slice(1)));
+        const background = Number(
+            '0x'.concat(
+                getComputedStyle(document.body)
+                    .getPropertyValue('--left-bkg-color')
+                    .slice(1)
+            )
+        );
         this.scene.background = new THREE.Color(background);
     }
 
     configCamera() {
         this.camera.aspect = this.calculateAspectRatio();
         this.camera.updateProjectionMatrix();
-        this.camera.position.set(-15, 10, 15);
+        this.camera.position.set(-13, 9, 13);
         this.camera.lookAt(this.scene.position);
     }
 
@@ -74,15 +102,14 @@ export class ThreejsComponent {
             this.canvas.clientWidth,
             this.canvas.clientHeight
         );
-        console.log('clientWidth', this.canvas.clientWidth);
-        console.log('clientHeight', this.canvas.clientHeight);
     }
 
     configControls() {
         this.controls = new OrbitControls(this.camera, this.canvas);
-        this.controls.autoRotate = false;
-        this.controls.enableZoom = true;
-        this.controls.enablePan = true;
+        this.controls.autoRotate = true;
+        this.controls.autoRotateSpeed = 0.5;
+        this.controls.enableDamping = true;
+        this.controls.enableZoom = false;
         this.controls.update();
     }
 
@@ -102,10 +129,6 @@ export class ThreejsComponent {
 
     animate() {
         window.requestAnimationFrame(() => this.animate());
-        // this.mesh.rotation.x += 0.01;
-        // this.mesh.rotation.y += 0.002;
-        // this.mesh.rotation.z += 0.01;
-
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
     }
