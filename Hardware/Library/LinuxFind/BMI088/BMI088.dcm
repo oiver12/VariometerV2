@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BMI088
+D Inertial Measurement Unit Digital Output 2.5V/3.3V Automotive
+K
+F https://datasheet.datasheetarchive.com/originals/distributors/Datasheets_SAMA/994c3bf88e91a9e9fead6a819d348e4d.pdf
+$ENDCMP
+#
+#End Doc Library
