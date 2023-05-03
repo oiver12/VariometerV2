@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SRN6045TA-680M
+D SRN6045TA Series - Semi-shielded Power Inductors
+K
+F http://www.bourns.com/docs/Product-Datasheets/SRN6045TA.pdf
+$ENDCMP
+#
+#End Doc Library
