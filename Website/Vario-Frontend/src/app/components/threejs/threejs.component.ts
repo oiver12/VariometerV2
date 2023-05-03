@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { transition, style, animate, trigger } from '@angular/animations';
+import { HostListener } from '@angular/core';
 
 const leaveTrans = transition(':leave', [
     style({
@@ -22,9 +23,7 @@ const fadeOut = trigger('fadeOut', [leaveTrans]);
     selector: 'app-threejs',
     templateUrl: './threejs.component.html',
     styleUrls: ['./threejs.component.css'],
-    animations: [
-        fadeOut
-    ]
+    animations: [fadeOut],
 })
 export class ThreejsComponent {
     @Input() name!: string;
@@ -37,6 +36,24 @@ export class ThreejsComponent {
     mesh: THREE.Mesh | undefined;
     light: THREE.PointLight | undefined;
     hintVisible = true;
+
+    // add a event listener for window resize
+    // and update the camera aspect ratio accordingly
+    // to prevent the scene from stretching
+    @HostListener('window:resize', ['$event'])
+    onResize(event: Event) {
+        // this.camera.aspect = this.calculateAspectRatio();
+        // this.camera.updateProjectionMatrix();
+        // this.canvas.width = 1;
+        // this.canvas.height = 1;
+
+        console.log(document.getElementById('canvas'));
+        // const width = document.getElementById('canvas')!.clientWidth;
+        // const height = document.getElementById('canvas')!.clientHeight;
+
+        // this.renderer.setSize(width, height);
+        // console.log(this.canvas.clientWidth, this.canvas.clientHeight);
+    }
 
     private calculateAspectRatio(): number {
         const height = this.canvas.clientHeight;
