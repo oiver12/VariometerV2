@@ -1,4 +1,3 @@
 mat-icon {
-    border: 1px solid red;
-    z-index: 100;
+    transform: scale(2.5);
 }
