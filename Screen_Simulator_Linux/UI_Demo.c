@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "Screen/DeviceContext.h"
-#include "Screen/Vario_Screen.h"
+#include "Screen/ScreenManager.h"
 #include "Screen/E_Ink/GUI_Paint.h"
 #include <time.h>
 #include <math.h>
@@ -43,11 +43,8 @@ void readAGL(double latitude, double longitude)
     
     FILE* fileptr;
 
-    size_t bufferSize;
     fileptr = fopen(fileName, "r"); 
 
-    if (!fileptr)
-        bufferSize = 0;
 
     float secondsLat = (latitude - latDec) * 60 * 60;
     float secondsLon = (longitude - lonDec) * 60 * 60;
@@ -61,8 +58,8 @@ void readAGL(double latitude, double longitude)
     readPixel(fileptr, y + 1, x + 1, &height[1]);
 
     //ratio where X lays
-    float dy = fmod(secondsLat, secondsPerPx) / secondsPerPx;
-    float dx = fmod(secondsLon, secondsPerPx) / secondsPerPx;
+    //float dy = fmod(secondsLat, secondsPerPx) / secondsPerPx;
+    //float dx = fmod(secondsLon, secondsPerPx) / secondsPerPx;
 
     // Bilinear interpolation
     // h0------------h1
@@ -73,10 +70,10 @@ void readAGL(double latitude, double longitude)
     // |       |
     // h2------------h3   
      
-    float rightHeight = height[0] * dy * (1 - dx) +
-        height[1] * dy * (dx)+
-        height[2] * (1 - dy) * (1 - dx) +
-        height[3] * (1 - dy) * dx;
+    // float rightHeight = height[0] * dy * (1 - dx) +
+    //     height[1] * dy * (dx)+
+    //     height[2] * (1 - dy) * (1 - dx) +
+    //     height[3] * (1 - dy) * dx;
     /*double lat = latitude - (int)latitude;
     double lon = longitude - (int)longitude;
     

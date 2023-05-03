@@ -81,7 +81,12 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         static int countGPS = 20;
         vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
         if(countGPS % 20 == 0)
+        {
             snprintf(buffer, bufferSize, "%i:%i", tempGps.tim.hour, tempGps.tim.minute);
+            printf("GPS Time Update \n");
+        }
+        else if(bufferSize != 0)
+            buffer[0] = 0;
         countGPS++;
         return true;
     }
@@ -90,8 +95,7 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:
-        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
-		temp = tempGps.speed * 3.6f;
+        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, shouldReset);
         break;
     case WidgetContent_Vario_Active:
         returnValue = vario_state_get_member(&temp, vario_state_vertVel, shouldReset);
@@ -112,8 +116,7 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         returnValue = vario_state_get_member(&temp, vario_state_altitudeBaro, shouldReset);
         break;
     case WidgetContent_Altitude_GPS:
-        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
-        temp = tempGps.altitude;
+        returnValue = vario_state_get_member(&temp, vario_state_altitudeGPS, shouldReset);
         break;
     case WidgetContent_Altitude_AGL:
         returnValue = vario_state_get_member(&temp, vario_state_agl, shouldReset);
@@ -258,9 +261,9 @@ static void add_Chart_Widget(WidgetData* widget)
     Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
     Paint_DrawLine(widget->x + 8, widget->y + 25, widget->x + 8, widget->y + widget->h - 10, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
     char buffer[6];
-    snprintf(buffer, 6, "%i%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
+    snprintf(buffer, 6, "%lu%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
     Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
-    snprintf(buffer, 6, "%is", extr_data->timePeriod);
+    snprintf(buffer, 6, "%lus", extr_data->timePeriod);
     Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer, &Font12, WHITE, BLACK, TRUE);
 }
 
@@ -305,7 +308,7 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    float tempValue = get_Value_Text(widget->type, tempBuffer, 10, false, true);
+    get_Value_Text(widget->type, tempBuffer, 10, false, true);
     //Update Value Text
     if (tempBuffer[0] != '\0')
     {

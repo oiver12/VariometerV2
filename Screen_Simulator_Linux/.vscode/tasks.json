@@ -12,6 +12,7 @@
                 "${workspaceFolder}/Screen/*.c",
                 "${workspaceFolder}/Screen/E_Ink/*.c",
                 "${workspaceFolder}/Screen/freertos/*.c",
+                "${workspaceFolder}/Screen/assets/*.c",
                 "${workspaceFolder}/UI_Demo.c",
                 "-o",
                 "${workspaceFolder}/main",

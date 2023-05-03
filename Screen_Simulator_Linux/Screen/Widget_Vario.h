@@ -50,6 +50,7 @@ typedef enum
     Widget_Settings_Slider,
     Widget_Settings_Checkbox,
     Widget_Settings_SoundThreshold,
+    Widget_Settings_CalibrationPageButton,
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -59,7 +60,7 @@ typedef enum
     WidgetContent_Empty,
 
     /* Text Box Widgets / Chart Widgets */
-    WidgetContent_Speed_Ground,
+     WidgetContent_Speed_Ground,
     WidgetContent_Vario_Active,
     WidgetContent_Vario_Lazy,
     WidgetContent_VertAcc,
@@ -69,7 +70,7 @@ typedef enum
     WidgetContent_Altitude_GPS,		// QNH
     WidgetContent_Altitude_AGL,		// QFE
     WidgetContent_Time_GPS,
-
+    
     /* Sd Card Info Widget */
     WidgetContent_SDCardInfo,
 
@@ -83,6 +84,7 @@ typedef enum
     WidgetContent_Settings_VolumeSlider,
     WidgetContent_Settings_SoundLiftThreshold,
     WidgetContent_Settings_SoundSinkThreshold,
+    WidgetContent_Settings_MagnCalibrationPageButton,
 } WidgetContentType;
 
 typedef struct
@@ -139,10 +141,15 @@ typedef enum {
 
 typedef struct {
     uint16_t x, y, w, h;
-    float timeToDisplay;
+    float timeToDisplay; //ms
     PopUpType type;
     WidgetData* widgetToEdit; //needs to be set, if PopUpType_WidgetSettings
 } PopUpConfig_t;
+
+typedef struct {
+    void (*returnFunction)(WidgetData*);
+    WidgetData *widget;
+} ReturnFunctionData_t;
 
 void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);

@@ -1,11 +1,26 @@
 #include "RenderSystem.h"
+void rendering_Task(void *pvParameters)
+{
+}
 
-void rendering_Settings(bool varfullRedraw)
+void displayRefreshTask(void *pvParameters)
 {
 }
-void rendering_Normal(bool varfullRedraw)
+
+void startRendering(uint8_t* ScreenBuffer)
 {
 }
-void rendering_PopUp(bool varfullRedraw)
+void stopRendering_disableScreen()
 {
+}
+void rendering_Push(bool varfullRedraw)
+{
+}
+void rendering_Update(bool varfullRedraw)
+{
+}
+
+bool screenIsInit()
+{
+    return true;
 }

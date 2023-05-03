@@ -1,4 +1,4 @@
-﻿#include "Vario_Screen.h"
+﻿#include "ScreenManager.h"
 #include <stdio.h>
 #include "E_Ink/GUI_Paint.h"
 #include <string.h>
@@ -8,86 +8,17 @@
 #include "driver/gpio.h"
 #include "Display_Vario.h"
 #include "RenderSystem.h"
-
-const unsigned char gImage_lautsprecher_an[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFC,0XFF,0XFF,0XEC,0X3F,0XFF,
-0XCF,0X1F,0XFF,0X0F,0X8F,0XFF,0X0D,0XC7,0XFC,0X0C,0X67,0XC0,0X0C,0X63,0XC0,0X0F,
-0X33,0XC0,0X0F,0X33,0XC0,0X0F,0X33,0XC0,0X0F,0X33,0XC0,0X0C,0X63,0XFC,0X0C,0X67,
-0XFF,0X0D,0XC7,0XFF,0X8F,0X8F,0XFF,0XCF,0X1F,0XFF,0XCC,0X3F,0XFF,0XFC,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF };
-const unsigned char gImage_lautsprecher_aus[78] = { 0XFF,0XFF,0XFF,0XFF,0xFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XEF,0XFF,0XFF,0XEF,0XFF,0XFF,
-0X8F,0XFF,0XFF,0X8F,0XFF,0XFF,0X0F,0XFF,0XFC,0X0F,0XFF,0XE0,0X0E,0X67,0XC0,0X0E,
-0X07,0XC0,0X0F,0X0F,0XC0,0X0F,0X0F,0XC0,0X0E,0X07,0XE0,0X0E,0X67,0XFC,0X0F,0XFF,
-0XFF,0X0F,0XFF,0XFF,0X8F,0XFF,0XFF,0X8F,0XFF,0XFF,0XEF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF, };
-const unsigned char gImage_gps_an[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X81,0XFF,0XFF,0X00,0XFF,0XFE,0X00,0X7F,0XFC,
-0X00,0X3F,0XF8,0X00,0X3F,0XF8,0X3C,0X1F,0XF8,0X3C,0X1F,0XF8,0X3C,0X1F,0XF8,0X3C,
-0X1F,0XFC,0X00,0X3F,0XFC,0X00,0X3F,0XFC,0X00,0X3F,0XFE,0X00,0X7F,0XFE,0X00,0X7F,
-0XFF,0X00,0XFF,0XFF,0X81,0XFF,0XFF,0X81,0XFF,0XFF,0XC3,0XFF,0XFF,0XE7,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF };
-const unsigned char gImage_gps_aus[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XE7,0X00,0XFF,0XE3,0X80,0X7F,0XF1,
-0XC0,0X3F,0XF8,0XFC,0X3F,0XF8,0X7E,0X1F,0XF8,0X3E,0X1F,0XF8,0X1E,0X1F,0XF8,0X0E,
-0X1F,0XFC,0X07,0X3F,0XFC,0X03,0XBF,0XFC,0X01,0XFF,0XFE,0X00,0XFF,0XFE,0X00,0X7F,
-0XFF,0X00,0X3F,0XFF,0X81,0X1F,0XFF,0X81,0X8F,0XFF,0XC3,0XC7,0XFF,0XE7,0XE7,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF };
-const unsigned char gImage_sd_card_good[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFE,0X00,0X1F,0XFC,0X00,0X0F,0XFC,0XCC,0XCF,0XFC,
-0XCC,0XCF,0XFC,0XCC,0XCF,0XFC,0X00,0X0F,0XFC,0X00,0X0F,0XFC,0X00,0X0F,0XF8,0X00,
-0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,
-0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF0,0X00,0X0F,0XF8,
-0X00,0X1F,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF };
-const unsigned char gImage_sd_card_error[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XBC,0X00,0X0F,0X1C,0X00,0X0F,0X8C,0XCC,0XCF,0XC7,
-0XCC,0XCF,0XE3,0XCC,0XCF,0XF1,0X80,0X0F,0XF8,0XE0,0X0F,0XFC,0X70,0X0F,0XF8,0X30,
-0X0F,0XF0,0X18,0X0F,0XF0,0X0C,0X0F,0XF0,0X06,0X0F,0XF0,0X03,0X0F,0XF0,0X01,0X8F,
-0XF0,0X00,0XCF,0XF0,0X00,0X6F,0XF0,0X00,0X3F,0XF0,0X00,0X1F,0XF0,0X00,0X0F,0XF8,
-0X00,0X0F,0XFF,0XFF,0XC7,0XFF,0XFF,0XE3 };
-
-const unsigned char gImage_battery_charge[78] = { 0X00,0X01,0X18,0X00,0X18,0X00,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XF7,0XDF,0XFB,0XE7,
-0XDF,0XFB,0XE7,0XDF,0XFB,0XC3,0XDF,0XFB,0XC3,0XDF,0XFB,0XE7,0XDF,0XFB,0XE7,0XDF,
-0XFB,0XCF,0XDF,0XFB,0XDF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
-const unsigned char gImage_battery_empty[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,
-0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,
-0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFA,0X00,0X5F,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
-const unsigned char gImage_battery_full[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,
-0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,
-0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
-const unsigned char gImage_battery_half[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,
-0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,
-0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
-const unsigned char gImage_battery_halfEmpty[78] = { 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,
-0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,
-0XFB,0XFF,0XDF,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
-const unsigned char gImage_battery_halfFull[78] = { 0xFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X83,0XFF,0XFF,0X83,0XFF,0XFF,0XFF,0XFF,0XF8,
-0X00,0X1F,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFB,0XFF,0XDF,0XFA,0X00,
-0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,
-0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFA,0X00,0X5F,0XFB,
-0XFF,0XDF,0XF8,0X00,0X1F,0XFF,0XFF,0XFF };
+#include "assets/assets.h"
 
 const unsigned char gImage_PowerOff[1300] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xC0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFF, 0xF0, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x60, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0xF0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7, 0x1, 0xF8, 0xE, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0x81, 0xF8, 0x1F, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0x81, 0xF8, 0x1F, 0x80, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3F, 0x81, 0xF8, 0x1F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x1, 0xF8, 0xF, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFE, 0x1, 0xF8, 0x7, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFC, 0x0, 0xF0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0x7C, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xE0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x0, 0xFC, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x3, 0xF0, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x1, 0xF8, 0x0, 0x0, 0x1, 0xF8, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFC, 0x0, 0x0, 0x3, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xFE, 0x0, 0x0, 0x7, 0xF0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x0, 0x0, 0xF, 0xE0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7F, 0x80, 0x0, 0x1F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3F, 0xC0, 0x0, 0x3F, 0xC0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x1F, 0xF0, 0x0, 0xFF, 0x80, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0xF, 0xFF, 0xF, 0xFF, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x7, 0xFF, 0xFF, 0xFE, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x3, 0xFF, 0xFF, 0xF8, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xC0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x7, 0xFE, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1F, 0xFF, 0xF0, 0xFF, 0xFF, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3F, 0xFF, 0xF0, 0xFF, 0xFF, 0xC0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFF, 0xF0, 0xFF, 0xFF, 0xE0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xF0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0 };
 
 WidgetData widgetData_Audio_Settings[2] = {
         {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
         {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
+};
+
+WidgetData widgetData_Config_Settings[1] = {
+        {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
 };
 
 Vario_Screen_Manager_t screenManagerInstance;
@@ -157,21 +88,25 @@ static void init_SettingsWidgets()
     WidgetData backButtonWidget = { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = 0 };
 
     /* Init Page Buttons Setting Widgets */
-    widget_Settings_linkedList* backButtonItem = (widget_Settings_linkedList*)(calloc(1, sizeof(widget_Settings_linkedList)));
+    widget_Settings_linkedList* backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
     backButtonWidget.type = WidgetContent_Settings_PageButton;
     backButtonItem->data = backButtonWidget;
     screenManagerInstance.settingsScreen.headListPageButtons = backButtonItem;
     screenManagerInstance.settingsScreen.topFielPageButtons = backButtonItem;
     widget_Settings_linkedList* prev = backButtonItem;
+    widget_Settings_linkedList* listElement;
     for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
     {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = pageButtonSettingsWidget[i];
         listElement->data.x = 10;
         prev = listElement;
     }
+    //make it circular (skip to to top when all the way down)
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 
     /* Init Audio Setting Widgets */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
@@ -182,13 +117,15 @@ static void init_SettingsWidgets()
     prev = backButtonItem;
     for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
     {
-        widget_Settings_linkedList* listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetData_Audio_Settings[i];
         listElement->data.x = 10;
         prev = listElement;
     }
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 
     /* Init Config Setting Widget */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
@@ -196,6 +133,18 @@ static void init_SettingsWidgets()
     backButtonItem->data = backButtonWidget;
     screenManagerInstance.settingsScreen.headListConfig = backButtonItem;
     screenManagerInstance.settingsScreen.topFieldConfig = backButtonItem;
+    prev = backButtonItem;
+    for (size_t i = 0; i < sizeof(widgetData_Config_Settings) / sizeof(WidgetData); i++)
+    {
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement->prev = prev;
+        prev->next = listElement;
+        listElement->data = widgetData_Config_Settings[i];
+        listElement->data.x = 10;
+        prev = listElement;
+    }
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 }
 
 /* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
@@ -242,6 +191,7 @@ void ScreenManager_show_Screen(size_t screenIndex)
     }
     screenManagerInstance.curr_Screen = screenIndex;
     Screen_redraw_Screen();
+    rendering_Update(true);
 }
 
 /*
@@ -275,30 +225,12 @@ bool ScreenManager_update()
 {
     if (screenManagerInstance.screenMode == ScreenMode_Widget)
     {
-        screenManagerInstance.isRendering = TRUE;
         for (size_t i = 0; i < screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgetsAdded; i++)
         {
             if (screenManagerInstance.screenMode != ScreenMode_Widget)
                 return false;
             vario_update_widget(&screenManagerInstance.screens[screenManagerInstance.curr_Screen].widgets[i]);
         }
-        screenManagerInstance.isRendering = FALSE;
-        return true;
-    }
-    //TODO: muss nicht jeden Frame refreshen
-    else if (screenManagerInstance.screenMode == ScreenMode_PowerAccept)
-    {
-        Paint_Clear(WHITE);
-        Paint_DrawBitMap_Paste(gImage_PowerOff, Paint.Width / 2 - 50, 50, 100, 100, FALSE);
-        const char* stringToShow = "Confirm Power Off";
-        uint32_t stringLength = strlen(stringToShow) * Font24.Width;
-        Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 175, stringToShow, &Font24, WHITE, BLACK, FALSE);
-        const char* nextString = "Press the power button again to turn off the device";
-        const char* nextString1 = "Press any other button to cancel";
-        stringLength = strlen(nextString) * Font12.Width;
-        Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 220, nextString, &Font12, WHITE, BLACK, FALSE);
-        stringLength = strlen(nextString1) * Font12.Width;
-        Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
         return true;
     }
     return false;
@@ -307,30 +239,31 @@ bool ScreenManager_update()
 static void draw_Settings_Scrollbar()
 {
     uint32_t currY = 28;
-    widget_Settings_linkedList* element = screenManagerInstance.settingsScreen.topFielPageButtons;
+    widget_Settings_linkedList* startElement = screenManagerInstance.settingsScreen.topFielPageButtons;
     if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Audio)
     {
-        element = screenManagerInstance.settingsScreen.topFieldAudio;
+        startElement = screenManagerInstance.settingsScreen.topFieldAudio;
     }
     else if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Config)
     {
-        element = screenManagerInstance.settingsScreen.topFieldConfig;
+        startElement = screenManagerInstance.settingsScreen.topFieldConfig;
     }
     Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
-    while (element && currY + element->data.h <= Paint.Height)
+    widget_Settings_linkedList* element = startElement;
+    do
     {
         element->data.y = currY;
         if (screenManagerInstance.settingsScreen.hoveredField != element)
             vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false, screenManagerInstance.settingsScreen.selectedField == element, false);
         currY += element->data.h;
         element = element->next;
-    }
+    } while(element != startElement && currY + element->data.h <= Paint.Height);
     vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element, false);
 }
 
 static void settings_enter_press()
 {
-    //We have the top Buttons hovered
+    //Erste Page Button Seite
     if (screenManagerInstance.settingsScreen.currPage == Settings_Page_PageButtons)
     {
         switch (screenManagerInstance.settingsScreen.hoveredField->data.type)
@@ -338,7 +271,7 @@ static void settings_enter_press()
         case WidgetContent_Settings_PageButton:
             screenManagerInstance.screenMode = ScreenMode_Widget;
             Screen_redraw_Screen();
-            rendering_Normal(true);
+            rendering_Update(true);
             return;
         case WidgetContent_Settings_PageButton_Audio:
             screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
@@ -355,7 +288,7 @@ static void settings_enter_press()
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         draw_Settings_Scrollbar();
         xSemaphoreGive(buffer_Mutex);
-        rendering_Settings(false);
+        rendering_Push(false);
     }
     else
     {
@@ -366,7 +299,7 @@ static void settings_enter_press()
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
             xSemaphoreGive(buffer_Mutex);
-            rendering_Settings(false);
+            rendering_Push(false);
         }
         else
         {
@@ -377,7 +310,7 @@ static void settings_enter_press()
                 xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
                 draw_Settings_Scrollbar();
                 xSemaphoreGive(buffer_Mutex);
-                rendering_Settings(false);
+                rendering_Push(false);
                 return;
             }
             //select field
@@ -385,9 +318,19 @@ static void settings_enter_press()
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true, false);
             xSemaphoreGive(buffer_Mutex);
-            rendering_Settings(false);
+            printf("Finished\n");
+            rendering_Push(false);
         }
     }
+}
+
+void ScreenManager_deselctSettingsWidget()
+{
+    screenManagerInstance.settingsScreen.selectedField = NULL;
+    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
+    xSemaphoreGive(buffer_Mutex);
+    rendering_Push(false);
 }
 
 static void ScreenManager_openSettings()
@@ -399,10 +342,9 @@ static void ScreenManager_openSettings()
     screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
     screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
     screenManagerInstance.settingsScreen.selectedField = NULL;
-
     draw_Settings_Scrollbar();
     xSemaphoreGive(buffer_Mutex);
-    rendering_Settings(true);
+    rendering_Push(true);
 }
 
 static void settings_up_press()
@@ -417,7 +359,7 @@ static void settings_up_press()
             //we are hovering a field
             vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
             xSemaphoreGive(buffer_Mutex);
-            rendering_Settings(false);
+            rendering_Push(false);
         }
     }
     else
@@ -426,7 +368,7 @@ static void settings_up_press()
         //change Value in Field
         vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_up);
         xSemaphoreGive(buffer_Mutex);
-        rendering_Settings(false);
+        rendering_Push(false);
     }
 }
 
@@ -437,12 +379,13 @@ static void settings_down_press()
         //we are hovering a field
         if (screenManagerInstance.settingsScreen.hoveredField->next)
         {
+            //TODO: Go to top of list, when last element
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
             screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->next;
             vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
             xSemaphoreGive(buffer_Mutex);
-            rendering_Settings(false);
+            rendering_Push(false);
         }
     }
     else
@@ -451,7 +394,7 @@ static void settings_down_press()
         //change Value in Field
         vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_down);
         xSemaphoreGive(buffer_Mutex);
-        rendering_Settings(false);
+        rendering_Push(false);
     }
 }
 
@@ -465,6 +408,20 @@ void ScreenManager_powerButtonPressed(bool longPress)
         if (longPress)
         {
             screenManagerInstance.screenMode = ScreenMode_PowerAccept;
+            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+            Paint_Clear(WHITE);
+            Paint_DrawBitMap_Paste(gImage_PowerOff, Paint.Width / 2 - 50, 50, 100, 100, FALSE);
+            const char* stringToShow = "Confirm Power Off";
+            uint32_t stringLength = strlen(stringToShow) * Font24.Width;
+            Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 175, stringToShow, &Font24, WHITE, BLACK, FALSE);
+            const char* nextString = "Press the power button again to turn off the device";
+            const char* nextString1 = "Press any other button to cancel";
+            stringLength = strlen(nextString) * Font12.Width;
+            Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 220, nextString, &Font12, WHITE, BLACK, FALSE);
+            stringLength = strlen(nextString1) * Font12.Width;
+            Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
+            xSemaphoreGive(buffer_Mutex);
+            rendering_Push(false);
             return;
         }
         else
@@ -474,7 +431,7 @@ void ScreenManager_powerButtonPressed(bool longPress)
             else if (screenManagerInstance.screenMode == ScreenMode_Settings)
             {
                 screenManagerInstance.screenMode = ScreenMode_Widget;
-                rendering_Normal(true);
+                rendering_Update(true);
                 Screen_redraw_Screen();
             }
         }
@@ -511,6 +468,7 @@ void ScreenManager_DownArrowPressed()
         //TODO: evtl. in letzte Seite zurückkehren und nicht einfach Widgets laden
         screenManagerInstance.screenMode = ScreenMode_Widget;
         Screen_redraw_Screen();
+        rendering_Update(false);
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
@@ -536,6 +494,7 @@ void ScreenManager_UpArrowPressed()
         //TODO: evtl. in letzte Seite zurückkehren und nicht einfach Widgets laden
         screenManagerInstance.screenMode = ScreenMode_Widget;
         Screen_redraw_Screen();
+        rendering_Update(false);
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
@@ -550,6 +509,7 @@ void ScreenManager_EnterKeyPressed()
         //TODO: evtl. in letzte Seite zurückkehren und nicht einfach Widgets laden
         screenManagerInstance.screenMode = ScreenMode_Widget;
         Screen_redraw_Screen();
+        rendering_Update(false);
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
@@ -576,12 +536,22 @@ void Screen_redraw_Screen()
     }
 }
 
-void ScreenManager_showPopUp(PopUpConfig_t config)
+bool ScreenManager_showPopUp(PopUpConfig_t config)
 {
     //TODO: add Posibility to do Pop Up over Pop Up or save PopUp in Queue or something like that.
-    if (screenManagerInstance.screenMode == ScreenMode_PopUp)
-        return;
-    screenManagerInstance.screenMode = ScreenMode_PopUp;
-    rendering_PopUp(false);   
+    if (!screenIsInit() || screenManagerInstance.screenMode == ScreenMode_PopUp)
+        return false;
+    screenManagerInstance.screenMode = ScreenMode_PopUp; 
+    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
     vario_display_showPopUp(config);
+    xSemaphoreGive(buffer_Mutex);
+    rendering_Push(false); 
+    return true; 
+}
+
+void ScreenManager_closePopUp()
+{
+    screenManagerInstance.screenMode = ScreenMode_Widget;
+    Screen_redraw_Screen();
+    rendering_Update(false);
 }
