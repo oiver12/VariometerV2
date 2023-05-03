@@ -44,6 +44,7 @@ typedef enum
     Widget_Compass,
     Widget_Chart,
     Widget_SdCardInfo,
+    Widget_GPSInfo,
     /*Settings Widget*/
     Widget_Settings_PageButton,
     Widget_settings_BackButton,
@@ -60,7 +61,7 @@ typedef enum
     WidgetContent_Empty,
 
     /* Text Box Widgets / Chart Widgets */
-     WidgetContent_Speed_Ground,
+    WidgetContent_Speed_Ground,
     WidgetContent_Vario_Active,
     WidgetContent_Vario_Lazy,
     WidgetContent_VertAcc,
@@ -76,6 +77,9 @@ typedef enum
 
     /* Compass Widgets */
     WidgetContent_CompassSensor,
+
+    /* GPSInfo Widgets */
+    WidgetContent_GPSInfo,
 
     /* Settings Widget */
     WidgetContent_Settings_PageButton,
