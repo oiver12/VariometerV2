@@ -1,0 +1,67 @@
+Comment,Designator,Footprint,LCSC Part #
+"22uF Unpolarized capacitor, small symbol",C1,C_0603_1608Metric,C59461
+"1uF Unpolarized capacitor, small symbol","C2,C6,C11,C15,C16,C19,C23,C24,C25,C26,C27,C28,C29,C31,C32,C47,C48,C49",C_0402_1005Metric,C52923
+"100nF Unpolarized capacitor, small symbol","C3,C4,C5,C17,C20,C35,C36,C37,C38,C39,C43",C_0402_1005Metric,C307331
+"6.8uF Unpolarized capacitor, small symbol",C10,C_0805_2012Metric,
+"47nF Unpolarized capacitor, small symbol",C12,C_0603_1608Metric,C1622
+"10uF Unpolarized capacitor, small symbol","C13,C14,C30,C42,C44,C45",C_0603_1608Metric,C19702
+"10nF Unpolarized capacitor, small symbol",C18,C_0402_1005Metric,C15195
+"2.2uF Unpolarized capacitor, small symbol","C21,C22",C_0603_1608Metric,C23630
+"4.7uF Unpolarized capacitor, small symbol","C33,C34,C40,C46",C_0603_1608Metric,C19666
+"220nF Unpolarized capacitor, small symbol",C41,C_0402_1005Metric,C16772
+"B5819W SL Schottky diode, small symbol","D1,D3,D4,D5,D6",D_SOD-123,C8598
+"RED Light emitting diode, small symbol",D2,LED_0603_1608Metric,C2286
+"600 @ 100 MHz Ferrite bead, small symbol",FB1,L_0603_1608Metric,C1002
+MountingHole_Pad Mounting Hole with connection,"H1,H2,H3,H4",MountingHole_2.2mm_M2_DIN965_Pad,
+ESP32-S3-WROOM ,IC1,ESP32S3WROOM1,C2913198
+BQ24196RGER I2C Controlled 2.5A Single Cell USB/Adaptor Charger w/ Narrow VDC Power Path,IC2,QFN50P400X400X100-25N-D,C117006
+TPS22916CNYFPR ,IC4,BGA4C40P2X2_78X78X50,C2655476
+TPS73701DCQR ,IC5,SOT127P706X180-6N,C56848
+USB_C_Receptacle_USB2.0 USB 2.0-only Type-C Receptacle connector,J1,USB_C_Receptacle_HRO_TYPE-C-31-M-12,C165948
+"Conn_01x02 Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)","J2,J7",,
+~ ,J3,TFP09212B,
+FFC24/0.5MM ,J4,FH12-24S-0.5SH_55_,C202112
+"LED_CHRG Generic connector, double row, 02x01, this symbol is compatible with counter-clockwise, top-bottom and odd-even numbering schemes., script generated (kicad-library-utils/schlib/autogen/connector/)","J8,J11",PinHeader_2x01_P2.54mm_Vertical,
+"SolderJumper_3_Open Solder Jumper, 3-pole, open",JP1,SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm_NumberLabels,
+"JMP Solder Jumper, 2-pole, open","JP2,JP4",SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm,
+"SJMP 3-pole Solder Jumper, pins 1+2 closed/bridged",JP3,SolderJumper-3_P1.3mm_Bridged12_Pad1.0x1.5mm_NumberLabels,
+"1uH P Inductor, small symbol",L1,L_0603_1608Metric,
+SRN6045TA-680M SRN6045TA Series - Semi-shielded Power Inductors,L3,SRN6045TA,
+"AO3401A -4.0A Id, -30V Vds, P-Channel MOSFET, SOT-23","Q1,Q2",SOT-23,C15127
+"AO3400A 30V Vds, 5.7A Id, N-Channel MOSFET, SOT-23","Q3,Q4",SOT-23,C20917
+"10k Resistor, small symbol","R1,R5,R17,R20,R27,R28,R29,R30,R31,R44,R46,R48",R_0402_1005Metric,C25744
+"5.1k Resistor, small symbol","R2,R3",R_0805_2012Metric,C27834
+"10k Resistor, small symbol","R4,R15,R25,R26,R35,R37,R38,R39,R40,R42,R43",R_0603_1608Metric,C25804
+"1k Resistor, small symbol","R6,R45,R47,R49",R_0402_1005Metric,C11702
+"1k Resistor, small symbol","R13,R14",R_0603_1608Metric,C21190
+"360R Resistor, small symbol",R16,R_0603_1608Metric,C25194
+"33k Resistor, small symbol",R18,R_0402_1005Metric,C25779
+"1M Resistor, small symbol",R19,R_0402_1005Metric,C26083
+"47k Resistor, small symbol",R21,R_0603_1608Metric,C25819
+"20k Resistor, small symbol",R22,R_0603_1608Metric,C4184
+"9.1k Resistor, small symbol",R23,R_0603_1608Metric,C23260
+"1.5k Resistor, small symbol",R24,R_0603_1608Metric,C22843
+"10k S Resistor, small symbol",R32,R_0805_2012Metric,C17414
+"22 Resistor, small symbol",R33,R_0402_1005Metric,C25092
+"0.47R Resistor, small symbol",R34,R_0805_2012Metric,
+"100k Resistor, small symbol",R36,R_0603_1608Metric,C25803
+"10k B Resistor, small symbol",R41,R_0805_2012Metric,C17414
+Switch_SW_Push ,"SW1,SW2",SW_PUSH_6mm,
+BTN1 ,"SW3,SW4,SW5,SW6",SW_PUSH_6mm,
+TP_BATTERY test point,TP1,TestPoint_Pad_D1.5mm,
+3.1V TP test point,TP2,TestPoint_Pad_D1.5mm,
+TP_SDA1 test point,TP3,TestPoint_Pad_D1.5mm,
+TP_SCL1 test point,TP4,TestPoint_Pad_D1.5mm,
+TP_SDA2 test point,TP5,TestPoint_Pad_D1.5mm,
+TP_SCL2 test point,TP6,TestPoint_Pad_D1.5mm,
+TP_BCLK test point,TP7,TestPoint_Pad_D1.5mm,
+TP_LRCLK test point,TP8,TestPoint_Pad_D1.5mm,
+TP_DIN test point,TP9,TestPoint_Pad_D1.5mm,
+TP_SYS_LOAD test point,TP10,TestPoint_Pad_D1.5mm,
+CC1 test point,TP11,TestPoint_Pad_D1.5mm,
+CC2 test point,TP12,TestPoint_Pad_D1.5mm,
+"SRV05-4 ESD Protection Diodes with Low Clamping Voltage, SOT-23-6","U1,U2,U3",SOT-23-6,C85364
+DPS310 ,U4,DPS310XTSA1,C130156
+BMI088 ,U5,BMI088,C194919
+QMC5883L ,U6,QMC5883L,C976032
+MAX98357A ,U7,QFN50P300X300X80-17N,C910544

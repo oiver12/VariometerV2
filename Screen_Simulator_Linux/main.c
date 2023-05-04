@@ -81,10 +81,6 @@ void open_ReadFile()
 		bufferSimulation[currPosVarioSimulation].time = *time;
 		currPosVarioSimulation++;
 	}
-	for (size_t i = 0; i < vario_state_Simulation_size; i++)
-	{
-		vario_state_Simulation temp = bufferSimulation[i];
-	}
 	free(bufferRead);
 }
 

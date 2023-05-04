@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 #include "E_Ink/GUI_Paint.h"
+#include "Common_Widget_Vario.h"
 
 #define BUFFER_TEXT_SIZE 20
 #define Compass_Method1
@@ -19,6 +20,8 @@ const unsigned char gImage_Compass[800] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
 const unsigned char gImage_Compass_Zahlen[512] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xCF, 0x8F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEB, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xED, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xED, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEE, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x5F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x9F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0x78, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3, 0xEF, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFB, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF7, 0xF6, 0xBB, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x7, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF7, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFA, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xF9, 0xD7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFD, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xFB, 0xFD, 0xEF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFB, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x9F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xDF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF3, 0xBF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 #endif
 const unsigned char gImage_Arrow_down[20] = { 0x0, 0x3F, 0x0, 0x3F, 0x0, 0x3F, 0x80, 0x7F, 0x80, 0x7F, 0xC0, 0xFF, 0xC0, 0xFF, 0xE1, 0xFF, 0xE1, 0xFF, 0xF3, 0xFF };
+
+gps_t oldGpsObject;
 
 sFONT* __FontStack[] =
 {
@@ -81,7 +84,12 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         static int countGPS = 20;
         vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
         if(countGPS % 20 == 0)
+        {
             snprintf(buffer, bufferSize, "%i:%i", tempGps.tim.hour, tempGps.tim.minute);
+            printf("GPS Time Update \n");
+        }
+        else if(bufferSize != 0)
+            buffer[0] = 0;
         countGPS++;
         return true;
     }
@@ -90,8 +98,7 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
     switch (contentType)
     {
     case WidgetContent_Speed_Ground:
-        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
-		temp = tempGps.speed * 3.6f;
+        returnValue = vario_state_get_member(&temp, vario_state_groundSpeed, shouldReset);
         break;
     case WidgetContent_Vario_Active:
         returnValue = vario_state_get_member(&temp, vario_state_vertVel, shouldReset);
@@ -112,8 +119,7 @@ float get_Value_Text(WidgetContentType contentType, char* const buffer, size_t b
         returnValue = vario_state_get_member(&temp, vario_state_altitudeBaro, shouldReset);
         break;
     case WidgetContent_Altitude_GPS:
-        returnValue = vario_state_get_member(&tempGps, vario_state_gps_data, shouldReset);
-        temp = tempGps.altitude;
+        returnValue = vario_state_get_member(&temp, vario_state_altitudeGPS, shouldReset);
         break;
     case WidgetContent_Altitude_AGL:
         returnValue = vario_state_get_member(&temp, vario_state_agl, shouldReset);
@@ -164,21 +170,13 @@ static void add_TextBox_Widget(WidgetData* widget)
     TextBox_Widget_Data* extr_data = malloc(sizeof(TextBox_Widget_Data));
     widget->extr_data = (void*)extr_data;
 
-    //TODO: Add rounded Corners to Frame
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-
     const char* informationString = get_Info_Text(widget->type);
-    uint16_t textWidth = getTextWidth(informationString, &Font12);
-    //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
-    if (widget->w < textWidth)
-        printf("Text passt nicht rein!\n");
-    //Text ist oben in der Mitte vom Frame
-    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    DrawWidgetBone(widget, informationString);
 
     const char* unitText = get_Unit_Text(widget->type);
-    textWidth = getTextWidth(unitText, &Font16);
+    uint16_t textWidth = getTextWidth(unitText, &Font16);
     //StartX: Abstand rechts vom Fram ist 5 Pixel
-    Paint_DrawString_EN(widget->x + (widget->w - textWidth) - 5, widget->y + (widget->h / 2) + 5, unitText, &Font16, WHITE, BLACK, TRUE);
+    DrawTextWithOffset(widget, unitText, widget->w - textWidth - 5, (widget->h/2) + 5, &Font16, true);
 
     sFONT* fontValue = __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4];
     //Draw value Text
@@ -186,32 +184,33 @@ static void add_TextBox_Widget(WidgetData* widget)
     switch (widget->extraStyle & WS_FONT_MASK_CONTENT)
     {
     case WS_FONT_8_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 7;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2 + 7;
         break;
     case WS_FONT_12_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 7;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2 + 7;
         break;
     case WS_FONT_16_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 5;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2 + 5;
         break;
     case WS_FONT_20_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2 + 3;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2 + 3;
         break;
     case WS_FONT_24_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2;
         break;
     case WS_FONT_30_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2;
         break;
     case WS_FONT_32_CONTENT:
-        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->y + widget->h / 2;
+        ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText = widget->h / 2;
         break;
     }
     char tempBuffer[10];
     get_Value_Text(widget->type, tempBuffer, 10, true, true);
     textWidth = getTextWidth(tempBuffer, __FontStack[(widget->extraStyle & WS_FONT_MASK_CONTENT) >> 4]);
     //StartX: Abstand zwischen Unit rechts und Frame links soll gleich gross sein
-    Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, fontValue, WHITE, BLACK, TRUE);
+    //Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, fontValue, WHITE, BLACK, TRUE);
+    DrawTextWithOffset(widget, tempBuffer, ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, fontValue, true);
 }
 
 static void add_Compass_widget(WidgetData* widget)
@@ -220,9 +219,9 @@ static void add_Compass_widget(WidgetData* widget)
     widget->extr_data = (void*)extr_data;
     extr_data->lastAngle = 0;
     extr_data->angleDifferenceToShow = 5;
-    //Draw Frame
-    //TODO: Add rounded Corners to Frame
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+    
+    DrawWidgetBone(widget, NULL);
+
     Paint_DrawBitMap_Paste(gImage_Arrow_down, widget->x + widget->w / 2 - 5, widget->y + 28, 10, 10, FALSE);
 #ifdef Compass_Method1
     Paint_DrawBitMap_Paste(gImage_Compass, widget->x + widget->w / 2 - 40, widget->y + widget->h - 80 - 10, 80, 80, FALSE);
@@ -233,9 +232,6 @@ static void add_Compass_widget(WidgetData* widget)
 
 static void add_Chart_Widget(WidgetData* widget)
 {
-    //Draw frame
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-
     Chart_Widget_Data* extr_data = malloc(sizeof(Chart_Widget_Data));
     widget->extr_data = (void*)extr_data;
     extr_data->data = fifo_create(ChartNumDataPoints, sizeof(Chart_Point));
@@ -250,32 +246,24 @@ static void add_Chart_Widget(WidgetData* widget)
     extr_data->xMoveDelta = chartXWidth / ChartNumDataPoints;
     //Draw Chart
     const char* informationString = get_Info_Text(widget->type);
-    uint16_t textWidth = getTextWidth(informationString, &Font12);
-    //TODO: was tuen, wenn Text grösser ist? (sollte nicht passieren)
-    if (widget->w < textWidth)
-        printf("Text passt nicht rein!\n");
-    //Text ist oben in der Mitte vom Frame
-    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    DrawWidgetBone(widget, informationString);
     Paint_DrawLine(widget->x + 8, widget->y + 25, widget->x + 8, widget->y + widget->h - 10, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
     char buffer[6];
-    snprintf(buffer, 6, "%i%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
-    Paint_DrawString_EN(widget->x + 12, widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
-    snprintf(buffer, 6, "%is", extr_data->timePeriod);
-    Paint_DrawString_EN(widget->x + widget->w - 30, widget->y + widget->h - 14, buffer, &Font12, WHITE, BLACK, TRUE);
+    snprintf(buffer, 6, "%d%s", extr_data->differenzToShow, get_Unit_Text(widget->type));
+    DrawTextWithOffset(widget, buffer, 12, widget->h / 2, &Font12, true);
+    snprintf(buffer, 6, "%ds", extr_data->timePeriod);
+    DrawTextWithOffset(widget, buffer, widget->w -30, widget->h - 14, &Font12, true);
 }
 
 static void add_sdCardInfo_Widget(WidgetData* widget)
 {
     sd_card_state_t sdcard_state;
     device_state_get_member(&sdcard_state, device_state_statusSDCard, TRUE);
-    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-    char* informationString = "SD Card usage";
-    uint16_t textWidth = getTextWidth(informationString, &Font12);
-    Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + 4, informationString, &Font12, WHITE, BLACK, TRUE);
+    DrawWidgetBone(widget, "SD Card usage");
     if (sdcard_state.status & SD_CARD_STATE_ERROR_INIT)
     {
         char* buffer = "SD Card not mounted";
-        textWidth = getTextWidth(buffer, &Font12);
+        int16_t textWidth = getTextWidth(buffer, &Font12);
         Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
         return;
     }
@@ -292,20 +280,113 @@ static void add_sdCardInfo_Widget(WidgetData* widget)
         snprintf(buffer, 50, "Flight Logger started");
     else
         snprintf(buffer, 50, "Flight Logger disabled");
-    textWidth = getTextWidth(buffer, &Font12);
-    Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 55, buffer, &Font12, WHITE, BLACK, true);
+    int16_t textWidth = getTextWidth(buffer, &Font12);
+    DrawTextWithOffset(widget, buffer, widget->w / 2 - textWidth/2, 55, &Font12, true);
     if (sdcard_state.status & SD_CARD_STATE_IGC_LOGGING)
         snprintf(buffer, 50, "IGC Logger started");
     else
         snprintf(buffer, 50, "IGC Logger disabled");
     textWidth = getTextWidth(buffer, &Font12);
-    Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 70, buffer, &Font12, WHITE, BLACK, true);
+    DrawTextWithOffset(widget, buffer, widget->w / 2 - textWidth/2, 70, &Font12, true);
 }
+
+static void add_gpsInfo_Widget(WidgetData* widget)
+{
+    gps_t gps_data;
+    vario_state_get_member(&gps_data, vario_state_gps_data, true);
+    DrawWidgetBone(widget, "GPS Info");
+    char buffer[50];
+    snprintf(buffer, 49, "Lat: %.2f", gps_data.latitude);
+    DrawTextWithOffset(widget, buffer, 5, 25, &Font12, true);
+    snprintf(buffer, 49, "Lon: %.2f", gps_data.longitude);
+    DrawTextWithOffset(widget, buffer, 90, 25, &Font12, true);
+    snprintf(buffer, 49, "Height: %.2fm", gps_data.altitude);
+    DrawTextWithAlign(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    DrawTextWithOffset(widget, gps_data.valid ? "1" : "0", 5, 50, &Font12, true);
+    switch(gps_data.fix)
+    {
+        case GPS_FIX_INVALID:
+            snprintf(buffer, 50, "Fix: Invalid");
+            break;
+        case GPS_FIX_GPS:
+            snprintf(buffer, 50, "Fix: GPS");
+            break;
+        case GPS_FIX_DGPS:
+            snprintf(buffer, 50, "Fix: DGPS");
+            break;
+        default:
+            snprintf(buffer, 50, "None");
+            break;
+    }
+    DrawTextWithOffset(widget, buffer, 40, 50, &Font12, true);
+    switch(gps_data.fix_mode)
+    {
+        case GPS_MODE_INVALID:
+            snprintf(buffer, 50, "Fix M: Invalid");
+            break;
+        case GPS_MODE_2D:
+            snprintf(buffer, 50, "Fix M: 2D");
+            break;
+        case GPS_MODE_3D:
+            snprintf(buffer, 50, "Fix: 3D");
+            break;
+        default:
+            snprintf(buffer, 50, "Fix M: Invalid");
+            break;
+    }
+    DrawTextWithAlign(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    DrawTextWithOffset(widget, "--Satellits--", 5, 65, &Font12, true);
+    uint16_t currentPosY = 80;
+
+    gps_data.sats_in_view = 12;
+    for (size_t i = 0; i < gps_data.sats_in_view; i++)
+    {
+        //gps_satellite_t sat = gps_data.sats_desc_in_view[i];
+        gps_satellite_t sat = {
+            .num = i,
+        };
+        snprintf(buffer, 50, "ID: %u", sat.num);
+        for (size_t y = 0; y < gps_data.sats_in_use; y++)
+        {
+            //TODO: Check if this is right, perhaps in num of satellit
+            if(gps_data.sats_id_in_use[y] == i)
+            {
+                strcat(buffer, "(in use)");
+            }
+        }
+        if(i % 2 == 0)
+        {
+            strcat(buffer, "(in use)");
+        }
+        DrawTextWithOffset(widget, buffer, 20, currentPosY, &Font8, true);
+        currentPosY += 9;
+    }
+
+    DrawTextWithOffset(widget, "Dilution:", 130, 86, &Font12, true);
+    snprintf(buffer, 50, "H: %.2f", gps_data.dop_h);
+    DrawTextWithOffset(widget, buffer, 200, 75, &Font12, true);
+    snprintf(buffer, 50, "V: %.2f", gps_data.dop_v);
+    DrawTextWithOffset(widget, buffer, 200, 87, &Font12, true);
+    snprintf(buffer, 50, "P: %.2f", gps_data.dop_p);
+    DrawTextWithOffset(widget, buffer, 200, 99, &Font12, true);
+    
+    snprintf(buffer, 50, "COG: %.2f", gps_data.cog);
+    DrawTextWithOffset(widget, buffer, 130, 130, &Font12, true);
+    snprintf(buffer, 50, "Variation: %.2f", gps_data.variation);
+    DrawTextWithOffset(widget, buffer, 130, 150, &Font12, true);
+    snprintf(buffer, 50, "Speed: %.2f", gps_data.speed);
+    DrawTextWithOffset(widget, buffer, 130, 170, &Font12, true);
+    oldGpsObject = gps_data;
+}
+
+
+/************************ Update Widgets ************************/
+
 
 static void update_TextBox_Widget(WidgetData* widget)
 {
     char tempBuffer[10];
-    float tempValue = get_Value_Text(widget->type, tempBuffer, 10, false, true);
+    get_Value_Text(widget->type, tempBuffer, 10, false, true);
     //Update Value Text
     if (tempBuffer[0] != '\0')
     {
@@ -314,7 +395,7 @@ static void update_TextBox_Widget(WidgetData* widget)
         //Clear surface in frame
         Paint_ClearWindows(widget->x + 5, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText - 2, ((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - 8, widget->y + (widget->h / 2) + 21, WHITE);
         //Paint_DrawRectangle(widget->x + 5, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText - 2, ((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - 8, widget->y + (widget->h / 2) + 21, WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-        Paint_DrawString_EN(widget->x + ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, tempBuffer, font, WHITE, BLACK, FALSE);
+        DrawTextWithOffset(widget, tempBuffer, ((((TextBox_Widget_Data*)widget->extr_data)->linkerRandUnitText - widget->x) / 2) - textWidth / 2, ((TextBox_Widget_Data*)widget->extr_data)->yStartValueText, font, FALSE);
     }
 }
 
@@ -349,7 +430,7 @@ static void update_Compass_Widget(WidgetData* widget)
             snprintf(tempBuffer, 9, "%iNW", heading);
         uint16_t textWidth = getTextWidth(tempBuffer, &Font16);
         Paint_ClearWindows(widget->x + 10, widget->y + 10, widget->x + (widget->w / 2) + 30, widget->y + 25, WHITE);
-        Paint_DrawString_EN(widget->x + (widget->w / 2) - textWidth / 2, widget->y + 10, tempBuffer, &Font16, WHITE, BLACK, FALSE);
+        DrawTextWithOffset(widget, tempBuffer, widget->w / 2, 10, &Font16, FALSE);
     }
 }
 
@@ -448,7 +529,7 @@ void update_sdCardInfo_Widget(WidgetData* widget)
         {
             char* buffer = "SD Card not mounted";
             uint16_t textWidth = getTextWidth(buffer, &Font12);
-            Paint_DrawString_EN(widget->x + ((widget->w - textWidth) / 2), widget->y + widget->h / 2, buffer, &Font12, WHITE, BLACK, TRUE);
+            DrawTextWithOffset(widget, buffer, (widget->w - textWidth) / 2, widget->h / 2, &Font12, TRUE);
             return;
         }
         uint32_t startPos = widget->x + 10;
@@ -472,8 +553,130 @@ void update_sdCardInfo_Widget(WidgetData* widget)
         else
             snprintf(buffer, 50, "IGC Logger disabled");
         textWidth = getTextWidth(buffer, &Font12);
+        DrawTextWithOffset(widget, buffer, widget->w / 2 - textWidth / 2, 70, &Font12, true);
         Paint_DrawString_EN(widget->x + widget->w / 2 - textWidth / 2, widget->y + 70, buffer, &Font12, WHITE, BLACK, true);
     }
+}
+
+void update_gpsInfo_Widget(WidgetData* widget)
+{
+    gps_t gps_data;
+    vario_state_get_member(&gps_data, vario_state_gps_data, true);
+
+    char buffer[50];
+    if(fabsf(gps_data.latitude - oldGpsObject.latitude) > 0.01f)
+    {
+        snprintf(buffer, 49, "Lat: %.2f", gps_data.latitude);
+        DrawTextWithOffset(widget, buffer, 5, 25, &Font12, true);
+    }
+    if(fabsf(gps_data.longitude - oldGpsObject.longitude) > 0.01f)
+    {
+        snprintf(buffer, 49, "Lon: %.2f", gps_data.longitude);
+        DrawTextWithOffset(widget, buffer, 90, 25, &Font12, true);
+    }
+    if(fabsf(gps_data.altitude - oldGpsObject.altitude) > 0.01f)
+    {
+        snprintf(buffer, 49, "Height: %.2fm", gps_data.altitude);
+        DrawTextWithAlign(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    }
+    if(gps_data.fix != oldGpsObject.fix || gps_data.fix_mode != oldGpsObject.fix_mode || gps_data.valid != oldGpsObject.valid)
+    {
+        DrawTextWithOffset(widget, gps_data.valid ? "1" : "0", 5, 50, &Font12, true);
+        switch(gps_data.fix)
+        {
+            case GPS_FIX_INVALID:
+                snprintf(buffer, 50, "Fix: Invalid");
+                break;
+            case GPS_FIX_GPS:
+                snprintf(buffer, 50, "Fix: GPS");
+                break;
+            case GPS_FIX_DGPS:
+                snprintf(buffer, 50, "Fix: DGPS");
+                break;
+            default:
+                snprintf(buffer, 50, "None");
+                break;
+        }
+        DrawTextWithOffset(widget, buffer, 40, 50, &Font12, true);
+        switch(gps_data.fix_mode)
+        {
+            case GPS_MODE_INVALID:
+                snprintf(buffer, 50, "Fix M: Invalid");
+                break;
+            case GPS_MODE_2D:
+                snprintf(buffer, 50, "Fix M: 2D");
+                break;
+            case GPS_MODE_3D:
+                snprintf(buffer, 50, "Fix: 3D");
+                break;
+            default:
+                snprintf(buffer, 50, "Fix M: Invalid");
+                break;
+        }
+        DrawTextWithAlign(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    }
+    if(gps_data.sats_in_view != oldGpsObject.sats_desc_in_view || gps_data.sats_in_use != oldGpsObject.sats_in_use)
+    {
+        DrawTextWithOffset(widget, "--Satellits--", 5, 65, &Font12, true);
+        uint16_t currentPosY = 80;
+
+        gps_data.sats_in_view = 12;
+        for (size_t i = 0; i < gps_data.sats_in_view; i++)
+        {
+            //gps_satellite_t sat = gps_data.sats_desc_in_view[i];
+            gps_satellite_t sat = {
+                .num = i,
+            };
+            snprintf(buffer, 50, "ID: %u", sat.num);
+            for (size_t y = 0; y < gps_data.sats_in_use; y++)
+            {
+                //TODO: Check if this is right, perhaps in num of satellit
+                if(gps_data.sats_id_in_use[y] == i)
+                {
+                    strcat(buffer, "(in use)");
+                }
+            }
+            if(i % 2 == 0)
+            {
+                strcat(buffer, "(in use)");
+            }
+            DrawTextWithOffset(widget, buffer, 20, currentPosY, &Font8, true);
+            currentPosY += 9;
+        }
+    }
+    
+    if(fabsf(gps_data.dop_h - oldGpsObject.dop_h) > 0.1f)
+    {
+        snprintf(buffer, 50, "H: %.2f", gps_data.dop_h);
+        DrawTextWithOffset(widget, buffer, 200, 75, &Font12, true);
+    }
+    if(fabsf(gps_data.dop_v - oldGpsObject.dop_v) > 0.1f)
+    {
+        snprintf(buffer, 50, "V: %.2f", gps_data.dop_v);
+        DrawTextWithOffset(widget, buffer, 200, 87, &Font12, true);
+    }
+    if(fabsf(gps_data.dop_p - oldGpsObject.dop_p) > 0.1f)
+    {
+        snprintf(buffer, 50, "P: %.2f", gps_data.dop_p);
+        DrawTextWithOffset(widget, buffer, 200, 99, &Font12, true);
+    }
+    
+    if(fabsf(gps_data.cog - oldGpsObject.cog) > 0.1f)
+    {
+        snprintf(buffer, 50, "COG: %.2f", gps_data.cog);
+        DrawTextWithOffset(widget, buffer, 130, 130, &Font12, true);
+    }
+    if(fabsf(gps_data.variation - oldGpsObject.variation) > 0.1f)
+    {
+        snprintf(buffer, 50, "Variation: %.2f", gps_data.variation);
+        DrawTextWithOffset(widget, buffer, 130, 150, &Font12, true);
+    }
+    if(fabsf(gps_data.speed - oldGpsObject.speed) > 0.1f)
+    {
+        snprintf(buffer, 50, "Speed: %.2f", gps_data.speed);
+        DrawTextWithOffset(widget, buffer, 130, 170, &Font12, true);
+    }
+    oldGpsObject = gps_data;
 }
 
 void vario_display_add_widget(WidgetData* widget)
@@ -493,6 +696,9 @@ void vario_display_add_widget(WidgetData* widget)
         break;
     case Widget_SdCardInfo:
         add_sdCardInfo_Widget(widget);
+        break;
+    case Widget_GPSInfo:
+        add_gpsInfo_Widget(widget);
         break;
     default:
         break;
@@ -516,6 +722,9 @@ void vario_update_widget(WidgetData* widget)
         break;
     case Widget_SdCardInfo:
         update_sdCardInfo_Widget(widget);
+        break;
+    case Widget_GPSInfo:
+        update_gpsInfo_Widget(widget);
         break;
     default:
         break;

@@ -75,14 +75,14 @@ typedef struct {
     uint8_t sats_in_use;                                           /*!< Number of satellites in use */
     gps_time_t tim;                                                /*!< time in UTC */
     gps_fix_mode_t fix_mode;                                       /*!< Fix mode */
-    uint8_t sats_id_in_use[12];             /*!< ID list of satellite in use */
+    uint8_t sats_id_in_use[12];                                    /*!< ID list of satellite in use */
     float dop_h;                                                   /*!< Horizontal dilution of precision */
     float dop_p;                                                   /*!< Position dilution of precision  */
     float dop_v;                                                   /*!< Vertical dilution of precision  */
     uint8_t sats_in_view;                                          /*!< Number of satellites in view */
     gps_satellite_t sats_desc_in_view[GPS_MAX_SATELLITES_IN_VIEW]; /*!< Information of satellites in view */
     gps_date_t date;                                               /*!< Fix date */
-    bool_t valid;                                                    /*!< GPS validity */
+    bool_t valid;                                                  /*!< GPS validity */
     float speed;                                                   /*!< Ground speed, unit: m/s */
     float cog;                                                     /*!< Course over ground */
     float variation;                                               /*!< Magnetic variation */

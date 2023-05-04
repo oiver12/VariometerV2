@@ -166,7 +166,7 @@ parameter:
 void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 {
     if(Xpoint > Paint.Width || Ypoint > Paint.Height){
-        printf("Exceeding display boundaries\r\n");
+        //printf("Exceeding display boundaries\r\n");
         return;
     }      
     UWORD X, Y;
@@ -244,21 +244,23 @@ parameter:
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
 {
-	if(Paint.Scale == 2 || Paint.Scale == 4){
-		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
-			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
-				UDOUBLE Addr = X + Y*Paint.WidthByte;
-				Paint.Image[Addr] = Color;
-			}
-		}		
-	}else if(Paint.Scale == 7){
-		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
-			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {
-				UDOUBLE Addr = X + Y*Paint.WidthByte;
-				Paint.Image[Addr] = (Color<<4)|Color;
-			}
-		}		
-	}
+    //TODO: Use Memset
+	// if(Paint.Scale == 2 || Paint.Scale == 4){
+	// 	for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
+	// 		for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
+	// 			UDOUBLE Addr = X + Y*Paint.WidthByte;
+	// 			Paint.Image[Addr] = Color;
+	// 		}
+	// 	}		
+	// }else if(Paint.Scale == 7){
+	// 	for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
+	// 		for (UWORD X = 0; X < Paint.WidthByte; X++ ) {
+	// 			UDOUBLE Addr = X + Y*Paint.WidthByte;
+	// 			Paint.Image[Addr] = (Color<<4)|Color;
+	// 		}
+	// 	}		
+	// }
+    memset(Paint.Image, Color, Paint.WidthByte * Paint.HeightByte);
 }
 
 /******************************************************************************
@@ -293,9 +295,9 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
                      DOT_PIXEL Dot_Pixel, DOT_STYLE Dot_Style)
 {
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
-        printf("Paint_DrawPoint Input exceeds the normal display range\r\n");
-				printf("Xpoint = %d , Paint.Width = %d  \r\n ",Xpoint,Paint.Width);
-				printf("Ypoint = %d , Paint.Height = %d  \r\n ",Ypoint,Paint.Height);
+        // printf("Paint_DrawPoint Input exceeds the normal display range\r\n");
+		// 		printf("Xpoint = %d , Paint.Width = %d  \r\n ",Xpoint,Paint.Width);
+		// 		printf("Ypoint = %d , Paint.Height = %d  \r\n ",Ypoint,Paint.Height);
         return;
     }
 
@@ -303,7 +305,7 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color,
     if (Dot_Style == DOT_FILL_AROUND) {
         for (XDir_Num = 0; XDir_Num < 2 * Dot_Pixel - 1; XDir_Num++) {
             for (YDir_Num = 0; YDir_Num < 2 * Dot_Pixel - 1; YDir_Num++) {
-                if(Xpoint + XDir_Num - Dot_Pixel < 0 || Ypoint + YDir_Num - Dot_Pixel < 0)
+                if((int32_t)(Xpoint + XDir_Num) - (int32_t)Dot_Pixel < 0 || (int32_t)(Ypoint + YDir_Num) - (int32_t)Dot_Pixel < 0)
                     break;
                 // printf("x = %d, y = %d\r\n", Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel);
                 Paint_SetPixel(Xpoint + XDir_Num - Dot_Pixel, Ypoint + YDir_Num - Dot_Pixel, Color);
@@ -567,7 +569,6 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
     }
 
     uint32_t Char_Offset = (Acsii_Char - ' ') * Font->Height * (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
-    uint32_t char_offset_start = Char_Offset;
     const unsigned char *ptr = &Font->table[Char_Offset];
 
     for (Page = 0; Page < Font->Height; Page ++ ) {
@@ -946,8 +947,8 @@ void Paint_DrawBitMap_Paste_Rotated_Circle(const unsigned char* image_buffer, UW
 
             int xs = (int)((cosma * xt - sinma * yt) + hwidth);
             int ys = (int)((sinma * xt + cosma * yt) + hheight);
-            uint8_t firstT = (xs >= 0 && xs < imageWidth&& ys >= 0 && ys < imageHeight);
-            uint8_t secondT = (xt * xt + yt * yt < radius* radius);
+            //uint8_t firstT = (xs >= 0 && xs < imageWidth&& ys >= 0 && ys < imageHeight);
+            //uint8_t secondT = (xt * xt + yt * yt < radius* radius);
             if (xs >= 0 && xs < imageWidth && ys >= 0 && ys < imageHeight && xt * xt + yt * yt < radius * radius) {
                 uint32_t addr1 = xs / 8 + ys * widthBytes;
                 /* set target pixel (x,y) to color at (xs,ys) */

@@ -5,13 +5,14 @@
 #include <stdbool.h>
 
 typedef enum {
-    RenderMode_Normal,
-    RenderMode_Settings,
-    RenderMode_PopUp,
+    RenderMode_Update,
+    RenderMode_Push,
 } RenderModes_t;
 
-void rendering_Settings(bool varfullRedraw);
-void rendering_Normal(bool varfullRedraw);
-void rendering_PopUp(bool varfullRedraw);
+void startRendering(uint8_t* screenBuffer);
+void stopRendering_disableScreen();
+void rendering_Push(bool varfullRedraw);
+void rendering_Update(bool varfullRedraw);
+bool screenIsInit();
 
 #endif

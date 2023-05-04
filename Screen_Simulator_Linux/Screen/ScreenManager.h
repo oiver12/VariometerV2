@@ -52,7 +52,6 @@ typedef struct {
     size_t screensAdded;
     uint8_t curr_Screen;
     ScreenMode screenMode;
-    uint8_t isRendering;
 } Vario_Screen_Manager_t;
 
 void ScreenManager_init(SemaphoreHandle_t semaphore);
@@ -68,6 +67,9 @@ void ScreenManager_UpArrowPressed();
 void ScreenManager_EnterKeyPressed();
 void Screen_redraw_Screen();
 void ScreenManager_add_Screen_add_widgets(WidgetData* widgets, size_t size);
-void ScreenManager_showPopUp(PopUpConfig_t config);
+void ScreenManager_deselctSettingsWidget();
+//returns if it could show the PopUp
+bool ScreenManager_showPopUp(PopUpConfig_t config);
+void ScreenManager_closePopUp();
 
 #endif

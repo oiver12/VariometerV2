@@ -2,8 +2,14 @@
 #include "E_Ink/GUI_Paint.h"
 #include "DeviceContext.h"
 #include <stdio.h>
+#include "esp_timer.h"
 
 extern unsigned char gImage_gps_an[78];
+
+// static void popUp_Disable_TimerCallback(void* arg)
+// {
+//     ScreenManager_closePopUp();
+// }
 
 static void popUpGPS_draw(PopUpConfig_t configData)
 {
@@ -58,7 +64,7 @@ void vario_display_showPopUp(PopUpConfig_t configData)
 	case PopUpType_WidgetSettings:
 		popUpSettings_draw(configData);
 		break;
-	case PopUpType_TakeOff:
+    case PopUpType_TakeOff:
 		popUpTakeOff_draw(configData);
 		break;
 	case PopUpType_Landing:
@@ -69,6 +75,13 @@ void vario_display_showPopUp(PopUpConfig_t configData)
 	}
 	if (configData.timeToDisplay > 0)
 	{
-		//TODO: Add Timer
+        // const esp_timer_create_args_t oneshot_timer_args = {
+        //     .callback = &popUp_Disable_TimerCallback,
+        //     /* argument specified here will be passed to timer callback function */
+        //     .name = "popUp Disable"
+        // };
+        // esp_timer_handle_t oneshot_timer;
+        // ESP_ERROR_CHECK(esp_timer_create(&oneshot_timer_args, &oneshot_timer));
+        // ESP_ERROR_CHECK(esp_timer_start_once(oneshot_timer, configData.timeToDisplay * 1000));
 	}
 }

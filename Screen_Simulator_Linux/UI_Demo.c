@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "Screen/DeviceContext.h"
-#include "Screen/Vario_Screen.h"
+#include "Screen/ScreenManager.h"
 #include "Screen/E_Ink/GUI_Paint.h"
 #include <time.h>
 #include <math.h>
@@ -43,11 +43,8 @@ void readAGL(double latitude, double longitude)
     
     FILE* fileptr;
 
-    size_t bufferSize;
     fileptr = fopen(fileName, "r"); 
 
-    if (!fileptr)
-        bufferSize = 0;
 
     float secondsLat = (latitude - latDec) * 60 * 60;
     float secondsLon = (longitude - lonDec) * 60 * 60;
@@ -61,8 +58,8 @@ void readAGL(double latitude, double longitude)
     readPixel(fileptr, y + 1, x + 1, &height[1]);
 
     //ratio where X lays
-    float dy = fmod(secondsLat, secondsPerPx) / secondsPerPx;
-    float dx = fmod(secondsLon, secondsPerPx) / secondsPerPx;
+    //float dy = fmod(secondsLat, secondsPerPx) / secondsPerPx;
+    //float dx = fmod(secondsLon, secondsPerPx) / secondsPerPx;
 
     // Bilinear interpolation
     // h0------------h1
@@ -73,10 +70,10 @@ void readAGL(double latitude, double longitude)
     // |       |
     // h2------------h3   
      
-    float rightHeight = height[0] * dy * (1 - dx) +
-        height[1] * dy * (dx)+
-        height[2] * (1 - dy) * (1 - dx) +
-        height[3] * (1 - dy) * dx;
+    // float rightHeight = height[0] * dy * (1 - dx) +
+    //     height[1] * dy * (dx)+
+    //     height[2] * (1 - dy) * (1 - dx) +
+    //     height[3] * (1 - dy) * dx;
     /*double lat = latitude - (int)latitude;
     double lon = longitude - (int)longitude;
     
@@ -137,14 +134,15 @@ void startRender()
         {.extraStyle = WS_FONT_24_CONTENT, .h = 73, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 320, .y = 207},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 8);
-    static WidgetData widgetDataScreen1[4] = {
+    static WidgetData widgetDataScreen1[5] = {
         {.extraStyle = WS_FONT_32_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Time_GPS, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
 		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
         {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
+        {.extraStyle = WS_FONT_12_CONTENT, .h = 192, .w = 280, .style = Widget_GPSInfo, .type = WidgetContent_GPSInfo, .x = 0, .y = 87}
     };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 4);
-    ScreenManager_show_Screen(0);
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 5);
+    ScreenManager_show_Screen(1);
 }
 
 void updateRender()
