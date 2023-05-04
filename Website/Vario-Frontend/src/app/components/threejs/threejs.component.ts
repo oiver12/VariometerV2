@@ -40,19 +40,15 @@ export class ThreejsComponent {
     // add a event listener for window resize
     // and update the camera aspect ratio accordingly
     // to prevent the scene from stretching
-    @HostListener('window:resize', ['$event'])
-    onResize(event: Event) {
-        // this.camera.aspect = this.calculateAspectRatio();
-        // this.camera.updateProjectionMatrix();
-        // this.canvas.width = 1;
-        // this.canvas.height = 1;
+    @HostListener('window:resize')
+    onResize() {
+        this.camera.aspect = this.calculateAspectRatio();
+        this.camera.updateProjectionMatrix();
 
-        console.log(document.getElementById('canvas'));
-        // const width = document.getElementById('canvas')!.clientWidth;
-        // const height = document.getElementById('canvas')!.clientHeight;
-
-        // this.renderer.setSize(width, height);
-        // console.log(this.canvas.clientWidth, this.canvas.clientHeight);
+        this.renderer.setSize(
+            document.getElementsByClassName('threejs')![0].clientWidth,
+            document.getElementsByClassName('threejs')![0].clientHeight
+        );
     }
 
     private calculateAspectRatio(): number {

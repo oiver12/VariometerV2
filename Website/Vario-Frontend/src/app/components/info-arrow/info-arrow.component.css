@@ -1,3 +1,8 @@
 mat-icon {
     transform: scale(2.5);
+    opacity: 1;
+}
+mat-icon:hover {
+    transform: scale(3);
+    transition: 0.3s ease-in-out;
 }
