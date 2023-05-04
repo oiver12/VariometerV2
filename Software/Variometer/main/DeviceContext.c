@@ -9,6 +9,7 @@
 #include "TestTools/FlightLogger.h"
 #include "IGCLogger.h"
 #include "esp_timer.h"
+#include "Screen/ScreenManager.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
 {

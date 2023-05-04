@@ -26,7 +26,7 @@ typedef struct {
     WidgetData widgets[MAX_WIDGETS_SCREEN];
     uint16_t widgetsAdded;
 } VarioScreen_t;
-
+//TODO: Change to list_head
 typedef struct {
     void* prev;
     void* next;

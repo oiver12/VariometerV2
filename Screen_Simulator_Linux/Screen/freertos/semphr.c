@@ -1,4 +1,5 @@
 #include "semphr.h"
+#include <stdlib.h>
 
 SemaphoreHandle_t xSemaphoreCreateMutex()
 {

@@ -15,6 +15,7 @@ extern const unsigned char gImage_battery_full[];
 extern const unsigned char gImage_battery_half[];
 extern const unsigned char gImage_battery_halfEmpty[];
 extern const unsigned char gImage_battery_halfFull[];
-
+extern const unsigned char gImage_PowerOff[];
+extern const unsigned char gImage_Arrow_down[];
 
 #endif

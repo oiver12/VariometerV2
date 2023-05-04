@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
+#include "Screen/IGC_Parser.h"
 
 #define EPD_3IN7_WIDTH       410
 #define EPD_3IN7_HEIGHT      480 
@@ -44,7 +45,10 @@ void open_ReadFile()
     }
 
 	FILE* fileptr;
-	
+	fileptr = fopen("FlightLong.IGC", "r");
+    Track_t track;
+    ParseIGCFile(&track, 50, fileptr);
+    fclose(fileptr);
 	size_t bufferSize;
 	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
     if (fileptr == NULL)
@@ -205,7 +209,7 @@ int main(void) {
             }
         }
         updateRender();
-        updateRenderTimeProgress((float)currPosStateBuffer / (float)vario_state_Simulation_size);
+        updateRenderTimeProgress((float)currPosStateBuffer / (float)vario_state_Simulation_size, vario_state_Simulation_size, bufferSimulation);
         for (int y = 0; y < EPD_3IN7_HEIGHT; y++)
 	    {
             for (int x = 0; x < EPD_3IN7_WIDTH; x++)

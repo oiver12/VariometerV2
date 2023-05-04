@@ -161,8 +161,14 @@ void startRenderTimeProgress()
     Paint_DrawRectangle(x + 2, y + 2, x + width - 2, y + height - 2, WHITE, DOT_PIXEL_1X1, WHITE);
 }
 
-void updateRenderTimeProgress(float percentage)
+void updateRenderTimeProgress(float percentage, size_t vario_state_Simulation_size, vario_state_Simulation* bufferSimulation)
 {
+    static int i = 0;
+    if (i % 10 == 0)
+    {
+        startRenderTimeProgress();
+        startHeightDiagramm(vario_state_Simulation_size, bufferSimulation);
+    }
     const int x = 20;
     const int y = 290;
     const int width = 440; 

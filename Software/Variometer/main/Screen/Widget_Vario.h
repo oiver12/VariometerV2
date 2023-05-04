@@ -159,12 +159,16 @@ void init_WidgetHandler();
 void vario_display_add_widget(WidgetData* widget);
 void vario_update_widget(WidgetData* widget);
 
-/*** Settings Implemented in "Settings_Widget_Vario.c" ***/
+/*** Settings Implemented in "Widget_Vario_Settings.c" ***/
 void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected, bool reRenderRectangle);
 void vario_display_select_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected);
 void vario_display_settings_widget_handle_input(WidgetData* widget, Button_Direction direction);
 
-/*** PopUps Implemented in "PopUp_Widget_Vario.c" ***/
+/*** PopUps Implemented in "Widget_Vario_PopUp.c" ***/
 void vario_display_showPopUp(PopUpConfig_t configData);
+
+/*** Screens Implemented in "Widget_Vario_Screens.c" ***/
+void vario_display_PowerOffScreen();
+void vario_display_FlightStatistics();
 
 #endif

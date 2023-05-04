@@ -1,6 +1,17 @@
 #include "Util.h"
 #include "math.h"
 
+static double TO_RADIAN(double deg)
+{
+    return deg / 180.0 * PI;
+}
+
+static double TO_DEGREE(double rad)
+{
+    return rad * (180.0 / PI);
+}
+
+
 int16_t GET_BEARING(double lat1, double lon1, double lat2, double lon2)
 {
     double teta1 = TO_RADIAN(lat1);
@@ -38,4 +49,28 @@ double GET_DISTANCE(double lat1, double lon1, double lat2, double lon2)
     dist = dist * 60 * 1.1515;
 
     return dist * 1609.344; // meter
+}
+
+void INIT_LIST_HEAD(struct list_head *list)
+{
+	list->next = list;
+	list->prev = list;
+}
+
+void list_add_head(struct list_head *new, struct list_head *head)
+{
+    list_insert(new, head, head->next);
+}
+
+void list_add_tail(struct list_head *new, struct list_head *head)
+{
+    list_insert(new, head->prev, head);
+}
+
+void list_insert(struct list_head *new, struct list_head *prev, struct list_head *next)
+{
+	next->prev = new;
+	new->next = next;
+	new->prev = prev;
+	prev->next = new;
 }

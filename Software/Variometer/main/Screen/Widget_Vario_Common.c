@@ -1,4 +1,5 @@
-#include "Common_Widget_Vario.h"
+#include "Widget_Vario_Common.h"
+#include <stdio.h>
 
 static uint16_t getTextWidth(const char* pString, sFONT* font)
 {
@@ -40,6 +41,8 @@ void DrawTextWithAlign(WidgetData* widget, const char* text, uint16_t offsetX, u
         case ALIGN_RIGHT:
             posX -= textWidth;
             break;
+        default:
+            break;
         //Case ALIGN_LEFT is without changing
     }
     switch(alignY)
@@ -49,6 +52,8 @@ void DrawTextWithAlign(WidgetData* widget, const char* text, uint16_t offsetX, u
             break;
         case ALIGN_BOTTOM:
             posY -= textHeight;
+            break;
+        default:
             break;
     }
     Paint_DrawString_EN(posX, posY, text, font, WHITE, BLACK, redrawBackground);

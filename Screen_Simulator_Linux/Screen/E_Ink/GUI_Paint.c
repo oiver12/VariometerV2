@@ -210,7 +210,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
     }
 
     if(X > Paint.WidthMemory || Y > Paint.HeightMemory){
-        printf("Exceeding display boundaries\r\n");
+        //printf("Exceeding display boundaries\r\n");
         return;
     }
     

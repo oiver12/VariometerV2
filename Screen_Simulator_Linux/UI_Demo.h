@@ -14,5 +14,5 @@ void startMenuKey();
 void MenuKeyReleased();
 void PKeyPressed();
 void startRenderTimeProgress();
-void updateRenderTimeProgress(float percentage);
+void updateRenderTimeProgress(float percentage, size_t vario_state_Simulation_size, vario_state_Simulation* bufferSimulation);
 void startHeightDiagramm(size_t vario_state_Simulation_size, vario_state_Simulation* bufferSimulation);
