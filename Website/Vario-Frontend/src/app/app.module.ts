@@ -14,6 +14,9 @@ import { ProductNewsPopUpComponent } from './components/product-news-pop-up/prod
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { InvalidEmailSnackBarComponent } from './components/invalid-email-snack-bar/invalid-email-snack-bar.component';
 import { InfoArrowComponent } from './components/info-arrow/info-arrow.component';
+import { FirstSideComponent } from './components/first-side/first-side.component';
+import { SecondSideComponent } from './components/second-side/second-side.component';
+import { BottomInformationComponent } from './components/bottom-information/bottom-information.component';
 
 @NgModule({
     declarations: [
@@ -27,6 +30,9 @@ import { InfoArrowComponent } from './components/info-arrow/info-arrow.component
         ProductNewsPopUpComponent,
         InvalidEmailSnackBarComponent,
         InfoArrowComponent,
+        FirstSideComponent,
+        SecondSideComponent,
+        BottomInformationComponent,
     ],
     imports: [
         BrowserAnimationsModule,

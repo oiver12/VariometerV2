@@ -33,12 +33,19 @@ mat-divider {
     margin: 1rem;
 }
 .main-div {
-    height: 100vh;
+    height: 200vh;
 }
 h1 {
     margin: 0.6rem 0rem;
 }
-.right-main-div{
+.info-arrow {
+    position: fixed;
+    top: 95%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+.right-main-div {
     position: absolute;
     top: 0vh;
     right: 0;
@@ -50,22 +57,15 @@ h1 {
     position: absolute;
     left: 0;
     top: 110vh;
-    height: 100vh;
+    height: 90vh;
     width: 100%;
     z-index: -1;
-}
-.info-arrow {
-    position: fixed;
-    top: 95%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 11;
 }
 .lowest-main-div {
     position: absolute;
     left: 0;
-    top: 210vh;
-    height: 100vh;
+    top: 200vh;
+    height: 10vh;
     width: 100%;
     z-index: -1;
 }

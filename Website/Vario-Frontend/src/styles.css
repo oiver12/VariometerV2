@@ -1,11 +1,4 @@
-body {
-    --text-color: #111;
-    --left-bkg-color: #fff;
-    --btn-txt-color: white;
-    --btn-bg-color: rgb(11, 88, 160);
-}
-
-body.dark-theme {
+body{
     /* --text-color: #d6b387; */
     /* --left-bkg-color: #211c19; */
     --text-color: #c5ccda;
@@ -13,9 +6,11 @@ body.dark-theme {
     --left-bkg-color: #03104d;
     --right-bkg-color: #06187e;
     --lower-bkg-color: #0a1da9;
+    --lowest-bkg-color: black;
     --btn-txt-color: rgb(46, 43, 43);
     --btn-bg-color: rgb(20, 211, 195);
-    --circle-color: #fc811f;
+    /* --circle-color: #fc811f; */
+    --circle-color: purple;
 }
 
 body {
@@ -39,7 +34,9 @@ button {
     color: var(--btn-txt-color);
     background-color: var(--btn-bg-color);
 }
-
+a.text-color {
+    color: var(--text-color);
+}
 span.accent-text-color {
     color: var(--accent-text-color);
 }
@@ -57,4 +54,7 @@ div.product-news:hover {
 }
 div.lower-bkg-color {
     background-color: var(--lower-bkg-color);
+}
+div.lowest-bkg-color {
+    background-color: var(--lowest-bkg-color);
 }

@@ -7,8 +7,9 @@ import { Component, HostListener } from '@angular/core';
 })
 export class InfoArrowComponent {
     scrollDown() {
-        window.scrollBy({
-            top: window.outerHeight,
+        window.scrollTo({
+            top: document.getElementsByClassName('right-main-div')[0]
+                .clientHeight,
             behavior: 'smooth',
         });
     }

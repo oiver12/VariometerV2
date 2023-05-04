@@ -42,7 +42,7 @@ export class SpinningWheelComponent {
                 const angle = index * 60;
                 this.rotate(this.degrees + angle, div);
             });
-        }, 5000);
+        }, 6000);
     }
 
     rotate(degrees: number, div: HTMLElement, angle?: number) {
