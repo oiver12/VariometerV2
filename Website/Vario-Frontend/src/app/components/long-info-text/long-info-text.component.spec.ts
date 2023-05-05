@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LoginComponent } from './login.component';
+import { LongInfoTextComponent } from './long-info-text.component';
 
-describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
+describe('LongInfoTextComponent', () => {
+  let component: LongInfoTextComponent;
+  let fixture: ComponentFixture<LongInfoTextComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoginComponent ]
+      declarations: [ LongInfoTextComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LoginComponent);
+    fixture = TestBed.createComponent(LongInfoTextComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

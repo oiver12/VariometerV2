@@ -50,27 +50,30 @@ h1 {
     transform: translate(-50%, -50%);
     z-index: 11;
 }
-.right-main-div {
-    position: absolute;
-    top: 0vh;
-    right: 0;
-    height: 110vh;
-    width: 50vw;
-    z-index: -1;
-}
-.lower-main-div {
-    position: absolute;
-    left: 0;
-    top: 110vh;
-    height: 90vh;
-    width: 100%;
-    z-index: -1;
-}
 .lowest-main-div {
     position: absolute;
     left: 0;
-    top: 200vh;
+    top: 100%;
     height: 10vh;
     width: 100%;
     z-index: -1;
+}
+.nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin: 0;
+}
+
+.nav li {
+    display: flex;
+    vertical-align: middle;
+    display: inline-block;
+    font-size: 20px;
+    padding: 0 10%;
+    z-index: 20; /* So its over the info-arrow.component*/
+}
+a {
+    text-decoration: none;
 }

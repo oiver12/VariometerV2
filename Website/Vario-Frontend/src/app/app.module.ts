@@ -3,7 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { LoginComponent } from './views/login/login.component';
 import { MaterialModule } from './material/material.module';
 import { ThreejsComponent } from './components/threejs/threejs.component';
 import { SpinningWheelComponent } from './components/spinning-wheel/spinning-wheel.component';
@@ -16,12 +15,13 @@ import { InvalidEmailSnackBarComponent } from './components/invalid-email-snack-
 import { InfoArrowComponent } from './components/info-arrow/info-arrow.component';
 import { FirstSideComponent } from './components/first-side/first-side.component';
 import { SecondSideComponent } from './components/second-side/second-side.component';
-import { BottomInformationComponent } from './components/bottom-information/bottom-information.component';
+import { LongInfoTextComponent } from './components/long-info-text/long-info-text.component';
+import { AboutComponent } from './views/about/about.component';
+import { ContactComponent } from './views/contact/contact.component';
 
 @NgModule({
     declarations: [
         AppComponent,
-        LoginComponent,
         ThreejsComponent,
         SpinningWheelComponent,
         HomeComponent,
@@ -32,7 +32,9 @@ import { BottomInformationComponent } from './components/bottom-information/bott
         InfoArrowComponent,
         FirstSideComponent,
         SecondSideComponent,
-        BottomInformationComponent,
+        LongInfoTextComponent,
+        AboutComponent,
+        ContactComponent,
     ],
     imports: [
         BrowserAnimationsModule,

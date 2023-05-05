@@ -8,3 +8,26 @@
     width: 100%;
     height: 100vh;
 }
+.info-arrow {
+    position: fixed;
+    top: 95%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+.right-main-div {
+    position: absolute;
+    top: 0vh;
+    right: 0;
+    height: 110vh;
+    width: 50vw;
+    z-index: -1;
+}
+.lower-main-div {
+    position: absolute;
+    left: 0;
+    top: 110vh;
+    height: 90vh;
+    width: 100%;
+    z-index: -1;
+}
