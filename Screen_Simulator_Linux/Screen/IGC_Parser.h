@@ -10,6 +10,14 @@
 
 #include <stdbool.h> 
 
+typedef enum {
+    IGC_FXA,
+    IGC_VXA,
+    IGC_GSP,
+    IGC_CCO,
+    IGC_HDT
+} IFieldTypeIGC;
+
 //translated from go in c from: https://github.com/ezgliding/goigc
 typedef struct HeaderIGC_t
 {
@@ -24,8 +32,10 @@ typedef struct TimeIGC_t {
     uint8_t second;
 } TimeIGC_t;
 
+typedef int64_t IFieldPointIGC_t;
+
 typedef struct TrackPointIGC_t {
-    //struct list_head list;
+    IFieldPointIGC_t* IFields;
     TimeIGC_t time;
     bool FixValidity;
     int pressureAlt;
@@ -33,6 +43,12 @@ typedef struct TrackPointIGC_t {
     float lat;
     float lon; 
 } TrackPointIGC_t;
+
+typedef struct IFieldIGC_t {
+    uint8_t posStart;
+    uint8_t posEnd;
+    IFieldTypeIGC type;
+} IFieldIGC_t;
 
 typedef struct Track_t
 {
@@ -42,7 +58,7 @@ typedef struct Track_t
     size_t sizeTrackPoints;
 } Track_t;
 
-int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* file);
+int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile);
 
 
 #endif

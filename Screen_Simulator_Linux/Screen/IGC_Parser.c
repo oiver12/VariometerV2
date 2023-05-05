@@ -148,6 +148,19 @@ static int parseB(const char* line, TrackPointIGC_t* point)
     return 0;
 }
 
+static int parseI(const char* line, Track_t *track)
+{
+    if(strlen(line) < 3) 
+    {
+        return 1;
+    }
+    char tempBuffer[MAX_LINELENGTH];
+    sliceString(line, tempBuffer, 1, 2);
+    int n;
+    ERROR_CHECK(str2int(&n, tempBuffer));
+    
+}
+
 void updateFlightStats(TrackPointIGC_t trackPoint, Track_t *track)
 {
     if(trackPoint.FixValidity)
@@ -159,23 +172,25 @@ void updateFlightStats(TrackPointIGC_t trackPoint, Track_t *track)
     }
 }
 
-int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* file)
+int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
 {   
     char line[MAX_LINELENGTH];
-    if (file == NULL)
+    if (igcFile == NULL)
         return 1;
     memset(&track->flightStats, 0, sizeof(flight_stats_t));
     track->trackPoints = NULL;
     track->sizeTrackPoints = 0;
     TrackPointIGC_t tempPoint;
     size_t totalPoints = 0;
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(line, sizeof(line), igcFile)) {
         switch(line[0]) {
             case 'B':
                 ERROR_CHECK(parseB(line, &tempPoint));
                 updateFlightStats(tempPoint, track);
                 totalPoints++;
                 break;
+            case 'I':
+
             default:
                 break;
         }
