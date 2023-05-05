@@ -7,3 +7,23 @@
     text-align: center;
     color: #999;
 }
+.img-div {
+    position: absolute;
+    left: 50vw;
+    height: 10vh;
+    width: 45vw;
+    height: 45vw;
+}
+.white-div {
+    position: absolute;
+    background-color: white;
+    width: 45vw;
+    height: 45vw;
+    transform: translate(8vw, 10vw);
+}
+img {
+    position: absolute;
+    mix-blend-mode: multiply;
+    width: 45vw;
+    height: 45vw;
+}
