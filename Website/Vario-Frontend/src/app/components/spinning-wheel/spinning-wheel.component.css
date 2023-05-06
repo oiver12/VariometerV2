@@ -9,7 +9,7 @@
 .rotate {
     position: absolute;
     transform-origin: calc(50% + 2 * var(--main-div-gap)) 50%;
-    transition: none;
+    transition: 0s;
     height: 100%;
     width: 100%;
 }

@@ -1,32 +1,20 @@
-<div class="content">
-    <div class="top-row-outer-div">
-        <div class="top-row-inner-div">
+<div class="wrapper">
+    <div class="relative-container">
+        <div class="top-row-outer-div">
             <h1>Vario Name</h1>
-            <div class="button-div">
-                <!-- <button mat-icon-button class="icon-button-left" (click)="toggleDarkTheme()">
-                            <mat-icon>{{ darkTheme ? 'light_mode' : 'dark_mode' }}</mat-icon>
-                        </button> -->
-                <button
-                    mat-icon-button
-                    class="icon-button-right"
-                    (click)="goToShop()"
-                >
-                    <mat-icon>shopping_cart</mat-icon>
-                </button>
-            </div>
+            <button mat-icon-button (click)="goToShop()">
+                <mat-icon>shopping_cart</mat-icon>
+            </button>
         </div>
+        <div class="main-div">
+            <router-outlet></router-outlet>
+        </div>
+        <nav class="lowest-navigation lowest-bkg-color">
+            <ul class="navigation">
+                <li><a class="text-color" href="home">Home</a></li>
+                <li><a class="text-color" href="about">About Us</a></li>
+                <li><a class="text-color" href="contact">Contact Us</a></li>
+            </ul>
+        </nav>
     </div>
-    <!-- <div class="divider-div">
-                <mat-divider></mat-divider>
-            </div> -->
-    <div class="main-div">
-        <router-outlet></router-outlet>
-    </div>
-</div>
-<div class="lowest-main-div lowest-bkg-color">
-    <ul class="nav">
-        <li><a class="text-color" href="home">Home</a></li>
-        <li><a class="text-color" href="about">About Us</a></li>
-        <li><a class="text-color" href="contact">Contact Us</a></li>
-    </ul>
 </div>

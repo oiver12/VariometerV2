@@ -26,12 +26,20 @@ export class SpinningWheelComponent {
         }
         divs.forEach((div: HTMLElement, index: number) => {
             const angle = index * 60;
-            this.rotate(0, div, angle);
+            this.rotate(angle, div);
         });
+        const transitionTime = 3;
+        const wayOfTransition = 'ease-in-out';
+        const everyXSeconds = 6;
         window.onload = () => {
             for (var i = 0, ii = divs.length; i < ii; i++) {
-                divs[i].style.transition = 'transform 2s ease-in-out';
+                divs[i].style.transition = 'transform ' + transitionTime.toString() + 's ' + wayOfTransition;
             }
+            this.degrees += 60;
+            divs.forEach((div: HTMLElement, index: number) => {
+                const angle = index * 60;
+                this.rotate(this.degrees + angle, div);
+            });
         };
         setInterval(() => {
             if (document.hidden) {
@@ -42,15 +50,14 @@ export class SpinningWheelComponent {
                 const angle = index * 60;
                 this.rotate(this.degrees + angle, div);
             });
-        }, 6000);
+        }, everyXSeconds * 1000);
     }
 
-    rotate(degrees: number, div: HTMLElement, angle?: number) {
-        const finalAngle = angle !== undefined ? angle : 0;
+    rotate(degrees: number, div: HTMLElement) {
         this.renderer.setStyle(
             div,
             'transform',
-            `rotate(${degrees + finalAngle}deg)`
+            `rotate(${degrees}deg)`
         );
     }
 }

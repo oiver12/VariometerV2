@@ -19,10 +19,11 @@
 
 .threejs {
     position: absolute;
+    margin: 0 1vw;
     max-width: calc(100vh - 4.6rem);
     max-height: calc(100vh - 4.6rem);
-    width: calc(50vw - 2rem);
-    height: calc(50vw - 2rem);
+    width: calc(50vw - 2vw);
+    height: calc(50vw - 2vw);
 }
 .info-text {
     position: absolute;
@@ -38,4 +39,12 @@
     left: 60%;
     font-size: 1.5rem;
     z-index: 10;
+}
+.right-main-div {
+    position: absolute;
+    top: 0vh;
+    right: 0;
+    height: 110vh;
+    width: 50vw;
+    z-index: -1;
 }
