@@ -9,7 +9,7 @@
 
 #define ERROR_CHECK(val) ({if(val != 0) return 1;})
 
-int str2int(int *out, const char *s) {
+static int str2int(int *out, const char *s) {
     char *end;
     if (s[0] == '\0' || isspace((unsigned char)s[0]))
         return 1;
@@ -32,6 +32,13 @@ static void sliceString(const char* oldString, char* newString, int start, int s
 {
     strncpy(newString, &oldString[start], size);
     newString[size] = '\0';
+}
+
+static int sliceStringToInt(int* out ,const char* stringIn, int start, int size)
+{
+    char buffer[size+1];
+    sliceString(stringIn, buffer, start, size);
+    return str2int(out, buffer);
 }
 
 static int floatFROMDMD(const char* dmd, float* valueRad)
@@ -154,10 +161,28 @@ static int parseI(const char* line, Track_t *track)
     {
         return 1;
     }
-    char tempBuffer[MAX_LINELENGTH];
-    sliceString(line, tempBuffer, 1, 2);
     int n;
-    ERROR_CHECK(str2int(&n, tempBuffer));
+    ERROR_CHECK(sliceStringToInt(&n, line, 1, 2));
+    if(strlen(n) != n*7+1) 
+    {
+        printf("Wrong I Field Length\n");
+        return 1;
+    }
+    track->IFields =  malloc(sizeof(IFieldIGC_t) * n);
+    if(&track->IFields == NULL)
+    {
+        printf("Couldn't allocate memory");
+        return 1;
+    }
+    char buffer[4];
+    for (size_t i = 0; i < n; i++)
+    {
+        int s = i*7+3;
+        int start, end;
+        ERROR_CHECK(sliceStringToInt(start, line, s, 2));
+        ERROR_CHECK(sliceStringToInt(end, line, s+2, 2));
+        sliceString(line, buffer, s+4, 3);
+    }
     
 }
 
