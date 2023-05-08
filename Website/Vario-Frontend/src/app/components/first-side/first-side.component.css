@@ -1,22 +1,8 @@
 .main-div {
     flex-direction: row;
     width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
+    height: auto;
 }
-
-.spinning-wheel {
-    max-width: 75vh;
-    max-height: 75vh;
-    width: 50vw;
-    height: 50vw;
-    top: 10%;
-    position: absolute;
-    margin-left: 100%;
-    transform: translate(-40%, -0%);
-}
-
 .threejs {
     position: absolute;
     margin: 0 1vw;
@@ -33,10 +19,20 @@
     z-index: 10;
     transform: translate(-15.2rem, 0);
 }
+.spinning-wheel {
+    max-width: 75vh;
+    max-height: 75vh;
+    width: 50vw;
+    height: 50vw;
+    top: 10%;
+    position: absolute;
+    margin-left: 100%;
+    transform: translate(-40%, -0%);
+}
 .product-news {
     position: absolute;
-    top: 65%;
-    left: 60%;
+    top: 65vh;
+    left: 60vw;
     font-size: 1.5rem;
     z-index: 10;
 }
@@ -44,7 +40,7 @@
     position: absolute;
     top: 0vh;
     right: 0;
-    height: 110vh;
+height: 100%;
     width: 50vw;
     z-index: -1;
 }

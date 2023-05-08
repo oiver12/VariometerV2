@@ -1,0 +1,66 @@
+.background-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 90vh;
+}
+.content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.toolbar {
+  margin: 1.5em 2em;
+  background-color: transparent;
+  color: white;
+  width: calc(100% - 4em);
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.toolbar-child {
+  flex: 1;
+}
+.first-tc {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+.logo {
+  scale: 0.8;
+}
+.title {
+  margin: 0.7em;
+  font-size: 2em;
+}
+.nav-div {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+a {
+  margin: 0.7em;
+  text-decoration: none;
+  color: white;
+}
+.spacer {
+  flex: 1 1 auto;
+}
+.order-now {
+  display: flex;
+  width: auto;
+  height: auto;
+  border-radius: 0.7em;
+  font-size: larger;
+  margin-left: auto;
+  margin-right: 0;
+}
+.order-now h1 {
+  font-size: larger;
+  padding: 0.3em 0;
+}

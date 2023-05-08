@@ -1,8 +1,11 @@
 .long-info-text {
     position: relative;
-    height: 90vh;
+    height: auto;
     width: 40vw;
     margin: 5vh 5vw;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
 }
 .image-div {
     height: 100%;
@@ -32,7 +35,7 @@ img {
     position: absolute;
     left: 0;
     top: 0;
-    height: 100vh;
+    height: 100%;
     width: 100%;
     z-index: -1;
 }

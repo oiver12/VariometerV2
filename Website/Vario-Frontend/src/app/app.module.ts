@@ -18,6 +18,7 @@ import { SecondSideComponent } from './components/second-side/second-side.compon
 import { LongInfoTextComponent } from './components/long-info-text/long-info-text.component';
 import { AboutComponent } from './views/about/about.component';
 import { ContactComponent } from './views/contact/contact.component';
+import { KaufenComponent } from './views/kaufen/kaufen.component';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import { ContactComponent } from './views/contact/contact.component';
         LongInfoTextComponent,
         AboutComponent,
         ContactComponent,
+        KaufenComponent,
     ],
     imports: [
         BrowserAnimationsModule,

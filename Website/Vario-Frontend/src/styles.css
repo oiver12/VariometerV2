@@ -8,7 +8,6 @@ body{
     --lower-bkg-color: #0a1da9;
     --lowest-bkg-color: black;
     --btn-txt-color: rgb(46, 43, 43);
-    --btn-bg-color: rgb(20, 211, 195);
     /* --circle-color: #fc811f; */
     --circle-color: purple;
 }
@@ -31,8 +30,7 @@ mat-icon {
 
 button {
     border: none;
-    color: var(--btn-txt-color);
-    background-color: var(--btn-bg-color);
+    background-color: var(--left-bkg-color);
 }
 a.text-color {
     color: var(--text-color);

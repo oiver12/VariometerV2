@@ -5,3 +5,6 @@ h3 {
 p {
     margin-top: 0.25em;
 }
+.container {
+    max-width: 40em;
+}
