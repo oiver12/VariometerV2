@@ -56,6 +56,8 @@ typedef struct Track_t
     flight_stats_t flightStats;
     TrackPointIGC_t* trackPoints;
     size_t sizeTrackPoints;
+    IFieldIGC_t* IFields;
+    size_t sizeIFields;
 } Track_t;
 
 int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile);
