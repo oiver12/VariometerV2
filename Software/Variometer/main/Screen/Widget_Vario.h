@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "FIFO.h"
+#include <stdio.h>
 
 #define ChartNumDataPoints 20
 
@@ -169,6 +170,6 @@ void vario_display_showPopUp(PopUpConfig_t configData);
 
 /*** Screens Implemented in "Widget_Vario_Screens.c" ***/
 void vario_display_PowerOffScreen();
-void vario_display_FlightStatistics();
+void vario_display_FlightStatistics(FILE *igcFile, char *fileName);
 
 #endif

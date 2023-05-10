@@ -15,7 +15,8 @@ typedef enum {
     IGC_VXA,
     IGC_GSP,
     IGC_CCO,
-    IGC_HDT
+    IGC_HDT,
+    IGC_UNKNOWN
 } IFieldTypeIGC;
 
 //translated from go in c from: https://github.com/ezgliding/goigc
@@ -61,6 +62,7 @@ typedef struct Track_t
 } Track_t;
 
 int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile);
+void Get_duration_diff(TimeIGC_t start_time, TimeIGC_t end_time, uint8_t *hours, uint8_t *minutes);
 
 
 #endif

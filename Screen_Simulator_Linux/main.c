@@ -45,9 +45,25 @@ void open_ReadFile()
     }
 
 	FILE* fileptr;
-	fileptr = fopen("FlightLong.IGC", "r");
+	fileptr = fopen("IGC/IGCbsLKve.IGC", "r");
+    if (fileptr == NULL)
+    {
+        int error = errno; 
+        printf("Error %d \n", error);
+        return;
+    }
     Track_t track;
-    ParseIGCFile(&track, 50, fileptr);
+    if(ParseIGCFile(&track, 50, fileptr) != 0) {
+        printf("Failed to parse IGC File\n");
+    }
+    fclose(fileptr);
+    fileptr = fopen("GPSLOG.txt", "w");
+    fprintf(fileptr, "latitude,longitude\n");
+    for (size_t i = 0; i < track.sizeTrackPoints; i++)
+    {
+        fprintf(fileptr ,"%.6f,%.6f\n", track.trackPoints[i].lat, track.trackPoints[i].lon);
+    }
+    
     fclose(fileptr);
 	size_t bufferSize;
 	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode

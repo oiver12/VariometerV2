@@ -4,8 +4,15 @@
 #include <limits.h>
 #include <errno.h>
 #include <ctype.h>
+#include "Util.h"
+#include <math.h>
+#include "FIFO.h"
 
 #define MAX_LINELENGTH 256
+#define POINTS_MEAN_VARIO 5
+#define VARIO_MAXSINKCLIMB 10
+
+fifo_t vario_fifo;
 
 #define ERROR_CHECK(val) ({if(val != 0) return 1;})
 
@@ -66,7 +73,7 @@ static int floatFROMDMD(const char* dmd, float* valueRad)
         ERROR_CHECK(str2int(&degress, tempBuffer));
         sliceString(dmd, tempBuffer, 2, 2);
         ERROR_CHECK(str2int(&minutes, tempBuffer));
-        sliceString(dmd, tempBuffer, 4, 2);
+        sliceString(dmd, tempBuffer, 4, 3);
         ERROR_CHECK(str2int(&dminutes, tempBuffer));
     }
     else if (dmd[0] == 'W' || dmd[0] == 'E')
@@ -111,11 +118,10 @@ static int parseTime(const char* timeString, TimeIGC_t* date)
     date->hour = hour;
     date->minute = minute;
     date->second = second;
-    printf("H: %i, M: %i, S: %i \n", hour, minute, second);
     return 0;
 }
 
-static int parseB(const char* line, TrackPointIGC_t* point)
+static int parseB(const char* line, Track_t* track, TrackPointIGC_t* point, IFieldPointIGC_t* IFields)
 {
     if(point == NULL)
     {
@@ -146,12 +152,41 @@ static int parseB(const char* line, TrackPointIGC_t* point)
         printf("Invalid fix validity: %s", line);
     }
     //Parse PressureAlt
-    sliceString(line, tempBuffer, 25, 5);
-    ERROR_CHECK(str2int(&point->pressureAlt, tempBuffer));
+    ERROR_CHECK(sliceStringToInt(&point->pressureAlt, line, 25, 5));
     //Parse GNSSAlt
-    sliceString(line, tempBuffer, 30, 5);
-    ERROR_CHECK(str2int(&point->gnssAlt, tempBuffer));
-    //TODO: Parse I fields
+    ERROR_CHECK(sliceStringToInt(&point->gnssAlt, line, 30, 5));
+    for (size_t i = 0; i < track->sizeIFields; i++)
+    {
+        size_t sizeNumber =  track->IFields[i].posEnd - track->IFields[i].posStart + 1;
+        int field;
+        int posStart = track->IFields[i].posStart -1;
+        ERROR_CHECK(sliceStringToInt(&field, line, posStart, sizeNumber));
+        IFields[i] = field;
+    }
+    return 0;
+}
+
+static int getIFieldType(const char* Field, IFieldTypeIGC *type)
+{
+    if(strlen(Field) != 3)
+    {
+        printf("Couldn't parse IField Type\n");
+        return 1;
+    }
+    if(strcmp(Field, "FXA") == 0)
+        *type = IGC_FXA;
+    else if(strcmp(Field, "VXA") == 0)
+        *type = IGC_VXA;
+    else if(strcmp(Field, "GSP") == 0)
+        *type = IGC_GSP;
+    else if(strcmp(Field, "CCO") == 0)
+        *type = IGC_CCO;
+    else if(strcmp(Field, "HDT") == 0)
+        *type = IGC_HDT;
+    else
+    {
+        *type = IGC_UNKNOWN;
+    }
     return 0;
 }
 
@@ -163,64 +198,154 @@ static int parseI(const char* line, Track_t *track)
     }
     int n;
     ERROR_CHECK(sliceStringToInt(&n, line, 1, 2));
-    if(strlen(n) != n*7+1) 
+    if(strlen(line) != n*7+1 && strlen(line) != n*7+5) 
     {
         printf("Wrong I Field Length\n");
         return 1;
     }
-    track->IFields =  malloc(sizeof(IFieldIGC_t) * n);
-    if(&track->IFields == NULL)
+    if(track->IFields == NULL)
+        track->IFields =  malloc(sizeof(IFieldIGC_t) * n);
+    if(track->IFields == NULL)
     {
-        printf("Couldn't allocate memory");
+        printf("Couldn't allocate memory for IFields\n");
         return 1;
     }
     char buffer[4];
+    track->sizeIFields = n;
     for (size_t i = 0; i < n; i++)
     {
         int s = i*7+3;
         int start, end;
-        ERROR_CHECK(sliceStringToInt(start, line, s, 2));
-        ERROR_CHECK(sliceStringToInt(end, line, s+2, 2));
+        ERROR_CHECK(sliceStringToInt(&start, line, s, 2));
+        ERROR_CHECK(sliceStringToInt(&end, line, s+2, 2));
         sliceString(line, buffer, s+4, 3);
+        ERROR_CHECK(getIFieldType(buffer, &track->IFields[i].type));
+        track->IFields[i].posStart = start;
+        track->IFields[i].posEnd = end;
     }
-    
+    return 0;
 }
 
-void updateFlightStats(TrackPointIGC_t trackPoint, Track_t *track)
+void updateFlightStats(TrackPointIGC_t trackPoint, TrackPointIGC_t previousTrackPoint, Track_t *track)
 {
+    static float sumVertVel = 0.0f;
     if(trackPoint.FixValidity)
     {
-        if(track->flightStats.altitudeMax < trackPoint.gnssAlt)
-            track->flightStats.altitudeMax = trackPoint.gnssAlt;
-        if(track->flightStats.altitudeMin > trackPoint.gnssAlt)
-            track->flightStats.altitudeMin = trackPoint.gnssAlt;
+        track->flightStats.altitudeMax = fmaxf(trackPoint.gnssAlt, track->flightStats.altitudeMax);
+        track->flightStats.altitudeMin = fminf(trackPoint.gnssAlt, track->flightStats.altitudeMin);
+        if(previousTrackPoint.FixValidity)
+        {
+            track->flightStats.distFlight += GET_DISTANCEFAST(trackPoint.lat, trackPoint.lon, previousTrackPoint.lat, previousTrackPoint.lon);
+        }
     }
+    float vario = (float)trackPoint.pressureAlt - (float)previousTrackPoint.pressureAlt;
+    if(vario > (float)VARIO_MAXSINKCLIMB || vario < -(float)VARIO_MAXSINKCLIMB)
+        return;
+    float temp;
+    if (fifo_is_full(vario_fifo))
+    {
+        fifo_get(vario_fifo, &temp);
+        sumVertVel -= temp;
+    }
+    sumVertVel += vario;
+    fifo_add(vario_fifo, &vario);
+    if(sumVertVel / (float)POINTS_MEAN_VARIO < -30.0f)
+    {
+        printf("Heree\n");
+    }
+    track->flightStats.maxVelX = fmaxf(sumVertVel / (float)POINTS_MEAN_VARIO, track->flightStats.maxVelX);
+    track->flightStats.minVelX = fminf(sumVertVel / (float)POINTS_MEAN_VARIO, track->flightStats.minVelX);
 }
 
 int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
 {   
+    printf("Start parse IGC \n");
     char line[MAX_LINELENGTH];
     if (igcFile == NULL)
         return 1;
-    memset(&track->flightStats, 0, sizeof(flight_stats_t));
-    track->trackPoints = NULL;
-    track->sizeTrackPoints = 0;
-    TrackPointIGC_t tempPoint;
+    //Determine total points in track, so that we can sample the points in the second run
     size_t totalPoints = 0;
+    memset(track, 0, sizeof(Track_t));
+    while (fgets(line, sizeof(line), igcFile)) {
+        if(line[0] == 'B')
+            totalPoints++;
+        if(line[0] == 'I')
+            ERROR_CHECK(parseI(line, track));
+    }
+    fseek(igcFile, 0, SEEK_SET);
+    memset(&track->flightStats, 0, sizeof(flight_stats_t));
+    if(vario_fifo == NULL)
+        vario_fifo = fifo_create(POINTS_MEAN_VARIO, sizeof(float));
+    track->flightStats.altitudeMin = 100000;
+    track->flightStats.minVelX = 1000;
+    track->trackPoints = NULL;
+    if(maxSizeTrackPoints > totalPoints)
+        track->sizeTrackPoints = totalPoints;
+    else
+        track->sizeTrackPoints = maxSizeTrackPoints;
+    track->trackPoints = malloc(sizeof(TrackPointIGC_t)*track->sizeTrackPoints);
+    int k = totalPoints / maxSizeTrackPoints;
+    int countPoints = 0; 
+    int countAddedPoints = 0;
+    TrackPointIGC_t tempPoint;
+    TrackPointIGC_t tempPointPrev;
+    tempPointPrev.FixValidity = false;
+    IFieldPointIGC_t IFields[track->sizeIFields];
     while (fgets(line, sizeof(line), igcFile)) {
         switch(line[0]) {
             case 'B':
-                ERROR_CHECK(parseB(line, &tempPoint));
-                updateFlightStats(tempPoint, track);
-                totalPoints++;
+                if(maxSizeTrackPoints > totalPoints || countPoints%k == 0)
+                {
+                    if(countAddedPoints == track->sizeTrackPoints)
+                    {
+                        countPoints++;
+                        //printf("This sould not happen. countPoints: %i, totalPoints: %i, countAddedPoints%i\n", countPoints, (int)totalPoints, (int)countAddedPoints);
+                        break;
+                    }
+                    track->trackPoints[countAddedPoints].IFields = malloc(sizeof(IFieldPointIGC_t)*track->sizeIFields);
+                    ERROR_CHECK(parseB(line, track, &track->trackPoints[countAddedPoints], track->trackPoints[countAddedPoints].IFields));
+                    updateFlightStats(track->trackPoints[countAddedPoints], tempPointPrev, track);
+                    tempPointPrev = track->trackPoints[countAddedPoints];
+                    countPoints++;
+                    countAddedPoints++;
+                    break;
+                }
+                ERROR_CHECK(parseB(line, track, &tempPoint, IFields));
+                updateFlightStats(tempPoint, tempPointPrev, track);
+                tempPointPrev = tempPoint;
+                countPoints++;
                 break;
             case 'I':
-
+                ERROR_CHECK(parseI(line, track));
+                break;
             default:
                 break;
         }
     }
-    //TODO: Go trough it again. Set trackPoints in track with maxSizeTrackPoints
-    //size_t size = sizeof(TrackPointIGC_t) * track->sizeTrackPoints + sizeof(Track_t);
+    track->flightStats.takeOffPosition.lat = track->trackPoints[0].lat;
+    track->flightStats.takeOffPosition.lon = track->trackPoints[0].lon;
+    //TODO: Take the last Valid GNSS Alt
+    track->flightStats.takeOffPosition.alt = track->trackPoints[0].gnssAlt;
+
+    track->flightStats.takeOffPosition.lat = track->trackPoints[track->sizeTrackPoints-1].lat;
+    track->flightStats.takeOffPosition.lon = track->trackPoints[track->sizeTrackPoints-1].lon;
+    //TODO: Take the first Valid GNSS Alt
+    track->flightStats.takeOffPosition.alt = track->trackPoints[track->sizeTrackPoints-1].gnssAlt;
+    printf("End parse IGC \n");
     return 0;
+}
+
+void Get_duration_diff(TimeIGC_t start_time, TimeIGC_t end_time, uint8_t *hours, uint8_t *minutes) {
+    int total_start_minutes = start_time.hour * 60 + start_time.minute;
+    int total_end_minutes = end_time.hour * 60 + end_time.minute;
+    int total_diff_minutes = total_end_minutes - total_start_minutes;
+
+    *hours = total_diff_minutes / 60;
+    *minutes = total_diff_minutes % 60;
+}
+
+int Get_duration_diff_seconds(TimeIGC_t start_time, TimeIGC_t end_time) {
+    int seconds1 = start_time.hour * 3600 + start_time.minute * 60 + start_time.second;
+    int seconds2 = end_time.hour * 3600 + end_time.minute * 60 + end_time.second;
+    return seconds2 - seconds1;
 }

@@ -19,6 +19,7 @@ typedef enum AlignementX{
 void DrawWidgetBone(WidgetData* widget, const char* title);
 //Draw Standardtext with Alignement TOP, LEFT
 void DrawTextWithOffset(WidgetData* widget, const char* text, uint16_t offsetX, uint16_t offsetY,sFONT* font, bool redrawBackground);
-void DrawTextWithAlign(WidgetData* widget, const char* text, uint16_t offsetX, uint16_t offsetY,sFONT* font, bool redrawBackground, AlignementX_t alignX, AlignementY_t alignY);
+void DrawTextWithAlignOffset(WidgetData* widget, const char* text, uint16_t offsetX, uint16_t offsetY,sFONT* font, bool redrawBackground, AlignementX_t alignX, AlignementY_t alignY);
+void DrawTextWithAlign(const char* text, uint16_t offsetX, uint16_t offsetY,sFONT* font, bool redrawBackground, AlignementX_t alignX, AlignementY_t alignY);
 
 #endif
