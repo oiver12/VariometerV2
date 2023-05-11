@@ -28,7 +28,7 @@ vario_state_Simulation* bufferSimulation;
 
 void open_ReadFile()
 {
-    char cwd[5000];
+    char cwd[500];
     //Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
     if (getcwd(cwd, sizeof(cwd)) != NULL) 
     {
@@ -45,7 +45,7 @@ void open_ReadFile()
     }
 
 	FILE* fileptr;
-	fileptr = fopen("IGC/IGCbsLKve.IGC", "r");
+	fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
     if (fileptr == NULL)
     {
         int error = errno; 
@@ -53,7 +53,8 @@ void open_ReadFile()
         return;
     }
     Track_t track;
-    if(ParseIGCFile(&track, 50, fileptr) != 0) {
+    memset(&track, 0, sizeof(Track_t));
+    if(ParseIGCFile(&track, 10, fileptr, false, false) != 0) {
         printf("Failed to parse IGC File\n");
     }
     fclose(fileptr);
@@ -65,6 +66,7 @@ void open_ReadFile()
     }
     
     fclose(fileptr);
+    FreeTrackFile(&track);
 	size_t bufferSize;
 	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
     if (fileptr == NULL)

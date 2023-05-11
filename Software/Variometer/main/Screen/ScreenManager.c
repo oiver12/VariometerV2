@@ -9,15 +9,7 @@
 #include "Display_Vario.h"
 #include "RenderSystem.h"
 #include "assets/assets.h"
-
-WidgetData widgetData_Audio_Settings[2] = {
-        {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
-        {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
-};
-
-WidgetData widgetData_Config_Settings[1] = {
-        {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
-};
+#include "SettingsManager.h"
 
 Vario_Screen_Manager_t screenManagerInstance;
 static SemaphoreHandle_t buffer_Mutex = NULL;
@@ -77,74 +69,6 @@ void ScreenManager_draw_status_bar()
     Paint_DrawString_EN(Paint.Width - 26 - stringWidth, 8, buffer, &Font16, WHITE, BLACK, FALSE);
 }
 
-static void init_SettingsWidgets()
-{
-    WidgetData pageButtonSettingsWidget[2] = {
-        {.x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Audio, .extraStyle = 0},
-        {.x = 10, .y = 67, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Config, .extraStyle = 0}
-    };
-    WidgetData backButtonWidget = { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = 0 };
-
-    /* Init Page Buttons Setting Widgets */
-    widget_Settings_linkedList* backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
-    backButtonWidget.type = WidgetContent_Settings_PageButton;
-    backButtonItem->data = backButtonWidget;
-    screenManagerInstance.settingsScreen.headListPageButtons = backButtonItem;
-    screenManagerInstance.settingsScreen.topFielPageButtons = backButtonItem;
-    widget_Settings_linkedList* prev = backButtonItem;
-    widget_Settings_linkedList* listElement;
-    for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
-    {
-        listElement = calloc(1, sizeof(widget_Settings_linkedList));
-        listElement->prev = prev;
-        prev->next = listElement;
-        listElement->data = pageButtonSettingsWidget[i];
-        listElement->data.x = 10;
-        prev = listElement;
-    }
-    //make it circular (skip to to top when all the way down)
-    listElement->next = backButtonItem;
-    backButtonItem->prev = listElement;
-
-    /* Init Audio Setting Widgets */
-    backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
-    backButtonWidget.type = WidgetContent_Settings_PageButton_Audio;
-    backButtonItem->data = backButtonWidget;
-    screenManagerInstance.settingsScreen.headListAudio = backButtonItem;
-    screenManagerInstance.settingsScreen.topFieldAudio = backButtonItem;
-    prev = backButtonItem;
-    for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
-    {
-        listElement = calloc(1, sizeof(widget_Settings_linkedList));
-        listElement->prev = prev;
-        prev->next = listElement;
-        listElement->data = widgetData_Audio_Settings[i];
-        listElement->data.x = 10;
-        prev = listElement;
-    }
-    listElement->next = backButtonItem;
-    backButtonItem->prev = listElement;
-
-    /* Init Config Setting Widget */
-    backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
-    backButtonWidget.type = WidgetContent_Settings_PageButton_Config;
-    backButtonItem->data = backButtonWidget;
-    screenManagerInstance.settingsScreen.headListConfig = backButtonItem;
-    screenManagerInstance.settingsScreen.topFieldConfig = backButtonItem;
-    prev = backButtonItem;
-    for (size_t i = 0; i < sizeof(widgetData_Config_Settings) / sizeof(WidgetData); i++)
-    {
-        listElement = calloc(1, sizeof(widget_Settings_linkedList));
-        listElement->prev = prev;
-        prev->next = listElement;
-        listElement->data = widgetData_Config_Settings[i];
-        listElement->data.x = 10;
-        prev = listElement;
-    }
-    listElement->next = backButtonItem;
-    backButtonItem->prev = listElement;
-}
-
 /* Initialisiere den Bildschirm Manager(initialisiere eine Singleton)
 * Zeichne auch die Status Bar
 */
@@ -160,7 +84,7 @@ void ScreenManager_init(SemaphoreHandle_t semaphore)
 
     init_WidgetHandler();
 
-    init_SettingsWidgets();
+    Init_SettingsWidgets(semaphore);
 }
 
 //TODO: Implement this function. Free different buffers
@@ -234,168 +158,6 @@ bool ScreenManager_update()
     return false;
 }
 
-static void draw_Settings_Scrollbar()
-{
-    uint32_t currY = 28;
-    widget_Settings_linkedList* startElement = screenManagerInstance.settingsScreen.topFielPageButtons;
-    if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Audio)
-    {
-        startElement = screenManagerInstance.settingsScreen.topFieldAudio;
-    }
-    else if (screenManagerInstance.settingsScreen.currPage == Settings_Page_Config)
-    {
-        startElement = screenManagerInstance.settingsScreen.topFieldConfig;
-    }
-    Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
-    widget_Settings_linkedList* element = startElement;
-    do
-    {
-        element->data.y = currY;
-        if (screenManagerInstance.settingsScreen.hoveredField != element)
-            vario_display_add_settings_widget(&element->data, screenManagerInstance.settingsScreen.currPage, false, screenManagerInstance.settingsScreen.selectedField == element, false);
-        currY += element->data.h;
-        element = element->next;
-    } while(element != startElement && currY + element->data.h <= Paint.Height);
-    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, screenManagerInstance.settingsScreen.selectedField == element, false);
-}
-
-static void settings_enter_press()
-{
-    //Erste Page Button Seite
-    if (screenManagerInstance.settingsScreen.currPage == Settings_Page_PageButtons)
-    {
-        switch (screenManagerInstance.settingsScreen.hoveredField->data.type)
-        {
-        case WidgetContent_Settings_PageButton:
-            screenManagerInstance.screenMode = ScreenMode_Widget;
-            Screen_redraw_Screen();
-            rendering_Update(true);
-            return;
-        case WidgetContent_Settings_PageButton_Audio:
-            screenManagerInstance.settingsScreen.currPage = Settings_Page_Audio;
-            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFieldAudio;
-            break;
-        case WidgetContent_Settings_PageButton_Config:
-            screenManagerInstance.settingsScreen.currPage = Settings_Page_Config;
-            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFieldConfig;
-            break;
-        default:
-            printf("Page Button not found\n");
-            break;
-        }
-        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        draw_Settings_Scrollbar();
-        xSemaphoreGive(buffer_Mutex);
-        rendering_Push(false);
-    }
-    else
-    {
-        //deselect field
-        if (screenManagerInstance.settingsScreen.selectedField)
-        {
-            screenManagerInstance.settingsScreen.selectedField = NULL;
-            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
-            xSemaphoreGive(buffer_Mutex);
-            rendering_Push(false);
-        }
-        else
-        {
-            if (screenManagerInstance.settingsScreen.hoveredField->data.style == Widget_settings_BackButton)
-            {
-                screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
-                screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
-                xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-                draw_Settings_Scrollbar();
-                xSemaphoreGive(buffer_Mutex);
-                rendering_Push(false);
-                return;
-            }
-            //select field
-            screenManagerInstance.settingsScreen.selectedField = screenManagerInstance.settingsScreen.hoveredField;
-            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-            vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.selectedField->data, screenManagerInstance.settingsScreen.currPage, true, true, false);
-            xSemaphoreGive(buffer_Mutex);
-            printf("Finished\n");
-            rendering_Push(false);
-        }
-    }
-}
-
-void ScreenManager_deselctSettingsWidget()
-{
-    screenManagerInstance.settingsScreen.selectedField = NULL;
-    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-    vario_display_add_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false, true);
-    xSemaphoreGive(buffer_Mutex);
-    rendering_Push(false);
-}
-
-static void ScreenManager_openSettings()
-{
-    xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-    Paint_Clear(WHITE);
-    ScreenManager_draw_status_bar();
-    screenManagerInstance.screenMode = ScreenMode_Settings;
-    screenManagerInstance.settingsScreen.currPage = Settings_Page_PageButtons;
-    screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.topFielPageButtons;
-    screenManagerInstance.settingsScreen.selectedField = NULL;
-    draw_Settings_Scrollbar();
-    xSemaphoreGive(buffer_Mutex);
-    rendering_Push(true);
-}
-
-static void settings_up_press()
-{
-    if (!screenManagerInstance.settingsScreen.selectedField)
-    {
-        if (screenManagerInstance.settingsScreen.hoveredField->prev)
-        {
-            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
-            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->prev;
-            //we are hovering a field
-            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
-            xSemaphoreGive(buffer_Mutex);
-            rendering_Push(false);
-        }
-    }
-    else
-    {
-        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        //change Value in Field
-        vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_up);
-        xSemaphoreGive(buffer_Mutex);
-        rendering_Push(false);
-    }
-}
-
-static void settings_down_press()
-{
-    if (!screenManagerInstance.settingsScreen.selectedField)
-    {
-        //we are hovering a field
-        if (screenManagerInstance.settingsScreen.hoveredField->next)
-        {
-            //TODO: Go to top of list, when last element
-            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, false, false);
-            screenManagerInstance.settingsScreen.hoveredField = screenManagerInstance.settingsScreen.hoveredField->next;
-            vario_display_select_settings_widget(&screenManagerInstance.settingsScreen.hoveredField->data, screenManagerInstance.settingsScreen.currPage, true, false);
-            xSemaphoreGive(buffer_Mutex);
-            rendering_Push(false);
-        }
-    }
-    else
-    {
-        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        //change Value in Field
-        vario_display_settings_widget_handle_input(&screenManagerInstance.settingsScreen.selectedField->data, Button_Direction_down);
-        xSemaphoreGive(buffer_Mutex);
-        rendering_Push(false);
-    }
-}
-
 /*
 * Wenn der PowerButton gedrüct wird, kann entweder das Menu oder das Abschalten angezeigt werden
 */
@@ -415,7 +177,7 @@ void ScreenManager_powerButtonPressed(bool longPress)
         else
         {
             if (screenManagerInstance.screenMode == ScreenMode_Widget)
-                ScreenManager_openSettings();
+                SettingsManager_openSettings();
             else if (screenManagerInstance.screenMode == ScreenMode_Settings)
             {
                 screenManagerInstance.screenMode = ScreenMode_Widget;
@@ -460,7 +222,7 @@ void ScreenManager_DownArrowPressed()
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
-        settings_down_press();
+        SettingsManager_down_press();
     }
 }
 
@@ -486,7 +248,7 @@ void ScreenManager_UpArrowPressed()
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
-        settings_up_press();
+        SettingsManager_up_press();
     }
 }
 
@@ -501,7 +263,7 @@ void ScreenManager_EnterKeyPressed()
     }
     else if (screenManagerInstance.screenMode == ScreenMode_Settings)
     {
-        settings_enter_press();
+        SettingsManager__enter_press();
     }
 }
 
@@ -542,4 +304,9 @@ void ScreenManager_closePopUp()
     screenManagerInstance.screenMode = ScreenMode_Widget;
     Screen_redraw_Screen();
     rendering_Update(false);
+}
+
+void ScreenManager_setMode(ScreenMode mode)
+{
+    screenManagerInstance.screenMode = mode;
 }

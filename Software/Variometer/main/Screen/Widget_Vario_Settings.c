@@ -29,16 +29,27 @@ static void add_Settings_PageButton_Widget(WidgetData* widget, bool hovered, Set
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
     
     Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-    if (widget->type == WidgetContent_Settings_PageButton_Audio)
+    char* buffer;
+    const unsigned char* symbol;
+    switch(widget->type)
     {
-        Paint_DrawBitMap_Paste(gImage_Speaker, widget->x + 10, widget->y + widget->h / 2 - 10, 20, 20, false);
-        Paint_DrawString_EN(widget->x + 35, widget->y + 14, "Audio", &Font16, WHITE, BLACK, TRUE);
+        case WidgetContent_Settings_PageButton_Audio:
+            buffer = "Audio";
+            symbol = gImage_Speaker;
+            break;
+        case WidgetContent_Settings_PageButton_Config:
+            buffer = "Config";
+            symbol = gImage_ConfigRad;
+            break;
+        case WidgetContent_Settings_PageButton_Flights:
+            buffer = "Flights";
+            symbol = gImage_ConfigRad;
+            break;
+        default:
+            return;
     }
-    else if (widget->type == WidgetContent_Settings_PageButton_Config)
-    {
-        Paint_DrawBitMap_Paste(gImage_ConfigRad, widget->x + 10, widget->y + widget->h / 2 - 10, 20, 20, false);
-        Paint_DrawString_EN(widget->x + 35, widget->y + 14, "Config", &Font16, WHITE, BLACK, TRUE);
-    }
+    Paint_DrawBitMap_Paste(symbol, widget->x + 10, widget->y + widget->h / 2 - 10, 20, 20, false);
+    Paint_DrawString_EN(widget->x + 35, widget->y + 14, buffer, &Font16, WHITE, BLACK, TRUE);
     Paint_DrawBitMap_Paste(gImage_RightArrow, widget->x + widget->w - 30, widget->y + widget->h / 2 - 7, 15, 15, false);
 }
 

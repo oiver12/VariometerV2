@@ -34,7 +34,8 @@ typedef enum {
 typedef enum {
     Settings_Page_PageButtons,
     Settings_Page_Audio,
-    Settings_Page_Config
+    Settings_Page_Config,
+    Settings_Page_Flights
 } Settings_Page_t;
 
 //Wie sieht das Widget aus (TextBox, Compass, etc.)
@@ -86,6 +87,7 @@ typedef enum
     WidgetContent_Settings_PageButton,
     WidgetContent_Settings_PageButton_Audio,
     WidgetContent_Settings_PageButton_Config,
+    WidgetContent_Settings_PageButton_Flights,
     WidgetContent_Settings_VolumeSlider,
     WidgetContent_Settings_SoundLiftThreshold,
     WidgetContent_Settings_SoundSinkThreshold,
@@ -170,6 +172,7 @@ void vario_display_showPopUp(PopUpConfig_t configData);
 
 /*** Screens Implemented in "Widget_Vario_Screens.c" ***/
 void vario_display_PowerOffScreen();
+void vario_display_SettingsFlightsList();
 void vario_display_FlightStatistics(FILE *igcFile, char *fileName);
 
 #endif

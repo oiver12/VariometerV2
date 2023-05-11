@@ -4,7 +4,17 @@
 #include <esp_err.h>
 #include "sdmmc_cmd.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <stdint.h>
 
+#define MAX_FILENAME 100
+
+typedef struct FlightFile_t {
+    char fileName[MAX_FILENAME];
+    long timeStamp;
+} FlightFile_t;
 typedef struct {
     bool cardInit;
     char *Mount_Point;
@@ -17,5 +27,6 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char* directory, const char* fileN
 bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *fileName);
 esp_err_t writeToFile_sdcard(sdcard_t *sdcard);
 uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard);
+void GetFlights(int startIndex, FlightFile_t flightFile[6], uint16_t* foundAfterStart);
 
 #endif

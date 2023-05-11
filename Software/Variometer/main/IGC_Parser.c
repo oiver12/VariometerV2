@@ -133,6 +133,7 @@ static int parseB(const char* line, Track_t* track, TrackPointIGC_t* point, IFie
         printf("Line not enough long\n");
         return 1;
     }
+
     char tempBuffer[MAX_LINELENGTH];
     //Parse Latitude
     sliceString(line, tempBuffer, 7, 8);
@@ -190,7 +191,7 @@ static int getIFieldType(const char* Field, IFieldTypeIGC *type)
     return 0;
 }
 
-static int parseI(const char* line, Track_t *track)
+static int parseI(const char* line, Track_t *track, bool mallocIFields)
 {
     if(strlen(line) < 3) 
     {
@@ -203,8 +204,10 @@ static int parseI(const char* line, Track_t *track)
         printf("Wrong I Field Length\n");
         return 1;
     }
-    if(track->IFields == NULL)
+    if(track->IFields == NULL && mallocIFields)
         track->IFields =  malloc(sizeof(IFieldIGC_t) * n);
+    else if(!mallocIFields)
+        track->IFields = NULL;
     if(track->IFields == NULL)
     {
         printf("Couldn't allocate memory for IFields\n");
@@ -212,16 +215,19 @@ static int parseI(const char* line, Track_t *track)
     }
     char buffer[4];
     track->sizeIFields = n;
-    for (size_t i = 0; i < n; i++)
+    if(track->IFields != NULL)
     {
-        int s = i*7+3;
-        int start, end;
-        ERROR_CHECK(sliceStringToInt(&start, line, s, 2));
-        ERROR_CHECK(sliceStringToInt(&end, line, s+2, 2));
-        sliceString(line, buffer, s+4, 3);
-        ERROR_CHECK(getIFieldType(buffer, &track->IFields[i].type));
-        track->IFields[i].posStart = start;
-        track->IFields[i].posEnd = end;
+        for (size_t i = 0; i < n; i++)
+        {
+            int s = i*7+3;
+            int start, end;
+            ERROR_CHECK(sliceStringToInt(&start, line, s, 2));
+            ERROR_CHECK(sliceStringToInt(&end, line, s+2, 2));
+            sliceString(line, buffer, s+4, 3);
+            ERROR_CHECK(getIFieldType(buffer, &track->IFields[i].type));
+            track->IFields[i].posStart = start;
+            track->IFields[i].posEnd = end;
+        }
     }
     return 0;
 }
@@ -257,20 +263,24 @@ void updateFlightStats(TrackPointIGC_t trackPoint, TrackPointIGC_t previousTrack
     track->flightStats.minVelX = fminf(sumVertVel / (float)POINTS_MEAN_VARIO, track->flightStats.minVelX);
 }
 
-int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
+
+int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile, bool pointStackInit, bool parseIFields)
 {   
     printf("Start parse IGC \n");
     char line[MAX_LINELENGTH];
     if (igcFile == NULL)
         return 1;
-    //Determine total points in track, so that we can sample the points in the second run
-    size_t totalPoints = 0;
-    memset(track, 0, sizeof(Track_t));
-    while (fgets(line, sizeof(line), igcFile)) {
-        if(line[0] == 'B')
-            totalPoints++;
-        if(line[0] == 'I')
-            ERROR_CHECK(parseI(line, track));
+    track->pointStackInit = pointStackInit;
+    if(track->totalPoints == 0)
+    {
+        //Determine total points in track, so that we can sample the points in the second run
+        memset(track, 0, sizeof(Track_t));
+        while (fgets(line, sizeof(line), igcFile)) {
+            if(line[0] == 'B')
+                track->totalPoints++;
+            if(line[0] == 'I')
+                ERROR_CHECK(parseI(line, track, parseIFields));
+        }
     }
     fseek(igcFile, 0, SEEK_SET);
     memset(&track->flightStats, 0, sizeof(flight_stats_t));
@@ -278,13 +288,21 @@ int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
         vario_fifo = fifo_create(POINTS_MEAN_VARIO, sizeof(float));
     track->flightStats.altitudeMin = 100000;
     track->flightStats.minVelX = 1000;
-    track->trackPoints = NULL;
-    if(maxSizeTrackPoints > totalPoints)
-        track->sizeTrackPoints = totalPoints;
+    if(maxSizeTrackPoints > track->totalPoints)
+        track->sizeTrackPoints = track->totalPoints;
     else
         track->sizeTrackPoints = maxSizeTrackPoints;
-    track->trackPoints = malloc(sizeof(TrackPointIGC_t)*track->sizeTrackPoints);
-    int k = totalPoints / maxSizeTrackPoints;
+
+    if(!pointStackInit)
+        track->trackPoints = malloc(sizeof(TrackPointIGC_t)*track->sizeTrackPoints);
+    
+    if(track->trackPoints == NULL)
+    {
+        printf("Couldn' allocate TrackPoints or not on Stack\n");
+        return 1;
+    }
+
+    int k = track->totalPoints / maxSizeTrackPoints;
     int countPoints = 0; 
     int countAddedPoints = 0;
     TrackPointIGC_t tempPoint;
@@ -294,7 +312,7 @@ int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
     while (fgets(line, sizeof(line), igcFile)) {
         switch(line[0]) {
             case 'B':
-                if(maxSizeTrackPoints > totalPoints || countPoints%k == 0)
+                if(maxSizeTrackPoints > track->sizeTrackPoints || countPoints%k == 0)
                 {
                     if(countAddedPoints == track->sizeTrackPoints)
                     {
@@ -302,8 +320,16 @@ int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
                         //printf("This sould not happen. countPoints: %i, totalPoints: %i, countAddedPoints%i\n", countPoints, (int)totalPoints, (int)countAddedPoints);
                         break;
                     }
-                    track->trackPoints[countAddedPoints].IFields = malloc(sizeof(IFieldPointIGC_t)*track->sizeIFields);
-                    ERROR_CHECK(parseB(line, track, &track->trackPoints[countAddedPoints], track->trackPoints[countAddedPoints].IFields));
+                    if(parseIFields)
+                    {
+                        track->trackPoints[countAddedPoints].IFields = malloc(sizeof(IFieldPointIGC_t)*track->sizeIFields);
+                        ERROR_CHECK(parseB(line, track, &track->trackPoints[countAddedPoints], track->trackPoints[countAddedPoints].IFields));
+                    }
+                    else
+                    {
+                        track->trackPoints[countAddedPoints].IFields = NULL;
+                        ERROR_CHECK(parseB(line, track,  &track->trackPoints[countAddedPoints], IFields));
+                    }
                     updateFlightStats(track->trackPoints[countAddedPoints], tempPointPrev, track);
                     tempPointPrev = track->trackPoints[countAddedPoints];
                     countPoints++;
@@ -314,9 +340,6 @@ int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
                 updateFlightStats(tempPoint, tempPointPrev, track);
                 tempPointPrev = tempPoint;
                 countPoints++;
-                break;
-            case 'I':
-                ERROR_CHECK(parseI(line, track));
                 break;
             default:
                 break;
@@ -332,6 +355,40 @@ int ParseIGCFile(Track_t* track, size_t maxSizeTrackPoints, FILE* igcFile)
     //TODO: Take the first Valid GNSS Alt
     track->flightStats.takeOffPosition.alt = track->trackPoints[track->sizeTrackPoints-1].gnssAlt;
     printf("End parse IGC \n");
+    return 0;
+}
+
+int FreeTrackFile(Track_t* track)
+{
+    if(track->IFields != NULL)
+    {
+        free(track->IFields);
+        for (size_t i = 0; i < track->sizeIFields; i++)
+        {
+            free(&track->trackPoints[i].IFields);
+        }
+    }
+    if(!track->pointStackInit)
+        free(track->trackPoints);
+    return 0;
+}
+
+int SetPointCountFromFile(Track_t* track, FILE* igcFile, size_t maxSizeTrackPoints)
+{
+    char line[MAX_LINELENGTH];
+    if (igcFile == NULL)
+        return 1;
+    //Determine total points in track, so that we can sample the points in the second run
+    track->totalPoints = 0;
+    memset(track, 0, sizeof(Track_t));
+    while (fgets(line, sizeof(line), igcFile)) {
+        if(line[0] == 'B')
+            track->totalPoints++;
+    }
+     if(maxSizeTrackPoints > track->totalPoints)
+        track->sizeTrackPoints = track->totalPoints;
+    else
+        track->sizeTrackPoints = maxSizeTrackPoints;
     return 0;
 }
 

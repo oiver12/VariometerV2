@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include "IGC_Parser.h"
 #include <math.h>
-
-#define MAX_FILENAME 100
+#include "../SDCard.h"
+#include "Widget_Vario.h"
+#include <time.h>
 
 void vario_display_PowerOffScreen()
 {
@@ -23,6 +24,29 @@ void vario_display_PowerOffScreen()
     Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
 }
 
+void vario_display_SettingsFlightsList()
+{
+    WidgetData backButtonWidget = 
+    { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = WidgetContent_Settings_PageButton_Flights, .extraStyle = 0 };
+    Paint_Clear(WHITE);
+    FlightFile_t flighFiles[6];
+    uint16_t fileCount;
+    GetFlights(0, flighFiles, &fileCount);
+    vario_display_add_settings_widget(&backButtonWidget, Settings_Page_Flights, true, false, true);
+    WidgetData widgetFlight = {.x = 10, .y = 67, .w = 459, .h = 35};
+    for (size_t i = 0; i < fileCount; i++)
+    {
+        Paint_DrawRectangle(widgetFlight.x, widgetFlight.y, widgetFlight.x + widgetFlight.w, widgetFlight.y + widgetFlight.h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+        DrawTextWithAlignOffset(&widgetFlight, flighFiles[i].fileName, 5, 5, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
+         struct tm *access_time = gmtime(&flighFiles[i].timeStamp);
+        printf("Last access time of file: %d-%02d-%02d %02d:%02d\n", 
+           access_time->tm_year + 1900, access_time->tm_mon + 1, access_time->tm_mday,
+           access_time->tm_hour, access_time->tm_min);
+        widgetFlight.y += 35;
+    }
+    
+}
+
 void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
 {
     Paint_Clear(WHITE);
@@ -34,9 +58,14 @@ void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
     Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
     DrawTextWithAlign("Height Diagramm", 240, y, &Font16, true, ALIGN_CENTER, ALIGN_MID);
     Track_t track;
-    ParseIGCFile(&track, width, igcFile);
-    int maxHeightDiagramm = track.flightStats.altitudeMax + 50;
-    int minHeightDiagramm = track.flightStats.altitudeMin - 50;
+    memset(&track, 0, sizeof(Track_t));
+    SetPointCountFromFile(&track, igcFile, width);
+    TrackPointIGC_t trackPointsStack[track.sizeTrackPoints];
+    track.trackPoints = trackPointsStack;
+    ParseIGCFile(&track, width, igcFile, true, false);
+    int gapDia = (track.flightStats.altitudeMax - track.flightStats.altitudeMin) * 0.1f;
+    int maxHeightDiagramm = track.flightStats.altitudeMax + gapDia;
+    int minHeightDiagramm = track.flightStats.altitudeMin - gapDia;
     int i = 0;
     while(i < track.sizeTrackPoints && i <= width)
     {
@@ -82,9 +111,9 @@ void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
 
     Paint_DrawRectangle(240, 212, 475, 275, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
     Paint_DrawString_EN(250, 222, "Landung", &Font16, WHITE, BLACK, true);
-    snprintf(buffer, 50, "Time: %i:%i:%i", track.trackPoints[0].time.hour, track.trackPoints[0].time.minute, track.trackPoints[0].time.second);
+    snprintf(buffer, 50, "Time: %i:%i:%i", track.trackPoints[track.sizeTrackPoints -1].time.hour, track.trackPoints[0].time.minute, track.trackPoints[0].time.second);
     Paint_DrawString_EN(255, 242, buffer, &Font12, WHITE, BLACK, true);
-    snprintf(buffer, 50, "Height: %im", track.trackPoints[0].gnssAlt);
+    snprintf(buffer, 50, "Height: %im", track.trackPoints[track.sizeTrackPoints -1].gnssAlt);
     Paint_DrawString_EN(255, 257, buffer, &Font12, WHITE, BLACK, true);
     snprintf(buffer, 50, "Lat: %.2f ", fabsf(track.flightStats.takeOffPosition.lat));
     strcat(buffer, track.flightStats.takeOffPosition.lat < 0 ? "S" : "N");
@@ -92,4 +121,5 @@ void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
     snprintf(buffer, 50, "Lon: %.2f ", fabsf(track.flightStats.takeOffPosition.lon));
     strcat(buffer, track.flightStats.takeOffPosition.lat < 0 ? "W" : "E");
     DrawTextWithAlign(buffer, 465, 257, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    FreeTrackFile(&track);
 }
