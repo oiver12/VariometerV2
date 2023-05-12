@@ -2,6 +2,7 @@
 #include "E_Ink/GUI_Paint.h"
 #include "ScreenManager.h"
 #include "RenderSystem.h"
+#include "../SDCard.h"
 
 WidgetData widgetData_Audio_Settings[2] = {
         {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
@@ -83,6 +84,29 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     }
     listElement->next = backButtonItem;
     backButtonItem->prev = listElement;
+
+    /* Init Flight Setting Widget */
+    backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    backButtonWidget.type = WidgetContent_Settings_PageButton_Flights;
+    backButtonItem->data = backButtonWidget;
+    screenSettingsInstance.headListFlightList = backButtonItem;
+    screenSettingsInstance.topFieldFlightList = backButtonItem;
+    prev = backButtonItem;
+    
+    WidgetData widgetFlight = {.x = 10, .y = 67, .w = 459, .h = 35, .style = Widget_Settings_FlightListElement, .type = WidgetContent_Settings_FlightListElement};
+    for (size_t i = 0; i < SIZE_FLIGHTS; i++)
+    {
+        listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        listElement->prev = prev;
+        prev->next = listElement;
+        listElement->data = widgetFlight;
+        listElement->data.extr_data = calloc(1, sizeof(FlightList_Widget_Data));
+        listElement->data.x = 10;
+        prev = listElement;
+        listElement->data.y += 35;
+    }
+    listElement->next = backButtonItem;
+    backButtonItem->prev = listElement;
 }
 
 static void draw_Settings_Scrollbar()
@@ -96,6 +120,10 @@ static void draw_Settings_Scrollbar()
     else if (screenSettingsInstance.currPage == Settings_Page_Config)
     {
         startElement = screenSettingsInstance.topFieldConfig;
+    }
+    else if (screenSettingsInstance.currPage == Settings_Page_Flights)
+    {
+        startElement = screenSettingsInstance.topFieldFlightList;
     }
     Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
     widget_Settings_linkedList* element = startElement;
@@ -147,11 +175,10 @@ void SettingsManager__enter_press()
             screenSettingsInstance.hoveredField = screenSettingsInstance.topFieldConfig;
             break;
         case WidgetContent_Settings_PageButton_Flights:
-            xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-            vario_display_SettingsFlightsList();
-            xSemaphoreGive(buffer_Mutex);
-            rendering_Push(true);
-            return;
+            screenSettingsInstance.currPage = Settings_Page_Flights;
+            screenSettingsInstance.hoveredField = screenSettingsInstance.topFieldFlightList;
+            GetFlights(0, screenSettingsInstance.topFieldFlightList->next);
+            break;
         default:
             printf("Page Button not found\n");
             break;
@@ -160,6 +187,11 @@ void SettingsManager__enter_press()
         draw_Settings_Scrollbar();
         xSemaphoreGive(buffer_Mutex);
         rendering_Push(false);
+    }
+    else if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    {
+        screenSettingsInstance.currPage = Settings_Page_Flights;
+        draw_Settings_Scrollbar();
     }
     //Button in Setting drin
     else
@@ -185,12 +217,19 @@ void SettingsManager__enter_press()
                 rendering_Push(false);
                 return;
             }
+            else if(screenSettingsInstance.currPage == Settings_Page_Flights)
+            {
+                screenSettingsInstance.currPage = Settings_Page_FlightStatistics;
+                xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+                vario_display_FlightStatistics(((FlightList_Widget_Data*)screenSettingsInstance.hoveredField->data.extr_data)->FlightName);
+                rendering_Push(true);
+                return;
+            }
             //select field
             screenSettingsInstance.selectedField = screenSettingsInstance.hoveredField;
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_add_settings_widget(&screenSettingsInstance.selectedField->data, screenSettingsInstance.currPage, true, true, false);
             xSemaphoreGive(buffer_Mutex);
-            printf("Finished\n");
             rendering_Push(false);
         }
     }
@@ -198,6 +237,11 @@ void SettingsManager__enter_press()
 
 void SettingsManager_up_press()
 {
+    if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    {
+        //TODO: Change Flight Stat Site etc.
+        return;
+    }
     if (!screenSettingsInstance.selectedField)
     {
         if (screenSettingsInstance.hoveredField->prev)
@@ -223,6 +267,11 @@ void SettingsManager_up_press()
 
 void SettingsManager_down_press()
 {
+    if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    {
+        //TODO: implement
+        return;
+    }
     if (!screenSettingsInstance.selectedField)
     {
         //we are hovering a field

@@ -151,13 +151,12 @@ void startRender()
         printf("Can't finde File\n");
         return;
     }
-    vario_display_FlightStatistics(fileptr, "IGC_Flight");
+    //vario_display_FlightStatistics(fileptr, "IGC_Flight");
     fclose(fileptr);
 }
 
 void updateRender()
 {
-    return;
     ScreenManager_update();
 }
 

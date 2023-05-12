@@ -24,31 +24,17 @@ void vario_display_PowerOffScreen()
     Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
 }
 
-void vario_display_SettingsFlightsList()
+void vario_display_FlightStatistics(char *fileName)
 {
-    WidgetData backButtonWidget = 
-    { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = WidgetContent_Settings_PageButton_Flights, .extraStyle = 0 };
-    Paint_Clear(WHITE);
-    FlightFile_t flighFiles[6];
-    uint16_t fileCount;
-    GetFlights(0, flighFiles, &fileCount);
-    vario_display_add_settings_widget(&backButtonWidget, Settings_Page_Flights, true, false, true);
-    WidgetData widgetFlight = {.x = 10, .y = 67, .w = 459, .h = 35};
-    for (size_t i = 0; i < fileCount; i++)
+    char buffer[100];
+    strcpy(buffer, "IGC/");
+    strcat(buffer, fileName);
+    FILE *igcFile = fopen(buffer, "r");
+    if(igcFile == NULL)
     {
-        Paint_DrawRectangle(widgetFlight.x, widgetFlight.y, widgetFlight.x + widgetFlight.w, widgetFlight.y + widgetFlight.h, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-        DrawTextWithAlignOffset(&widgetFlight, flighFiles[i].fileName, 5, 5, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
-         struct tm *access_time = gmtime(&flighFiles[i].timeStamp);
-        printf("Last access time of file: %d-%02d-%02d %02d:%02d\n", 
-           access_time->tm_year + 1900, access_time->tm_mon + 1, access_time->tm_mday,
-           access_time->tm_hour, access_time->tm_min);
-        widgetFlight.y += 35;
+        printf("Couldn't open IGC File\n");
+        return;
     }
-    
-}
-
-void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
-{
     Paint_Clear(WHITE);
     DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
     const int x = 5;
@@ -74,7 +60,6 @@ void vario_display_FlightStatistics(FILE *igcFile, char *fileName)
         Paint_DrawPoint(x + i, heightY, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
         i++;
     }
-    char buffer[50];
     sprintf(buffer, "%im", (int)track.flightStats.altitudeMax);
     Paint_DrawString_EN(5, 50, buffer, &Font12, WHITE, BLACK, true);
     snprintf(buffer, 50, "%im", (int)track.flightStats.altitudeMin);

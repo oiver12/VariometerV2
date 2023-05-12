@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <stdint.h>
+#include "Screen/SettingsManager.h"
 
 #define MAX_FILENAME 100
 
@@ -27,6 +28,6 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char* directory, const char* fileN
 bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *fileName);
 esp_err_t writeToFile_sdcard(sdcard_t *sdcard);
 uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard);
-void GetFlights(int startIndex, FlightFile_t flightFile[6], uint16_t* foundAfterStart);
+void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead);
 
 #endif

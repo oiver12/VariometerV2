@@ -203,7 +203,7 @@ uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard)
     return tmp_free_bytes;
 }
 
-void GetFlights(int startIndex, FlightFile_t flightFile[6], uint16_t* foundAfterStart)
+void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
 {
     DIR *dir;
     struct dirent *ent;
@@ -222,19 +222,23 @@ void GetFlights(int startIndex, FlightFile_t flightFile[6], uint16_t* foundAfter
                 index++;
                 if(index < startIndex)
                     continue;
-                *foundAfterStart += 1;
-                strcpy(flightFile[tookenFiles].fileName, fileName);
-                tookenFiles++;
-                struct stat file_stat;
-                if(stat(fileName, &file_stat) == 0)
+                if(flightListHead == NULL)
                 {
-                    flightFile[tookenFiles].timeStamp = file_stat.st_atime;
+                    printf("Couldn't find next Flight\n");
+                    return;
                 }
+                strcpy(((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName, fileName);
+                flightListHead = flightListHead->next;
+                tookenFiles++;
             }
             if(tookenFiles >= 6)
                 break;
         }
         closedir(dir);
+        if(tookenFiles < 6 && flightListHead)
+        { 
+            ((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName[0] = '\0';
+        }
     }
     else
     {

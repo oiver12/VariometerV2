@@ -4,6 +4,8 @@
 #include "Widget_Vario.h"
 #include "freertos/semphr.h"
 
+#define SIZE_FLIGHTS 6
+
 typedef struct {
     void* prev;
     void* next;
@@ -18,6 +20,8 @@ typedef struct {
     widget_Settings_linkedList* topFieldAudio; //in Scrollbar from Audio field on top
     widget_Settings_linkedList* headListConfig;
     widget_Settings_linkedList* topFieldConfig; //in Scrollbar from Config field on top
+    widget_Settings_linkedList* headListFlightList;
+    widget_Settings_linkedList* topFieldFlightList;
     widget_Settings_linkedList* hoveredField;
     widget_Settings_linkedList* selectedField;
     uint16_t widgetsAddedConfig;

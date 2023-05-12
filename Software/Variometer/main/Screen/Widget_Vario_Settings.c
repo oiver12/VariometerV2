@@ -2,6 +2,7 @@
 #include "E_Ink/GUI_Paint.h"
 #include <stdio.h>
 #include "DeviceContext.h"
+#include "Widget_Vario_Common.h"
 
 const unsigned char gImage_RightArrow[30] = { 0xE7, 0xFE, 0xE3, 0xFE, 0xF1, 0xFE, 0xF8, 0xFE, 0xFC, 0x7E, 0xFE, 0x3E, 0xFF, 0x1E, 0xFF, 0x8E, 0xFF, 0x1E, 0xFE, 0x3E, 0xFC, 0x7E, 0xF8, 0xFE, 0xF1, 0xFE, 0xE3, 0xFE, 0xE7, 0xFE };
 const unsigned char gImage_LeftArrow[30] = { 0xFF, 0xCE, 0xFF, 0x8E, 0xFF, 0x1E, 0xFE, 0x3E, 0xFC, 0x7E, 0xF8, 0xFE, 0xF1, 0xFE, 0xE3, 0xFE, 0xF1, 0xFE, 0xF8, 0xFE, 0xFC, 0x7E, 0xFE, 0x3E, 0xFF, 0x1E, 0xFF, 0x8E, 0xFF, 0xCE }; 
@@ -111,6 +112,17 @@ static void add_Settings_CalibrationPageButton_Widget(WidgetData* widget, bool h
 
 }
 
+static void add_Settings_FlightListElement_Widget(WidgetData* widget, bool hovered, bool selected, bool reRenderRectangle)
+{
+    if(((FlightList_Widget_Data*)widget->extr_data)->FlightName[0] == '\0')
+    {
+        return;
+    }
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h + 1, WHITE, DOT_PIXEL_3X3, reRenderRectangle ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
+    Paint_DrawRectangle(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, BLACK, hovered && !selected ? DOT_PIXEL_3X3 : DOT_PIXEL_1X1, selected ? DRAW_FILL_FULL : DRAW_FILL_EMPTY);
+    DrawTextWithOffset(widget, ((FlightList_Widget_Data*)widget->extr_data)->FlightName, 5, 10, &Font16, true);
+}
+
 void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currPage, bool hovered, bool selected, bool reRenderRectangle)
 {
     switch (widget->style)
@@ -130,8 +142,12 @@ void vario_display_add_settings_widget(WidgetData* widget, Settings_Page_t currP
     case Widget_Settings_CalibrationPageButton:
         add_Settings_CalibrationPageButton_Widget(widget, hovered, selected, reRenderRectangle);
         break;
+    case Widget_Settings_FlightListElement:
+        add_Settings_FlightListElement_Widget(widget, hovered, selected, reRenderRectangle);
+        break;
     default:
         printf("Setting Widget not implemented!\n");
+        break;
     }
 }
 
@@ -190,5 +206,6 @@ void vario_display_settings_widget_handle_input(WidgetData* widget, Button_Direc
 		break;
 	default:
 		printf("Setting Widget not implemented!\n");
+        break;
 	}
 }
