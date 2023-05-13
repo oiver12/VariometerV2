@@ -13,20 +13,20 @@
 static const char *TAG = "SDCard";
 
 #define SDCARD_DETECT 14
+sdcard_t sdCardInstance;
 
 void sdcard_storageCheck(void* params)
 {
-    sdcard_t* sdcard = (sdcard_t*)params;
     while(1)
     {
-        sdcard_remainingSpace_update(sdcard);
+        sdcard_remainingSpace_update();
         vTaskDelay(20000 / portTICK_PERIOD_MS);
     }
 }
 
-esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
+esp_err_t init_sdcard(const char *Mount_Point)
 {
-    if(sdcard->cardInit)
+    if(sdCardInstance.cardInit)
         return ESP_OK;
     // /* Configure SDCard */
     gpio_config_t sdcard_detect_conf = {
@@ -42,7 +42,7 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     
     esp_err_t ret;
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = false,
+        .format_if_mount_failed = true,
         .max_files = 8,
         .allocation_unit_size = 16 * 1024
     };
@@ -78,14 +78,14 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
         return ret;
     }
     ESP_LOGI(TAG, "Filesystem mounted");
-    sdcard->cardInit = true;
-    sdcard->card = card;
-    sdcard->Mount_Point = malloc(strlen(Mount_Point) + 1);
-    strcpy(sdcard->Mount_Point, Mount_Point);
+    sdCardInstance.cardInit = true;
+    sdCardInstance.card = card;
+    sdCardInstance.Mount_Point = malloc(strlen(Mount_Point) + 1);
+    strcpy(sdCardInstance.Mount_Point, Mount_Point);
     /* Get volume information and free clusters of sdcard */
     FATFS *fs;
     uint32_t fre_clust, fre_sect, tot_sect;
-	FRESULT res = f_getfree(sdcard->Mount_Point, &fre_clust, &fs);
+	FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
 	if (res) {
 		printf("Couldn't find out SdCard size\n");
         sdcard_state_vario.freeSpace = 0;
@@ -110,22 +110,27 @@ esp_err_t init_sdcard(sdcard_t *sdcard, const char *Mount_Point)
     sdcard_state_vario.freeSpace = tmp_free_bytes;
     device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
 
-    xTaskCreate(sdcard_storageCheck, "Storage Check", 1024 * 2, sdcard, 2, NULL);
+    xTaskCreate(sdcard_storageCheck, "Storage Check", 1024 * 2, NULL, 2, NULL);
     return ret;
 }
 
-esp_err_t deinit_sdcard(sdcard_t *sdcard)
+bool sdCard_Init()
 {
-    esp_vfs_fat_sdcard_unmount(sdcard->Mount_Point, sdcard->card);
-    free(sdcard->Mount_Point);
+    return sdCardInstance.cardInit;
+}
+
+esp_err_t deinit_sdcard()
+{
+    esp_vfs_fat_sdcard_unmount(sdCardInstance.Mount_Point, sdCardInstance.card);
+    free(sdCardInstance.Mount_Point);
     return ESP_OK;
 }
 
 //TODO: directory not working
-FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileName, const char* openMethod)
+FILE *openFile_sdcard(const char *directory, const char* fileName, const char* openMethod)
 {
     char buffer[100];
-    strcpy(buffer, sdcard->Mount_Point);
+    strcpy(buffer, sdCardInstance.Mount_Point);
     struct stat st = {0};   
     if(directory != NULL)
     {
@@ -156,10 +161,10 @@ FILE *openFile_sdcard(sdcard_t *sdcard, const char *directory, const char* fileN
     return fopen(buffer, openMethod);
 }
 
-bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *fileName)
+bool fileExists_sdcard(const char* directory ,const char *fileName)
 {
-    char buffer[strlen(sdcard->Mount_Point) + strlen(directory) + strlen(fileName) + 2];
-    strcpy(buffer, sdcard->Mount_Point);
+    char buffer[strlen(sdCardInstance.Mount_Point) + strlen(directory) + strlen(fileName) + 2];
+    strcpy(buffer, sdCardInstance.Mount_Point);
     if(directory != NULL)
     {
         strcat(buffer, directory);
@@ -170,16 +175,16 @@ bool fileExists_sdcard(sdcard_t *sdcard, const char* directory ,const char *file
     return stat(buffer, &st) != -1;
 }
 
-uint64_t sdcard_remainingSpace_update(sdcard_t *sdcard)
+uint64_t sdcard_remainingSpace_update()
 {
-    if(!sdcard->cardInit)
+    if(!sdCardInstance.cardInit)
         return 0;
     sd_card_state_t state;
     device_state_get_member(&state, device_state_statusSDCard, false);
 
     FATFS *fs;
     uint32_t fre_clust, fre_sect, tot_sect;
-	FRESULT res = f_getfree(sdcard->Mount_Point, &fre_clust, &fs);
+	FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
 	if (res) {
 		printf("Couldn't find out SdCard size\n");
         state.freeSpace = 0;
@@ -208,6 +213,9 @@ void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
     DIR *dir;
     struct dirent *ent;
     char *extension = ".IGC";
+    char buffer[100];
+    strcpy(buffer, sdCardInstance.Mount_Point);
+    strcat(buffer, "/IGC");
 
     if((dir = opendir("IGC")) != NULL)
     {
@@ -227,6 +235,7 @@ void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
                     printf("Couldn't find next Flight\n");
                     return;
                 }
+                printf("FlighName: %s\n", fileName);
                 strcpy(((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName, fileName);
                 flightListHead = flightListHead->next;
                 tookenFiles++;

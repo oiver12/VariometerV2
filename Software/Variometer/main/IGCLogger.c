@@ -44,7 +44,7 @@ const char * igcHeader[] =
 	"\r\n"
 };
 
-static const char * makeFileName(char *buf, size_t buflength, sdcard_t *sdcard)
+static const char * makeFileName(char *buf, size_t buflength)
 {
 	// name format : YYYY-MM-DD-NRC-XXX-nn.igc
 	// ...
@@ -80,7 +80,7 @@ static const char * makeFileName(char *buf, size_t buflength, sdcard_t *sdcard)
 		// strcat(pathBuf, "/");
 		// strcat(pathBuf, buf);
 
-		if (!fileExists_sdcard(sdcard, directory, buf))
+		if (!fileExists_sdcard(directory, buf))
 			return buf;
 		
 		buf[19] = (i / 10) + '0';
@@ -137,31 +137,27 @@ static void logICGSentence(void *arg)
 	if(count % 10 == 0)
 	{
 		fclose(logger.file);
-		logger.file = openFile_sdcard(logger.sdcard, "/Tracklogs", logger.nameBuffer, "a");
+		logger.file = openFile_sdcard("/Tracklogs", logger.nameBuffer, "a");
 	}
 	count++;
 }
 
 static void igcLogget_Task(void *params)
 {
-	sdcard_t *card = logger.sdcard;
 	while(logger.gpsLastTimeUpdate == 0)
 	{
 		vTaskDelay(500 / portTICK_PERIOD_MS);
 	}
 	ESP_LOGI(TAG, "IGC Logging started");
 	char buffer[26 + strlen(directory)];
-	if(!(card->cardInit))
-    {
-        if(init_sdcard(card, sdcard_Mount_Point) != ESP_OK)
-		{
-			vTaskDelete(NULL);
-            return;
-		}
-    }
-	const char* FileName = makeFileName(buffer, 26 + strlen(directory), card);
+    if(init_sdcard(sdcard_Mount_Point) != ESP_OK)
+	{
+		vTaskDelete(NULL);
+        return;
+	}
+	const char* FileName = makeFileName(buffer, 26 + strlen(directory));
 	ESP_LOGI(TAG, "File Name: %s", FileName);
-	FILE *f = openFile_sdcard(card, "/Tracklogs", FileName, "w");
+	FILE *f = openFile_sdcard("/Tracklogs", FileName, "w");
 	strcpy(logger.nameBuffer, FileName);
 	if(!f)
 	{
@@ -211,11 +207,10 @@ static void igcLogget_Task(void *params)
 	vTaskDelete(NULL);
 }
 
-void init_IGCLogger(sdcard_t *card, nmea_parser_handle_t nmea_parser_handle)
+void init_IGCLogger(nmea_parser_handle_t nmea_parser_handle)
 {
 	nmea_parser_add_handler(nmea_parser_handle, IGCLogger_gps_event_handler, NULL, GPS_UPDATE);
 	logger.nmea_parser_handle = nmea_parser_handle;
-	logger.sdcard = card;
 }
 
 void start_IGCLogger()

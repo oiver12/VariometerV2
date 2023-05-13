@@ -17,7 +17,6 @@ FILE *fileVario;
 FILE *fileNMEA;
 FILE *fileGPSUpdate;
 int countVarioFile;
-sdcard_t *sdcard;
 nmea_parser_handle_t nmea_parser_hndl;
 const char *directoryLogs = "/Trackloggs";
 
@@ -46,7 +45,7 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
         if(count % 10 == 0)
         {
             fclose(fileGPSUpdate);
-            fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "a");
+            fileGPSUpdate = openFile_sdcard(directoryLogs, fileNameGPSUpdate, "a");
         }
     default:
         break;
@@ -56,18 +55,15 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
 
 void startLogging()
 {
-    if(!(sdcard->cardInit))
-    {
-        if(init_sdcard(sdcard, "/sdcard") != ESP_OK)
-            return;
-    }
+    if(init_sdcard("/sdcard") != ESP_OK)
+        return;
     int count = 0;
     do{
         snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", count++);
-    }while(fileExists_sdcard(sdcard, directoryLogs, fileNameVario));
+    }while(fileExists_sdcard(directoryLogs, fileNameVario));
     ESP_LOGI(TAG, "Found file: %s", fileNameVario);
     //snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", --count);
-    fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "w");
+    fileVario = openFile_sdcard(directoryLogs, fileNameVario, "w");
     
     #ifdef NotifyNMEASentence
     count = 0;
@@ -81,9 +77,9 @@ void startLogging()
     count = 0;
     do{
         snprintf(fileNameGPSUpdate, sizeof(fileNameGPSUpdate), "GPS%02d.txt", count++);
-    }while(fileExists_sdcard(sdcard, directoryLogs, fileNameGPSUpdate));
+    }while(fileExists_sdcard(directoryLogs, fileNameGPSUpdate));
     ESP_LOGI(TAG, "Found file: %s", fileNameGPSUpdate);
-    fileGPSUpdate = openFile_sdcard(sdcard, directoryLogs, fileNameGPSUpdate, "w");
+    fileGPSUpdate = openFile_sdcard(directoryLogs, fileNameGPSUpdate, "w");
 
     sd_card_state_t sdstate;
     device_state_get_member(&sdstate, device_state_statusSDCard, false);
@@ -96,9 +92,8 @@ void startLogging()
     nmea_parser_add_handler(nmea_parser_hndl, FlightLogger_NMEASentenceLogger, NULL, GPS_UPDATE);
 }
 
-void initLogging(sdcard_t* card, nmea_parser_handle_t nmea_parser_handle)
+void initLogging(nmea_parser_handle_t nmea_parser_handle)
 {
-    sdcard = card;
     nmea_parser_hndl = nmea_parser_handle;
 }
 
@@ -119,7 +114,7 @@ void logVarioData(FlightLogger_t state)
     {
         //fflush(fileVario);
         fclose(fileVario);
-        fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, "a");
+        fileVario = openFile_sdcard(directoryLogs, fileNameVario, "a");
         //fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
     }
     countVarioFile++;
