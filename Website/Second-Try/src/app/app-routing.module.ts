@@ -4,11 +4,11 @@ import { HomeComponent } from './views/home/home.component';
 
 const routes: Routes = [
     { path: 'home', component: HomeComponent },
-    { path: '**', redirectTo: 'home'},
+    { path: '**', redirectTo: 'home' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

@@ -1,20 +1,27 @@
-<img src="assets/images/upperBackground.svg" class="background-img" />
-<div class="content">
-  <mat-toolbar class="toolbar">
+<div class="background-div">
+    <img src="assets/images/BlackTop.svg" class="background-img black" />
+    <img
+        src="assets/images/BlackGreyTop.svg"
+        class="background-img black-grey"
+    />
+    <img src="assets/images/GreyTop.svg" class="background-img grey" />
+</div>
+<mat-toolbar class="toolbar">
     <div class="first-tc toolbar-child">
         <img src="assets/images/Logo.svg" class="logo" />
         <h1 class="title">Variometer</h1>
     </div>
     <div class="nav-div toolbar-child">
-      <a href="home">Home</a>
-      <a href="about">About</a>
-      <a href="contact">Contact us</a>
+        <a href="home">Home</a>
+        <a href="about">About</a>
+        <a href="contact">Contact us</a>
     </div>
     <div class="toolbar-child">
         <button mat-raised-button class="order-now">
-          <h1>Pre Order Now</h1>
+            <h1>Pre Order Now</h1>
         </button>
     </div>
-  </mat-toolbar>
-  <router-outlet></router-outlet>
+</mat-toolbar>
+<div class="router">
+    <router-outlet></router-outlet>
 </div>
