@@ -300,7 +300,7 @@ static void add_gpsInfo_Widget(WidgetData* widget)
     snprintf(buffer, 49, "Lon: %.2f", gps_data.longitude);
     DrawTextWithOffset(widget, buffer, 90, 25, &Font12, true);
     snprintf(buffer, 49, "Height: %.2fm", gps_data.altitude);
-    DrawTextWithAlign(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    DrawTextWithAlignOffset(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     DrawTextWithOffset(widget, gps_data.valid ? "1" : "0", 5, 50, &Font12, true);
     switch(gps_data.fix)
     {
@@ -333,7 +333,7 @@ static void add_gpsInfo_Widget(WidgetData* widget)
             snprintf(buffer, 50, "Fix M: Invalid");
             break;
     }
-    DrawTextWithAlign(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+    DrawTextWithAlignOffset(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     DrawTextWithOffset(widget, "--Satellits--", 5, 65, &Font12, true);
     uint16_t currentPosY = 80;
 
@@ -575,7 +575,7 @@ void update_gpsInfo_Widget(WidgetData* widget)
     if(fabsf(gps_data.altitude - oldGpsObject.altitude) > 0.01f)
     {
         snprintf(buffer, 49, "Height: %.2fm", gps_data.altitude);
-        DrawTextWithAlign(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+        DrawTextWithAlignOffset(widget, buffer, widget->w - 5, 25, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     }
     if(gps_data.fix != oldGpsObject.fix || gps_data.fix_mode != oldGpsObject.fix_mode || gps_data.valid != oldGpsObject.valid)
     {
@@ -611,7 +611,7 @@ void update_gpsInfo_Widget(WidgetData* widget)
                 snprintf(buffer, 50, "Fix M: Invalid");
                 break;
         }
-        DrawTextWithAlign(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
+        DrawTextWithAlignOffset(widget, buffer, widget->w - 20, 50, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     }
     if(gps_data.sats_in_view != oldGpsObject.sats_in_view || gps_data.sats_in_use != oldGpsObject.sats_in_use)
     {

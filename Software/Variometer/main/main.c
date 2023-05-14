@@ -430,12 +430,12 @@ void app_main(void)
     nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
     ESP_LOGI(TAG, "GPS started");
 
-    sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
+    //sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     init_DeviceContext();
 
-    init_sdcard(sdcard, "/sdcard");
-    init_IGCLogger(sdcard, gps_nmea_hdl);
-    initLogging(sdcard, gps_nmea_hdl);
+    init_sdcard("/sdcard");
+    init_IGCLogger(gps_nmea_hdl);
+    initLogging(gps_nmea_hdl);
 
     //gps handle wird beim DeviceContext erst nach SD Karte gestartet, da wenn direkt abfulg ist, soll
     //das loggen auf SDKarte direkt starten. Wenn die Sd Karte gestartet wird, muss jedoch device kontext

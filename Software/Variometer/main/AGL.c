@@ -31,7 +31,7 @@ static void AGL_gps_event_handler(void *event_handler_arg, esp_event_base_t even
 	{
 		case GPS_UPDATE:
             gps = (gps_t*)event_data;
-            if(gps->fix_mode != GPS_MODE_INVALID && agl_context.sdcard->cardInit)
+            if(gps->fix_mode != GPS_MODE_INVALID && sdCard_Init())
             {
                 gps = (gps_t *)event_data;
                 int latDec = (int)floor(gps->latitude);
@@ -49,12 +49,12 @@ static void AGL_gps_event_handler(void *event_handler_arg, esp_event_base_t even
 
                     if(agl_context.currFile)
                         fclose(agl_context.currFile);
-                    if(!fileExists_sdcard(agl_context.sdcard, directory, fileName))
+                    if(!fileExists_sdcard(directory, fileName))
                     {
                         ESP_LOGW(TAG, "AGL File doens't exist: %s", fileName);
                         return;
                     }
-                    agl_context.currFile = openFile_sdcard(agl_context.sdcard, directory, fileName, "r");
+                    agl_context.currFile = openFile_sdcard(directory, fileName, "r");
                 }
                 if(!agl_context.currFile)
                 {
@@ -104,9 +104,8 @@ static void AGL_gps_event_handler(void *event_handler_arg, esp_event_base_t even
 }
 
 
-void AGL_startAGL(sdcard_t *sdcard, nmea_parser_handle_t nmea_parser_handle)
+void AGL_startAGL(nmea_parser_handle_t nmea_parser_handle)
 {
-    agl_context.sdcard = sdcard;
     agl_context.nmea_parser_handle = nmea_parser_handle;
     agl_context.mLat = 0;
     agl_context.mLong = 0;

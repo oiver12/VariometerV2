@@ -28,7 +28,7 @@ vario_state_Simulation* bufferSimulation;
 
 void open_ReadFile()
 {
-    char cwd[5000];
+    char cwd[500];
     //Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
     if (getcwd(cwd, sizeof(cwd)) != NULL) 
     {
@@ -45,10 +45,28 @@ void open_ReadFile()
     }
 
 	FILE* fileptr;
-	fileptr = fopen("FlightLong.IGC", "r");
+	fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
+    if (fileptr == NULL)
+    {
+        int error = errno; 
+        printf("Error %d \n", error);
+        return;
+    }
     Track_t track;
-    ParseIGCFile(&track, 50, fileptr);
+    memset(&track, 0, sizeof(Track_t));
+    if(ParseIGCFile(&track, 10, fileptr, false, false) != 0) {
+        printf("Failed to parse IGC File\n");
+    }
     fclose(fileptr);
+    fileptr = fopen("GPSLOG.txt", "w");
+    fprintf(fileptr, "latitude,longitude\n");
+    for (size_t i = 0; i < track.sizeTrackPoints; i++)
+    {
+        fprintf(fileptr ,"%.6f,%.6f\n", track.trackPoints[i].lat, track.trackPoints[i].lon);
+    }
+    
+    fclose(fileptr);
+    FreeTrackFile(&track);
 	size_t bufferSize;
 	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
     if (fileptr == NULL)

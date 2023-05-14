@@ -96,6 +96,7 @@ void readAGL(double latitude, double longitude)
 
 void startRender()
 {
+
     //airspaceParcer();
     gps_t gsp;
     vario_state_get_member(&gsp, vario_state_gps_data, false);
@@ -143,6 +144,15 @@ void startRender()
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 5);
     ScreenManager_show_Screen(1);
+    FILE* fileptr;
+	fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
+    if(fileptr == NULL)
+    {
+        printf("Can't finde File\n");
+        return;
+    }
+    //vario_display_FlightStatistics(fileptr, "IGC_Flight");
+    fclose(fileptr);
 }
 
 void updateRender()

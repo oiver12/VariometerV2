@@ -9,6 +9,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "${workspaceFolder}/main.c",
+                "${workspaceFolder}/SDCard.c",
                 "${workspaceFolder}/Screen/*.c",
                 "${workspaceFolder}/Screen/E_Ink/*.c",
                 "${workspaceFolder}/Screen/freertos/*.c",

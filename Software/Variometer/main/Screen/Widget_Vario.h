@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "FIFO.h"
+#include <stdio.h>
 
 #define ChartNumDataPoints 20
 
@@ -33,7 +34,9 @@ typedef enum {
 typedef enum {
     Settings_Page_PageButtons,
     Settings_Page_Audio,
-    Settings_Page_Config
+    Settings_Page_Config,
+    Settings_Page_Flights,
+    Settings_Page_FlightStatistics,
 } Settings_Page_t;
 
 //Wie sieht das Widget aus (TextBox, Compass, etc.)
@@ -52,6 +55,7 @@ typedef enum
     Widget_Settings_Checkbox,
     Widget_Settings_SoundThreshold,
     Widget_Settings_CalibrationPageButton,
+    Widget_Settings_FlightListElement,
 } WidgetStyle;
 
 //was ist im Widget dargestellt (z.B. Vario_Active in TextBox)
@@ -85,10 +89,12 @@ typedef enum
     WidgetContent_Settings_PageButton,
     WidgetContent_Settings_PageButton_Audio,
     WidgetContent_Settings_PageButton_Config,
+    WidgetContent_Settings_PageButton_Flights,
     WidgetContent_Settings_VolumeSlider,
     WidgetContent_Settings_SoundLiftThreshold,
     WidgetContent_Settings_SoundSinkThreshold,
     WidgetContent_Settings_MagnCalibrationPageButton,
+    WidgetContent_Settings_FlightListElement,
 } WidgetContentType;
 
 typedef struct
@@ -135,6 +141,12 @@ typedef struct
     int32_t angleDifferenceToShow;
 } Compass_Widget_Data;
 
+/***** Flight Widget Settings Data *****/
+typedef struct FlightList_Widget_Data 
+{
+    char FlightName[255];
+} FlightList_Widget_Data; 
+
 typedef enum {
     PopUpType_GPSFix = 0,
     PopUpType_BatteryWarning = 1,
@@ -169,6 +181,6 @@ void vario_display_showPopUp(PopUpConfig_t configData);
 
 /*** Screens Implemented in "Widget_Vario_Screens.c" ***/
 void vario_display_PowerOffScreen();
-void vario_display_FlightStatistics();
+void vario_display_FlightStatistics(char *fileName);
 
 #endif
