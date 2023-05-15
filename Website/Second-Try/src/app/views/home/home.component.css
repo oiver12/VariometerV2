@@ -1,0 +1,40 @@
+.main {
+    height: 85vh;
+}
+.left {
+    height: 100%;
+    width: 45%;
+    float: left;
+    display: flex;
+    align-items: center;
+}
+h1 {
+    color: white;
+    font-size: 3em;
+    text-align: center;
+}
+.right {
+    position: relative;
+    height: 100%;
+    width: 50%;
+    float: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.clouds {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+.right:hover > .clouds {
+    transform: scale(1.1);
+}
+.three-js {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    transform: none;
+    transform: translateZ(0);
+}
