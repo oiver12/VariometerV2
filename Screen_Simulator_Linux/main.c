@@ -11,8 +11,8 @@
 #include <libgen.h>
 #include "Screen/IGC_Parser.h"
 
-#define EPD_3IN7_WIDTH       410
-#define EPD_3IN7_HEIGHT      480 
+#define EPD_3IN7_WIDTH 410
+#define EPD_3IN7_HEIGHT 480
 
 Uint32 lastbufferTime = 0;
 Uint32 lastFrameTime = 0;
@@ -21,20 +21,20 @@ Uint32 startedFKeyTime = 0;
 bool startedFKey = false;
 int currPosStateBuffer = 0;
 
-UBYTE* ScreenBuffer;
+UBYTE *ScreenBuffer;
 
 size_t vario_state_Simulation_size;
-vario_state_Simulation* bufferSimulation;
+vario_state_Simulation *bufferSimulation;
 
 void open_ReadFile()
 {
     char cwd[500];
-    //Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
-    if (getcwd(cwd, sizeof(cwd)) != NULL) 
+    // Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-        //printf("Current working dir: %s\n", cwd);
-        char* last_folder = basename(cwd);
-        while(strcmp(last_folder, "Screen_Simulator_Linux") != 0)
+        // printf("Current working dir: %s\n", cwd);
+        char *last_folder = basename(cwd);
+        while (strcmp(last_folder, "Screen_Simulator_Linux") != 0)
         {
             if (chdir("..") != 0)
                 return;
@@ -44,17 +44,18 @@ void open_ReadFile()
         }
     }
 
-	FILE* fileptr;
-	fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
+    FILE *fileptr;
+    fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
     if (fileptr == NULL)
     {
-        int error = errno; 
+        int error = errno;
         printf("Error %d \n", error);
         return;
     }
     Track_t track;
     memset(&track, 0, sizeof(Track_t));
-    if(ParseIGCFile(&track, 10, fileptr, false, false) != 0) {
+    if (ParseIGCFile(&track, 10, fileptr, false, false) != 0)
+    {
         printf("Failed to parse IGC File\n");
     }
     fclose(fileptr);
@@ -62,62 +63,149 @@ void open_ReadFile()
     fprintf(fileptr, "latitude,longitude\n");
     for (size_t i = 0; i < track.sizeTrackPoints; i++)
     {
-        fprintf(fileptr ,"%.6f,%.6f\n", track.trackPoints[i].lat, track.trackPoints[i].lon);
+        fprintf(fileptr, "%.6f,%.6f\n", track.trackPoints[i].lat, track.trackPoints[i].lon);
     }
-    
+
     fclose(fileptr);
     FreeTrackFile(&track);
-	size_t bufferSize;
-	fileptr = fopen("Vario10.txt", "rb");  // Open the file in binary mode
+    size_t bufferSize;
+    fileptr = fopen("Vario10.txt", "rb"); // Open the file in binary mode
     if (fileptr == NULL)
     {
-        int error = errno; 
+        int error = errno;
         printf("Error %d \n", error);
         return;
     }
-	fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
-	bufferSize = ftell(fileptr);             // Get the current byte offset in the file
-	rewind(fileptr);                      // Jump back to the beginning of the file
-	uint8_t* bufferRead = (uint8_t*)malloc(bufferSize * sizeof(uint8_t)); // Enough memory for the file
-	fread(bufferRead, bufferSize, 1, fileptr); // Read in the entire file
-	fclose(fileptr); // Close the file
-	//fill vario_state with value
-	vario_state_Simulation_size = bufferSize / 37;
-	bufferSimulation = (vario_state_Simulation*)malloc(vario_state_Simulation_size * sizeof(vario_state_Simulation));
-	size_t currPos = 0;
-	int currPosVarioSimulation = 0;
-	while (currPos != bufferSize)
-	{
-		vario_state_file_t* vario_state = (vario_state_file_t*)&bufferRead[currPos];;
-		currPos += sizeof(vario_state_file_t);
-		int64_t* time = (int64_t*)&bufferRead[currPos];
-		currPos += sizeof(int64_t);
-		currPos += sizeof(char);
-		bufferSimulation[currPosVarioSimulation].height = vario_state->height;
-		bufferSimulation[currPosVarioSimulation].velocity = vario_state->velocity;
-		bufferSimulation[currPosVarioSimulation].accX = vario_state->accX;
-		bufferSimulation[currPosVarioSimulation].rotation[0] = vario_state->rotation[0];
-		bufferSimulation[currPosVarioSimulation].rotation[1] = vario_state->rotation[1];
-		bufferSimulation[currPosVarioSimulation].rotation[2] = vario_state->rotation[2];
-		bufferSimulation[currPosVarioSimulation].rotation[3] = vario_state->rotation[3];
-		bufferSimulation[currPosVarioSimulation].time = *time;
-		currPosVarioSimulation++;
-	}
-	free(bufferRead);
+    fseek(fileptr, 0, SEEK_END);                                           // Jump to the end of the file
+    bufferSize = ftell(fileptr);                                           // Get the current byte offset in the file
+    rewind(fileptr);                                                       // Jump back to the beginning of the file
+    uint8_t *bufferRead = (uint8_t *)malloc(bufferSize * sizeof(uint8_t)); // Enough memory for the file
+    fread(bufferRead, bufferSize, 1, fileptr);                             // Read in the entire file
+    fclose(fileptr);                                                       // Close the file
+    // fill vario_state with value
+    vario_state_Simulation_size = bufferSize / 37;
+    bufferSimulation = (vario_state_Simulation *)malloc(vario_state_Simulation_size * sizeof(vario_state_Simulation));
+    size_t currPos = 0;
+    int currPosVarioSimulation = 0;
+    while (currPos != bufferSize)
+    {
+        vario_state_file_t *vario_state = (vario_state_file_t *)&bufferRead[currPos];
+        ;
+        currPos += sizeof(vario_state_file_t);
+        int64_t *time = (int64_t *)&bufferRead[currPos];
+        currPos += sizeof(int64_t);
+        currPos += sizeof(char);
+        bufferSimulation[currPosVarioSimulation].height = vario_state->height;
+        bufferSimulation[currPosVarioSimulation].velocity = vario_state->velocity;
+        bufferSimulation[currPosVarioSimulation].accX = vario_state->accX;
+        bufferSimulation[currPosVarioSimulation].rotation[0] = vario_state->rotation[0];
+        bufferSimulation[currPosVarioSimulation].rotation[1] = vario_state->rotation[1];
+        bufferSimulation[currPosVarioSimulation].rotation[2] = vario_state->rotation[2];
+        bufferSimulation[currPosVarioSimulation].rotation[3] = vario_state->rotation[3];
+        bufferSimulation[currPosVarioSimulation].time = *time;
+        currPosVarioSimulation++;
+    }
+    free(bufferRead);
+}
+
+void AnalyzeGPS()
+{
+    FILE *f = fopen("GPS01.txt", "r");
+    if (!f)
+    {
+        printf("Couldn't open GPS Log File\n");
+        return;
+    }
+    fseek(f, 0, SEEK_END);
+    size_t bufferSize = ftell(f);
+    rewind(f);
+    uint8_t *bufferRead[bufferSize];
+    fread(bufferRead, bufferSize, 1, f);
+    fclose(f);
+    size_t currPos = 0;
+    int currPosGPSObj = 0;
+    bufferSize = bufferSize / sizeof(gps_t);
+    gps_t gps_Objs[bufferSize];
+    bool firstValid = false;
+    bool firstGPS = false;
+    bool firstDGPS = false;
+    bool first2D = false;
+    bool first3D = false;
+    gps_analyze_t gpsAnalyze;
+    memset(&gpsAnalyze, 0, sizeof(gps_analyze_t));
+    while (currPos != bufferSize)
+    {
+        int64_t *time = (int64_t *)&bufferRead[currPos];
+        currPos += sizeof(int64_t);
+        gps_t *gpsObj = (gps_t *)&bufferRead[currPos];
+        currPos += sizeof(gps_t);
+        currPos += sizeof(char);
+        if (!firstValid && gpsObj->valid)
+        {
+            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToValid);
+            firstValid = true;
+        }
+        if (!firstGPS && gpsObj->fix == GPS_FIX_GPS)
+        {
+            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToGPS);
+            firstGPS = true;
+        }
+        if (!firstDGPS && gpsObj->fix == GPS_FIX_DGPS)
+        {
+            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToDGPS);
+            firstDGPS = true;
+        }
+        if (!first2D && gpsObj->fix_mode == GPS_MODE_2D)
+        {
+            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeTo2D);
+            first2D = true;
+        }
+        if (!first3D && gpsObj->fix_mode == GPS_MODE_3D)
+        {
+            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeTo3D);
+            first3D = true;
+        }
+        if (firstValid)
+        {
+            gpsAnalyze.meanDopH += gpsObj->dop_h;
+            gpsAnalyze.meanDopP += gpsObj->dop_p;
+            gpsAnalyze.meanDopV += gpsObj->dop_v;
+            gpsAnalyze.meanSatsInUseValid += gpsObj->sats_in_use;
+            gpsAnalyze.meanSatsInViewValid += gpsObj->sats_in_view;
+        }
+        currPosGPSObj++;
+    }
+    gpsAnalyze.meanDopH += ((double)gpsAnalyze.meanDopH) / (double)(currPosGPSObj);
+    gpsAnalyze.meanDopP += ((double)gpsAnalyze.meanDopP) / (double)(currPosGPSObj);
+    gpsAnalyze.meanDopV += ((double)gpsAnalyze.meanDopV) / (double)(currPosGPSObj);
+    gpsAnalyze.meanSatsInUseValid += ((double)gpsAnalyze.meanSatsInUseValid) / (double)(currPosGPSObj);
+    gpsAnalyze.meanSatsInViewValid += ((double)gpsAnalyze.meanSatsInViewValid) / (double)(currPosGPSObj);
+}
+
+void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_time_t *duration)
+{
+    uint64_t total_start_seconds = start_time.hour * 60 * 60 + start_time.minute * 60 + start_time.second;
+    uint64_t total_end_seconds = end_time.hour * 60 * 60 + end_time.minute * 60 + end_time.second;
+    uint64_t total_diff_minutes = total_end_seconds - total_start_seconds;
+
+    duration->hour = total_diff_minutes / 3600;
+    duration->minute = (total_diff_minutes / 60) % 60;
+    duration->second = (total_diff_minutes % 60);
 }
 
 void fastForwardSimulation(float percentage)
 {
     int step = vario_state_Simulation_size * percentage;
     currPosStateBuffer += step;
-    if(currPosStateBuffer > vario_state_Simulation_size)
+    if (currPosStateBuffer > vario_state_Simulation_size)
     {
         currPosStateBuffer = vario_state_Simulation_size;
     }
     lastbufferTime = bufferSimulation[currPosStateBuffer].time;
 }
 
-int main(void) {
+int main(void)
+{
     SDL_Renderer *renderer;
     SDL_Window *window;
 
@@ -127,8 +215,9 @@ int main(void) {
     // for (i = 0; i < EPD_3IN7_WIDTH; ++i)
     //     SDL_RenderDrawPoint(renderer, i, i);
 
-    UWORD Imagesize = ((EPD_3IN7_WIDTH % 4 == 0)? (EPD_3IN7_WIDTH / 4 ): (EPD_3IN7_WIDTH / 4 + 1)) * EPD_3IN7_HEIGHT;
-    if ((ScreenBuffer = (UBYTE*)malloc(Imagesize)) == NULL) {
+    UWORD Imagesize = ((EPD_3IN7_WIDTH % 4 == 0) ? (EPD_3IN7_WIDTH / 4) : (EPD_3IN7_WIDTH / 4 + 1)) * EPD_3IN7_HEIGHT;
+    if ((ScreenBuffer = (UBYTE *)malloc(Imagesize)) == NULL)
+    {
         printf("Failed to apply for Screen memory...\r\n");
         return 1;
     }
@@ -146,59 +235,64 @@ int main(void) {
     SDL_RenderPresent(renderer);
 
     int sizeXBuffer = EPD_3IN7_WIDTH % 8 == 0 ? EPD_3IN7_WIDTH / 8 : EPD_3IN7_WIDTH / 8 + 1;
-    while (1) {
+    while (1)
+    {
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_KEYDOWN:
-                    switch (event.key.keysym.sym) {
-                        case SDLK_DOWN:
-                            startDownArrow();
-                            break;
-                        case SDLK_UP:
-                            startUpArrow();
-                            break;
-                        case SDLK_m:
-                            startMenuKey();
-                            break;
-                        case SDLK_RETURN:
-                            startEnterKey();
-                            break;
-                        case SDLK_p:
-                            PKeyPressed();
-                            break;
-                        case SDLK_f:
-                            if (!startedFKey)
-                            {
-                                startedFKeyTime = SDL_GetTicks();
-                                startedFKey = true;
-                            }
-                            else
-                            {
-                                fastForwardSimulation(0.005f);
-                            }
-                            break;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_DOWN:
+                    startDownArrow();
+                    break;
+                case SDLK_UP:
+                    startUpArrow();
+                    break;
+                case SDLK_m:
+                    startMenuKey();
+                    break;
+                case SDLK_RETURN:
+                    startEnterKey();
+                    break;
+                case SDLK_p:
+                    PKeyPressed();
+                    break;
+                case SDLK_f:
+                    if (!startedFKey)
+                    {
+                        startedFKeyTime = SDL_GetTicks();
+                        startedFKey = true;
+                    }
+                    else
+                    {
+                        fastForwardSimulation(0.005f);
                     }
                     break;
-                case SDL_KEYUP:
-                    switch (event.key.keysym.sym) {
-                        case SDLK_DOWN:
-                            DownArrowReleased();
-                            break;
-                        case SDLK_UP:
-                            UpArrowReleased();
-                            break;
-                        case SDLK_m:
-                            MenuKeyReleased();
-                            break;
-                        case SDLK_RETURN:
-                            EnterKeyReleased();
-                            break;
-                        case SDLK_f:
-                            startedFKey = false;
-                            break;
-                    }
+                }
+                break;
+            case SDL_KEYUP:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_DOWN:
+                    DownArrowReleased();
                     break;
+                case SDLK_UP:
+                    UpArrowReleased();
+                    break;
+                case SDLK_m:
+                    MenuKeyReleased();
+                    break;
+                case SDLK_RETURN:
+                    EnterKeyReleased();
+                    break;
+                case SDLK_f:
+                    startedFKey = false;
+                    break;
+                }
+                break;
                 // Handle other event types as needed
             }
         }
@@ -229,16 +323,16 @@ int main(void) {
         updateRender();
         updateRenderTimeProgress((float)currPosStateBuffer / (float)vario_state_Simulation_size, vario_state_Simulation_size, bufferSimulation);
         for (int y = 0; y < EPD_3IN7_HEIGHT; y++)
-	    {
+        {
             for (int x = 0; x < EPD_3IN7_WIDTH; x++)
             {
                 int addr = x / 8 + y * sizeXBuffer;
                 uint8_t rdata = ScreenBuffer[addr];
-                //Black
+                // Black
                 if ((rdata & (0x80 >> (x % 8))) == 0)
                 {
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-                    SDL_RenderDrawPoint(renderer, EPD_3IN7_HEIGHT -1 - y, x);
+                    SDL_RenderDrawPoint(renderer, EPD_3IN7_HEIGHT - 1 - y, x);
                 }
                 else
                 {
@@ -246,8 +340,8 @@ int main(void) {
                     SDL_RenderDrawPoint(renderer, EPD_3IN7_HEIGHT - 1 - y, x);
                 }
             }
-	    }
-        if(current_time - lastRenderTime > 300)
+        }
+        if (current_time - lastRenderTime > 300)
         {
             SDL_RenderPresent(renderer);
             lastRenderTime = current_time;
