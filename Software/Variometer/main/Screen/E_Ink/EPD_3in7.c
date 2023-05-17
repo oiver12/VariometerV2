@@ -100,21 +100,28 @@ static const UBYTE lut_1Gray_A2[] =
 
 void EPD_3IN7_SPI_Init()
 {
-    spi_device_interface_config_t dev_config;
-    dev_config.command_bits = 0;
-    dev_config.address_bits = 0;
-    dev_config.dummy_bits = 0;
-    dev_config.mode = 0;
-    dev_config.duty_cycle_pos = 128;  // default 128 = 50%/50% duty
-    dev_config.cs_ena_pretrans = 0;  // 0 not used
-    dev_config.cs_ena_posttrans = 0;  // 0 not used
-    dev_config.clock_speed_hz = 20 * 1000 * 1000;
-    dev_config.spics_io_num = EPD_CS_PIN;
-    dev_config.flags = 0;  // 0 not used
-    dev_config.queue_size = 1;
-    dev_config.pre_cb = NULL;
-    dev_config.post_cb = NULL;
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &dev_config, &screen_spi_handle));
+    // spi_device_interface_config_t dev_config;
+    // dev_config.command_bits = 0;
+    // dev_config.address_bits = 0;
+    // dev_config.dummy_bits = 0;
+    // dev_config.mode = 0;
+    // dev_config.duty_cycle_pos = 128;  // default 128 = 50%/50% duty
+    // dev_config.cs_ena_pretrans = 0;  // 0 not used
+    // dev_config.cs_ena_posttrans = 0;  // 0 not used
+    // dev_config.clock_speed_hz = 20 * 1000 * 1000;
+    // dev_config.spics_io_num = EPD_CS_PIN;
+    // dev_config.flags = 0;  // 0 not used
+    // dev_config.queue_size = 1;
+    // dev_config.pre_cb = NULL;
+    // dev_config.post_cb = NULL;
+    spi_device_interface_config_t devcfg={
+        .clock_speed_hz=20*1000*1000,           //Clock out at 10 MHz
+        .mode=0,                                //SPI mode 0
+        .spics_io_num=EPD_CS_PIN,               //CS pin
+        .queue_size=7,                          //We want to be able to queue 7 transactions at a time
+    };
+    volatile esp_err_t err = spi_bus_add_device(SPI2_HOST, &devcfg, &screen_spi_handle);
+    ESP_ERROR_CHECK(err);
 }
 
 void DEV_SPI_WriteByte(UBYTE value)
