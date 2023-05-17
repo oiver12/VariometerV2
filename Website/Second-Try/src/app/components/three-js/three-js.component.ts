@@ -44,11 +44,12 @@ export class ThreeJsComponent {
     onResize() {
         this.camera.aspect = this.calculateAspectRatio();
         this.camera.updateProjectionMatrix();
-
-        this.renderer.setSize(
-            document.getElementsByClassName('threejs')![0].clientWidth,
-            document.getElementsByClassName('threejs')![0].clientHeight
-        );
+        if (document.getElementsByClassName('three-js')![0]) {
+            this.renderer.setSize(
+                document.getElementsByClassName('three-js')![0].clientWidth,
+                document.getElementsByClassName('three-js')![0].clientHeight
+            );
+        }
     }
 
     private calculateAspectRatio(): number {
@@ -116,13 +117,13 @@ export class ThreeJsComponent {
 
     createLight() {
         this.light = new THREE.PointLight(0xffffff);
-        this.light.position.set(-10, 10, 10);
+        this.light.position.set(-15, 10, 15);
         this.scene.add(this.light);
     }
 
     createMesh() {
         const loader = new GLTFLoader();
-        loader.load('../../assets/models/test.gltf', (gltf) => {
+        loader.load('../../assets/models/test1.gltf', (gltf) => {
             this.mesh = gltf.scene.children[0] as THREE.Mesh;
             this.scene.add(this.mesh);
         });

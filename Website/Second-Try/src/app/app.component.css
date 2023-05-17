@@ -1,39 +1,15 @@
-.background-div {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: -1;
-}
-.background-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-}
-.black {
-    z-index: 3;
-}
-.black-grey {
-    z-index: 2;
-}
-.grey {
-    z-index: 1;
-}
 .toolbar {
-    margin: 1.5em 1.5em;
-    background-color: transparent;
+    padding: 2.5em 3em;
+    background-color: #323640;
     color: white;
-    width: calc(100% - 3em);
-    position: absolute;
+    width: 100%;
+    position: fixed;
     top: 0;
     left: 0;
-    padding: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    z-index: 10;
 }
 .toolbar-child {
     flex: 1;

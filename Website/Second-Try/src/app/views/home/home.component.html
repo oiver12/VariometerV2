@@ -1,9 +1,32 @@
-<div class="main">
-    <div class="left">
-        <h1>Professional-grade accuracy at a beginner-friendly price</h1>
-    </div>
-    <div class="right">
-        <img src="assets/images/clouds.svg" alt="clouds" class="clouds" />
-        <app-three-js class="three-js"></app-three-js>
-    </div>
+<div class="background-div">
+    <img src="assets/images/BlackTop.svg" class="background-img-top black" />
+    <img
+        appParallax
+        [ratio]="0.2"
+        src="assets/images/BlackGreyTop.svg"
+        class="background-img-top black-grey"
+    />
+    <img
+        appParallax
+        [ratio]="0.4"
+        src="assets/images/GreyTop.svg"
+        class="background-img-top grey"
+    />
+    <img src="assets/images/whiteBackground.svg" class="background-img-top white" />
+    <img
+        src="assets/images/GreyBottom.svg"
+        class="background-img-bottom black-grey"
+    />
+    <img
+        src="assets/images/BlackGreyBottom.svg"
+        class="background-img-bottom grey"
+    />
+    <img
+        src="assets/images/BlackBottom.svg"
+        class="background-img-bottom black"
+    />
+</div>
+<div class="content">
+    <app-home-top></app-home-top>
+    <app-home-middle class="middle-page"></app-home-middle>
 </div>

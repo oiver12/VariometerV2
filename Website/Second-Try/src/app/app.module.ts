@@ -7,9 +7,23 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { HomeComponent } from './views/home/home.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ThreeJsComponent } from './components/three-js/three-js.component';
+import { HomeTopComponent } from './components/home/home-top/home-top.component';
+import { HomeMiddleComponent } from './components/home/home-middle/home-middle.component';
+import { HomeBottomComponent } from './components/home/home-bottom/home-bottom.component';
+import { CardComponent } from './components/card/card.component';
+import { ParallaxDirective } from './components/parallax/parallax.directive';
 
 @NgModule({
-    declarations: [AppComponent, HomeComponent, ThreeJsComponent],
+    declarations: [
+        AppComponent,
+        HomeComponent,
+        ThreeJsComponent,
+        HomeTopComponent,
+        HomeMiddleComponent,
+        HomeBottomComponent,
+        CardComponent,
+        ParallaxDirective,
+    ],
     imports: [
         BrowserModule,
         AppRoutingModule,
