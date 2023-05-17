@@ -58,7 +58,7 @@ static int floatFROMDMD(const char *dmd, float *valueRad)
         printf("Can't parse dmd\n");
         return 1;
     }
-    int degress, minutes, dminutes;
+    int degress, minutes, dminutes = 0;
     if (dmd[0] == 'S' || dmd[0] == 'N')
     {
         sliceString(dmd, tempBuffer, 1, 2);

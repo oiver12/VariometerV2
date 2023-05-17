@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Screen/nmea_parser.h"
+
 typedef struct
 {
 	float height;
@@ -19,11 +21,11 @@ typedef struct
 
 typedef struct
 {
-	gps_date_t timeToValid;
-	gps_date_t timeToGPS;
-	gps_date_t timeToDGPS;
-	gps_date_t timeTo2D;
-	gps_date_t timeTo3D;
+	gps_time_t timeToValid;
+	gps_time_t timeToGPS;
+	gps_time_t timeToDGPS;
+	gps_time_t timeTo2D;
+	gps_time_t timeTo3D;
 	double meanDopH;
 	double meanDopP;
 	double meanDopV;

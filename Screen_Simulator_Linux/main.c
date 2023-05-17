@@ -10,6 +10,7 @@
 #include <string.h>
 #include <libgen.h>
 #include "Screen/IGC_Parser.h"
+#include "airspaceParcer.h"
 
 #define EPD_3IN7_WIDTH 410
 #define EPD_3IN7_HEIGHT 480
@@ -108,6 +109,17 @@ void open_ReadFile()
     free(bufferRead);
 }
 
+void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_time_t *duration)
+{
+    uint64_t total_start_seconds = start_time.hour * 60 * 60 + start_time.minute * 60 + start_time.second;
+    uint64_t total_end_seconds = end_time.hour * 60 * 60 + end_time.minute * 60 + end_time.second;
+    uint64_t total_diff_minutes = total_end_seconds - total_start_seconds;
+
+    duration->hour = total_diff_minutes / 3600;
+    duration->minute = (total_diff_minutes / 60) % 60;
+    duration->second = (total_diff_minutes % 60);
+}
+
 void AnalyzeGPS()
 {
     FILE *f = fopen("GPS01.txt", "r");
@@ -135,7 +147,6 @@ void AnalyzeGPS()
     memset(&gpsAnalyze, 0, sizeof(gps_analyze_t));
     while (currPos != bufferSize)
     {
-        int64_t *time = (int64_t *)&bufferRead[currPos];
         currPos += sizeof(int64_t);
         gps_t *gpsObj = (gps_t *)&bufferRead[currPos];
         currPos += sizeof(gps_t);
@@ -182,17 +193,6 @@ void AnalyzeGPS()
     gpsAnalyze.meanSatsInViewValid += ((double)gpsAnalyze.meanSatsInViewValid) / (double)(currPosGPSObj);
 }
 
-void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_time_t *duration)
-{
-    uint64_t total_start_seconds = start_time.hour * 60 * 60 + start_time.minute * 60 + start_time.second;
-    uint64_t total_end_seconds = end_time.hour * 60 * 60 + end_time.minute * 60 + end_time.second;
-    uint64_t total_diff_minutes = total_end_seconds - total_start_seconds;
-
-    duration->hour = total_diff_minutes / 3600;
-    duration->minute = (total_diff_minutes / 60) % 60;
-    duration->second = (total_diff_minutes % 60);
-}
-
 void fastForwardSimulation(float percentage)
 {
     int step = vario_state_Simulation_size * percentage;
@@ -206,6 +206,7 @@ void fastForwardSimulation(float percentage)
 
 int main(void)
 {
+    airspaceParse();
     SDL_Renderer *renderer;
     SDL_Window *window;
 
