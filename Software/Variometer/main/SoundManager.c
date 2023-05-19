@@ -6,9 +6,9 @@
 #include "DeviceContext.h"
 #include <esp_log.h>
 
-#define BUFF_SIZE   2048
-#define PDM_TX_FREQ_HZ          44100           // I2S PDM TX frequency
-#define I2S_NUM         (0)
+#define BUFF_SIZE 2048
+#define PDM_TX_FREQ_HZ 44100 // I2S PDM TX frequency
+#define I2S_NUM (0)
 #define VELOCITY_THRESHOLD 0.2
 
 #define I2S_BCLK 11
@@ -19,9 +19,9 @@
 
 #define Sound_Size_Queue 10
 
-//#define WAVE_AMPTITUDE          (6000.0)        // 1~32767
-#define SINE_WAVE_LEN(tone)     (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
-#define BYTE_NUM_EVERY_TONE(duration)     (duration * PDM_TX_FREQ_HZ / 1000)
+// #define WAVE_AMPTITUDE          (6000.0)        // 1~32767
+#define SINE_WAVE_LEN(tone) (uint32_t)((PDM_TX_FREQ_HZ / (float)tone) + 0.5) // The sample point number per sine wave to generate the tone
+#define BYTE_NUM_EVERY_TONE(duration) (duration * PDM_TX_FREQ_HZ / 1000)
 
 static const char *TAG = "SoundManager";
 
@@ -29,22 +29,21 @@ int16_t *buffer;
 int16_t bufferZero[200];
 
 QueueHandle_t soundQueue = NULL;
-SoundManager_t soundManager_instance; 
-//SemaphoreHandle_t soundManager_Semaphore = NULL;
+SoundManager_t soundManager_instance;
+// SemaphoreHandle_t soundManager_Semaphore = NULL;
 
-//349, 440, 523
+// 349, 440, 523
 SoundManager_Tone_t startSeqeunce[3] = {
     {349, 500},
     {440, 500},
-    {523, 500}
-};
+    {523, 500}};
 
 static void SoundManager_NoSound(float duration)
 {
     size_t w_bytes = 0;
-    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration); tot_bytes += w_bytes) 
+    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration); tot_bytes += w_bytes)
     {
-        if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
+        if (i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
         {
             printf("Write Task: i2s write failed\n");
         }
@@ -53,26 +52,26 @@ static void SoundManager_NoSound(float duration)
 
 void SoundManager_Task(void *parameters)
 {
-    //TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
-    float lastFreqeuncy = soundManager_instance.frequencyNow-1;
+    // TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
+    float lastFreqeuncy = soundManager_instance.frequencyNow - 1;
     biepState_t lastBiepState = no_Sound;
     size_t w_bytes = 0;
     int tone_point = 0;
-    //SoundManager_playToneArray(startSeqeunce, 3);
-    while(true)
+    // SoundManager_playToneArray(startSeqeunce, 3);
+    while (true)
     {
-        //Spielen von anderen Tönen. Gegeben über SoundManager_playToneArray
-        if(uxQueueMessagesWaiting(soundQueue) != 0)
+        // Spielen von anderen Tönen. Gegeben über SoundManager_playToneArray
+        if (uxQueueMessagesWaiting(soundQueue) != 0)
         {
             SoundManager_Tone_t tempTone;
             xQueueReceive(soundQueue, &tempTone, 0);
-            if(tempTone.frequency == 0)
+            if (tempTone.frequency == 0)
             {
                 SoundManager_NoSound(100);
                 continue;
             }
             SoundManager_playSinWave(tempTone.frequency, tempTone.duration);
-            if(uxQueueMessagesWaiting(soundQueue) == 0)
+            if (uxQueueMessagesWaiting(soundQueue) == 0)
             {
                 SoundManager_NoSound(100);
             }
@@ -84,42 +83,43 @@ void SoundManager_Task(void *parameters)
         float durationNow = soundManager_instance.durationNow;
         float volume = soundManager_instance.volume;
 
-        if(currentBiepState == no_Sound)
+        if (currentBiepState == no_Sound)
         {
-            if(lastBiepState == constant_Deep)
+            if (lastBiepState == constant_Deep)
                 SoundManager_NoSound(100);
             vTaskDelay(20 / portTICK_PERIOD_MS);
             lastBiepState = currentBiepState;
             continue;
         }
         lastBiepState = currentBiepState;
-        //Buffer neu berechnen, wenn Frequenz geändert wurde
-        if(lastFreqeuncy != frequencyNow)
+        // Buffer neu berechnen, wenn Frequenz geändert wurde
+        if (lastFreqeuncy != frequencyNow)
         {
             tone_point = SINE_WAVE_LEN(frequencyNow);
             /* Generate the tone buffer (needs 1.2ms for it)*/
-            for (int i = 0; i < tone_point; i++) {
-                buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * volume);
+            for (int i = 0; i < tone_point; i++)
+            {
+                buffer[i] = (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * volume);
             }
             lastFreqeuncy = frequencyNow;
         }
         w_bytes = 0;
-        #ifdef SOUND_ON
-        //evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
-        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes) 
+#ifdef SOUND_ON
+        // evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
+        for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes)
         {
-            if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
+            if (i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
             {
                 printf("Write Task: i2s write failed\n");
             }
         }
-        #endif
-        //spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
-        if(currentBiepState != constant_Deep)
+#endif
+        // spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
+        if (currentBiepState != constant_Deep)
         {
-            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes) 
+            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes)
             {
-                if(i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
+                if (i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
                 {
                     printf("Write Task: i2s write failed\n");
                 }
@@ -131,32 +131,32 @@ void SoundManager_Task(void *parameters)
 
 void SoundManager_calculateNewBiep(float newVelocity)
 {
-    //in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
+    // in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
     for (size_t i = 0; i < soundManager_instance.sizeToneArray; i++)
     {
-        if(newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)
+        if (newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)
         {
             float difference = soundManager_instance.lastBeepVelocity - newVelocity;
-            //Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
-            if(fabs(difference) < VELOCITY_THRESHOLD && !(soundManager_instance.indexCurrentToneArray > 1 && i == 1) && !(soundManager_instance.indexCurrentToneArray  <= 1 && i > 1))
+            // Wenn Differenz Geschwindigkeit kliener als Thershold ist, dann nicht neuer Ton ausgeben, ausser man geht von nicht piepsen in piepsen oder umgekehrt
+            if (fabs(difference) < VELOCITY_THRESHOLD && !(soundManager_instance.indexCurrentToneArray > 1 && i == 1) && !(soundManager_instance.indexCurrentToneArray <= 1 && i > 1))
             {
                 return;
             }
             soundManager_instance.lastBeepVelocity = newVelocity;
             soundManager_instance.indexCurrentToneArray = i;
-            //wenn letzter Ton, dann einfach Geschwindigkeit nehmen
-            if((soundManager_instance.sizeToneArray - 1) == i || i == 0)
+            // wenn letzter Ton, dann einfach Geschwindigkeit nehmen
+            if ((soundManager_instance.sizeToneArray - 1) == i || i == 0)
             {
                 soundManager_instance.frequencyNow = soundManager_instance.ToneArray[i].frequency;
                 soundManager_instance.durationNow = soundManager_instance.ToneArray[i].duration;
             }
-            //sonst linear Interplorieren
+            // sonst linear Interplorieren
             else
             {
-                //linear zwischen zwei States machen
-                float factor = (newVelocity - soundManager_instance.ToneArray[i].lowerVelocity)/(soundManager_instance.ToneArray[i].upVelocity-soundManager_instance.ToneArray[i].lowerVelocity);
-                soundManager_instance.frequencyNow = factor * (soundManager_instance.ToneArray[i+1].frequency - soundManager_instance.ToneArray[i].frequency) + soundManager_instance.ToneArray[i].frequency;
-                soundManager_instance.durationNow = factor * (soundManager_instance.ToneArray[i+1].duration - soundManager_instance.ToneArray[i].duration) + soundManager_instance.ToneArray[i].duration;
+                // linear zwischen zwei States machen
+                float factor = (newVelocity - soundManager_instance.ToneArray[i].lowerVelocity) / (soundManager_instance.ToneArray[i].upVelocity - soundManager_instance.ToneArray[i].lowerVelocity);
+                soundManager_instance.frequencyNow = factor * (soundManager_instance.ToneArray[i + 1].frequency - soundManager_instance.ToneArray[i].frequency) + soundManager_instance.ToneArray[i].frequency;
+                soundManager_instance.durationNow = factor * (soundManager_instance.ToneArray[i + 1].duration - soundManager_instance.ToneArray[i].duration) + soundManager_instance.ToneArray[i].duration;
             }
         }
     }
@@ -169,12 +169,12 @@ esp_err_t init_SoundManager()
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = 1ULL << AUDIO_EN,
         .pull_down_en = 0,
-        .pull_up_en = 0
-    };
+        .pull_up_en = 0};
 
     gpio_config(&enableGPIOOutput);
+#ifdef SOUND_ON
     gpio_set_level(AUDIO_EN, 1);
-
+#endif
     i2s_config_t i2s_config = {
         .mode = I2S_MODE_MASTER | I2S_MODE_TX,
         .sample_rate = PDM_TX_FREQ_HZ,
@@ -184,20 +184,19 @@ esp_err_t init_SoundManager()
         .dma_buf_count = 6,
         .dma_buf_len = 240,
         .use_apll = false,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                               //Interrupt level 1
+        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1 // Interrupt level 1
     };
     i2s_pin_config_t pin_config = {
         .mck_io_num = I2S_PIN_NO_CHANGE,
         .bck_io_num = I2S_BCLK,
         .ws_io_num = I2S_LRCLK,
         .data_out_num = I2S_DIN,
-        .data_in_num = I2S_PIN_NO_CHANGE
-    };
+        .data_in_num = I2S_PIN_NO_CHANGE};
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL));
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM, &pin_config));
     buffer = (int16_t *)calloc(1, BUFF_SIZE);
     assert(buffer);
-    
+
     soundManager_instance.ToneArray = calloc(6, sizeof(Tonestate_t));
     assert(soundManager_instance.ToneArray);
     soundManager_instance.sizeToneArray = 6;
@@ -207,13 +206,12 @@ esp_err_t init_SoundManager()
         {.state = Biepen, .frequency = 700, .duration = 750, .lowerVelocity = 0.2f, .upVelocity = 1.5f},
         {.state = Biepen, .frequency = 850, .duration = 540, .lowerVelocity = 1.5f, .upVelocity = 3.5f},
         {.state = Biepen, .frequency = 1000, .duration = 300, .lowerVelocity = 3.5f, .upVelocity = 10},
-        {.state = Biepen, .frequency = 1600, .duration = 90, .lowerVelocity = 10, .upVelocity = 999}
-    };
+        {.state = Biepen, .frequency = 1600, .duration = 90, .lowerVelocity = 10, .upVelocity = 999}};
     memcpy(soundManager_instance.ToneArray, stateBeep, sizeof(stateBeep));
     soundManager_instance.indexCurrentToneArray = 1;
     uint16_t volume = 6000;
     vario_settings_set_member(&volume, vario_settings_soundVolume);
-    
+
     soundQueue = xQueueCreate(Sound_Size_Queue, sizeof(SoundManager_Tone_t));
     xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, NULL, 7, NULL);
     return ESP_OK;
@@ -232,13 +230,12 @@ void SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneA
     for (size_t i = 0; i < sizeToneArray; i++)
     {
         BaseType_t returnValue = xQueueSend(soundQueue, &toneArray[i], 3);
-        if(returnValue != pdTRUE)
+        if (returnValue != pdTRUE)
         {
             ESP_LOGI(TAG, "SoundManager: Queue is full");
             return;
         }
     }
-    
 }
 
 esp_err_t SoundManager_playSinWave(int frequency, int duration)
@@ -246,12 +243,14 @@ esp_err_t SoundManager_playSinWave(int frequency, int duration)
     size_t w_bytes = 0;
     int tone_point = SINE_WAVE_LEN(frequency);
     /* Generate the tone buffer */
-    for (int i = 0; i < tone_point; i++) {
-        buffer[i] =  (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * soundManager_instance.volume);
+    for (int i = 0; i < tone_point; i++)
+    {
+        buffer[i] = (int16_t)((sin(2 * (float)i * M_PI / tone_point)) * soundManager_instance.volume);
     }
-    
-    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration*2); tot_bytes += w_bytes) {
-        if(i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK)
+
+    for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration * 2); tot_bytes += w_bytes)
+    {
+        if (i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK)
         {
             printf("Write Task: i2s write failed\n");
         }

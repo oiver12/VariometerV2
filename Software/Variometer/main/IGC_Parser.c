@@ -157,6 +157,8 @@ static int parseB(const char *line, Track_t *track, TrackPointIGC_t *point, IFie
     ERROR_CHECK(sliceStringToInt(&point->pressureAlt, line, 25, 5));
     // Parse GNSSAlt
     ERROR_CHECK(sliceStringToInt(&point->gnssAlt, line, 30, 5));
+    if (track->IFields == NULL)
+        return 0;
     for (size_t i = 0; i < track->sizeIFields; i++)
     {
         size_t sizeNumber = track->IFields[i].posEnd - track->IFields[i].posStart + 1;
@@ -198,6 +200,12 @@ static int parseI(const char *line, Track_t *track, bool mallocIFields)
     {
         return 1;
     }
+    if (!mallocIFields)
+    {
+        track->IFields = NULL;
+        track->sizeIFields = 0;
+        return 0;
+    }
     int n;
     ERROR_CHECK(sliceStringToInt(&n, line, 1, 2));
     if (strlen(line) != n * 7 + 1 && strlen(line) != n * 7 + 5)
@@ -205,14 +213,14 @@ static int parseI(const char *line, Track_t *track, bool mallocIFields)
         printf("Wrong I Field Length\n");
         return 1;
     }
-    if (track->IFields == NULL && mallocIFields)
-        track->IFields = malloc(sizeof(IFieldIGC_t) * n);
-    else if (!mallocIFields)
-        track->IFields = NULL;
     if (track->IFields == NULL)
     {
-        printf("Couldn't allocate memory for IFields\n");
-        return 1;
+        track->IFields = malloc(sizeof(IFieldIGC_t) * n);
+        if (track->IFields == NULL)
+        {
+            printf("Couldn't allocate memory for IFields\n");
+            return 1;
+        }
     }
     char buffer[4];
     track->sizeIFields = n;
