@@ -5,38 +5,29 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "airspaceParcer.h"
 
 #define BOUNDINGBOX_OPTIMIZATION
 
 #define MAXDISTANCETOSEARCH 10000
 
-typedef enum
-{
-    HeightType_mQNH = 1,
-    HeightType_mSTD = 2,
-    HeightType_mAGL = 3
-} heightType;
-
-typedef struct
-{
-    char *name;
-    uint16_t upperLimit;
-    heightType heightTypeUpper;
-    uint16_t lowerLimit;
-    heightType heightTypeLower;
-    polygonSide *polygons;
-    size_t polygonSize;
-    void *next;
-} airspace;
-
-void airspaceCalculateValues(airspace *nearestAirspace, uint32_t startLineIndex, float myLat, float myLon)
+void airspaceCalculateValues(airspace *nearestAirspace, uint32_t startLineIndex, float myLat, float myLon, float myAlt)
 {
     uint32_t endLineIndex = startLineIndex + 1;
     if (nearestAirspace->polygonSize >= endLineIndex)
         endLineIndex = 0;
     float nearestLat, nearestLon = 0;
     NearestPointOnLine(nearestAirspace->polygons[startLineIndex].latitude, nearestAirspace->polygons[startLineIndex].longitude, nearestAirspace->polygons[endLineIndex].latitude, nearestAirspace->polygons[endLineIndex].longitude, myLat, myLon, &nearestLat, &nearestLon);
-    float dist = GET_DISTANCEFAST(myLat, myLon, nearestLat, nearestLon);
+    float HorDist = GET_DISTANCEFAST(myLat, myLon, nearestLat, nearestLon);
+    float VertDist = 0;
+    if (myAlt < nearestAirspace->lowerLimit)
+    {
+        VertDist = nearestAirspace->lowerLimit - myAlt;
+    }
+    else if (myAlt > nearestAirspace->upperLimit)
+    {
+        VertDist = myAlt - nearestAirspace->upperLimit;
+    }
 }
 
 void searchNearestAirspace(double myLat, double myLon, float altitude, airspace *airspaces)
@@ -178,6 +169,7 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         i++;
         readTilCharacter(fileptr, '[');
         fscanf(fileptr, "%f", &tempPolygon->longitude);
+        fgetc(fileptr);
         fscanf(fileptr, "%f", &tempPolygon->latitude);
 
         fgetc(fileptr);
@@ -189,8 +181,8 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
 
 void airspaceParse()
 {
-    double myLat = 46.837584144302504;
-    double myLon = 8.38808530535814;
+    double myLat = 47.429665;
+    double myLon = 9.388993;
 
     FILE *fileptr;
     fileptr = fopen("airspace/airspaces.json", "rb");
@@ -218,7 +210,10 @@ void airspaceParse()
         readTilCharacter(fileptr, ':');
         fgetc(fileptr);
         readToBufferTillNextChar(fileptr, '"', nameBuffer, 50);
-        readTilCharacterTimes(fileptr, ',', 5);
+        if (strcmp(nameBuffer, "LS-R31 Emmen east") == 0)
+            printf("Now");
+        readTilCharacterTimes(fileptr, ',', 6);
+        fgetc(fileptr);
         char temp = fgetc(fileptr);
         // Check if Freqeuncy Field exists
         if (temp == 'F')
@@ -302,6 +297,10 @@ void airspaceParse()
         readTilCharacter(fileptr, '[');
         readTilCharacter(fileptr, '[');
 
+        if (strcmp(nameBuffer, "TMA Zurich 13") == 0)
+        {
+            printf("Heress\n");
+        }
         airspace *tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox);
         if (!tempAirspace)
             continue;

@@ -6,41 +6,41 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
-void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
+void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
 {
     DIR *dir;
     struct dirent *ent;
-    char *extension = ".IGC";
+    char *extension = ".igc";
 
-    if((dir = opendir("IGC")) != NULL)
+    if ((dir = opendir("IGCFlights")) != NULL)
     {
         int index = 0;
         int tookenFiles = 0;
-        while((ent = readdir(dir)) != NULL)
+        while ((ent = readdir(dir)) != NULL)
         {
             char *fileName = ent->d_name;
             int len = strlen(fileName);
-            if(len > 4 && strcmp(fileName + len - 4, extension) == 0)
+            if (len > 4 && strcmp(fileName + len - 4, extension) == 0)
             {
                 index++;
-                if(index < startIndex)
+                if (index < startIndex)
                     continue;
-                if(flightListHead == NULL)
+                if (flightListHead == NULL)
                 {
                     printf("Couldn't find next Flight\n");
                     return;
                 }
-                strcpy(((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName, fileName);
+                strcpy(((FlightList_Widget_Data *)flightListHead->data.extr_data)->FlightName, fileName);
                 flightListHead = flightListHead->next;
                 tookenFiles++;
             }
-            if(tookenFiles >= 6)
+            if (tookenFiles >= 6)
                 break;
         }
         closedir(dir);
-        if(tookenFiles < 6 && flightListHead)
-        { 
-            ((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName[0] = '\0';
+        if (tookenFiles < 6 && flightListHead)
+        {
+            ((FlightList_Widget_Data *)flightListHead->data.extr_data)->FlightName[0] = '\0';
         }
     }
     else

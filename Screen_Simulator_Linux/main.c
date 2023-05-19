@@ -46,7 +46,7 @@ void open_ReadFile()
     }
 
     FILE *fileptr;
-    fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
+    fileptr = fopen("IGCFlights/2023-05-06-XCT-TLE-09.igc", "r");
     if (fileptr == NULL)
     {
         int error = errno;
@@ -55,7 +55,7 @@ void open_ReadFile()
     }
     Track_t track;
     memset(&track, 0, sizeof(Track_t));
-    if (ParseIGCFile(&track, 10, fileptr, false, false) != 0)
+    if (ParseIGCFile(&track, 50, fileptr, false, false) != 0)
     {
         printf("Failed to parse IGC File\n");
     }
@@ -122,7 +122,7 @@ void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_ti
 
 void AnalyzeGPS()
 {
-    FILE *f = fopen("GPS01.txt", "r");
+    FILE *f = fopen("Trackloggs/GPS08.txt", "r");
     if (!f)
     {
         printf("Couldn't open GPS Log File\n");
@@ -147,42 +147,66 @@ void AnalyzeGPS()
     memset(&gpsAnalyze, 0, sizeof(gps_analyze_t));
     while (currPos != bufferSize)
     {
+        int64_t *time = (int64_t *)&bufferRead[currPos];
         currPos += sizeof(int64_t);
-        gps_t *gpsObj = (gps_t *)&bufferRead[currPos];
-        currPos += sizeof(gps_t);
+        gps_time_t timeGPS;
+        timeGPS.hour = bufferRead[currPos];
+        currPos++;
+        timeGPS.minute = bufferRead[currPos];
+        currPos++;
+        timeGPS.second = bufferRead[currPos];
+        currPos++;
+        timeGPS.thousand = bufferRead[currPos];
+        currPos++;
+        gps_fix_t gpsFix = *((gps_fix_t *)&bufferRead[currPos]);
+        currPos += sizeof(gps_fix_t);
+        gps_fix_mode_t gpsFixMode = *((gps_fix_mode_t *)&bufferRead[currPos]);
+        currPos += sizeof(gps_fix_mode_t);
+        bool valid = *((bool *)&bufferRead[currPos]);
+        currPos += sizeof(bool);
+        float dop_h = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float dop_p = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float dop_v = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        uint8_t satsInUse = *((uint8_t *)&bufferRead[currPos]);
+        currPos++;
+        uint8_t satsInView = *((uint8_t *)&bufferRead[currPos]);
+        currPos++;
         currPos += sizeof(char);
-        if (!firstValid && gpsObj->valid)
+        if (!firstValid && valid)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToValid);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToValid);
             firstValid = true;
         }
-        if (!firstGPS && gpsObj->fix == GPS_FIX_GPS)
+        if (!firstGPS && gpsFix == GPS_FIX_GPS)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToGPS);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToGPS);
             firstGPS = true;
         }
-        if (!firstDGPS && gpsObj->fix == GPS_FIX_DGPS)
+        if (!firstDGPS && gpsFix == GPS_FIX_DGPS)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeToDGPS);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToDGPS);
             firstDGPS = true;
         }
-        if (!first2D && gpsObj->fix_mode == GPS_MODE_2D)
+        if (!first2D && gpsFixMode == GPS_MODE_2D)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeTo2D);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeTo2D);
             first2D = true;
         }
-        if (!first3D && gpsObj->fix_mode == GPS_MODE_3D)
+        if (!first3D && gpsFixMode == GPS_MODE_3D)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, gpsObj->tim, &gpsAnalyze.timeTo3D);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeTo3D);
             first3D = true;
         }
         if (firstValid)
         {
-            gpsAnalyze.meanDopH += gpsObj->dop_h;
-            gpsAnalyze.meanDopP += gpsObj->dop_p;
-            gpsAnalyze.meanDopV += gpsObj->dop_v;
-            gpsAnalyze.meanSatsInUseValid += gpsObj->sats_in_use;
-            gpsAnalyze.meanSatsInViewValid += gpsObj->sats_in_view;
+            gpsAnalyze.meanDopH += dop_h;
+            gpsAnalyze.meanDopP += dop_p;
+            gpsAnalyze.meanDopV += dop_v;
+            gpsAnalyze.meanSatsInUseValid += satsInUse;
+            gpsAnalyze.meanSatsInViewValid += satsInView;
         }
         currPosGPSObj++;
     }
@@ -206,6 +230,7 @@ void fastForwardSimulation(float percentage)
 
 int main(void)
 {
+    // AnalyzeGPS();
     airspaceParse();
     SDL_Renderer *renderer;
     SDL_Window *window;

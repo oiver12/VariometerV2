@@ -177,29 +177,30 @@ float DistancePointToLineSqr(float startLat, float startLon, float endLat, float
 	float yLine = endLat - startLat;
 	float xLTP = pointLon - startLon;
 	float yLTP = pointLat - startLat;
+	float mag = xLine * xLine + yLine * yLine;
 	float r = xLine * xLTP + yLine * yLTP;
-	r /= xLine * xLine + yLine * yLine;
+	r /= mag;
 	if (r < 0)
-		return GET_DISTANCEFAST(startLat, startLon, pointLat, pointLon);
+		return GET_DISTANCEFASTSQ(startLat, startLon, pointLat, pointLon);
 	else if (r > 1)
-		return GET_DISTANCEFAST(endLat, endLon, pointLat, pointLon);
+		return GET_DISTANCEFASTSQ(endLat, endLon, pointLat, pointLon);
 	else
 	{
-		float mag = sqrtf(xLine * xLine - yLine * yLine) * r;
-		float lonM = startLon + xLine * mag;
-		float latM = startLat + yLine * mag;
+		float lonM = startLon + xLine * r;
+		float latM = startLat + yLine * r;
 		return GET_DISTANCEFASTSQ(latM, lonM, pointLat, pointLon);
 	}
 }
-
+// TODO: not working https://maps.co/gis/ oder doch?????
 void NearestPointOnLine(float startLat, float startLon, float endLat, float endLon, float pointLat, float pointLon, float *nearestLat, float *nearestLon)
 {
 	float xLine = endLon - startLon;
 	float yLine = endLat - startLat;
 	float xLTP = pointLon - startLon;
 	float yLTP = pointLat - startLat;
+	float mag = xLine * xLine + yLine * yLine;
 	float r = xLine * xLTP + yLine * yLTP;
-	r /= xLine * xLine + yLine * yLine;
+	r /= mag;
 	if (r < 0)
 	{
 		*nearestLat = startLat;
@@ -214,9 +215,8 @@ void NearestPointOnLine(float startLat, float startLon, float endLat, float endL
 	}
 	else
 	{
-		float mag = sqrtf(xLine * xLine - yLine * yLine) * r;
-		*nearestLon = startLon + xLine * mag;
-		*nearestLat = startLat + yLine * mag;
+		*nearestLon = startLon + xLine * r;
+		*nearestLat = startLat + yLine * r;
 		return;
 	}
 }
