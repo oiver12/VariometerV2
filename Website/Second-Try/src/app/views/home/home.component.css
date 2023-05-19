@@ -18,16 +18,16 @@
     top: 200vh!important;
     left: 0;
 }
-.black {
+.black-top {
     z-index: 4;
     height: 120vh;
 }
-.black-grey {
+.black-grey-top {
     z-index: 3;
     height: 120vh;
     transform: translate(0, 15vh);
 }
-.grey {
+.grey-top {
     z-index: 2;
     height: 120vh;
     transform: translate(0, 25vh);
