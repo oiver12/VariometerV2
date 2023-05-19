@@ -74,15 +74,15 @@ float headingCalc = 0.0f;
 static void IRAM_ATTR dps310ISR(void* arg)
 {   
     TaskHandle_t taskHandle = *(TaskHandle_t*)arg;
+    configASSERT(taskHandle != NULL);
     BaseType_t HPTaskWoken = pdFALSE;
     //unblock TaskMeasureAcc
     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-    if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
+    portYIELD_FROM_ISR(HPTaskWoken);
 }
 
 static void TaskMeasureHeight(void *parameters)
 {
-
     startPressure = 0;
     startTemperature = 0;
     dps310_t DPS310_Data;
@@ -93,6 +93,7 @@ static void TaskMeasureHeight(void *parameters)
         dps310_get_Temperature(&DPS310_Data);
         startPressure += DPS310_Data.Pressure;
         startTemperature += DPS310_Data.Temperature;
+        ESP_LOGI(TAG, "StartPressure: %.2f, StartTemp: %.2f", startPressure, startTemperature);
         vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     startPressure /= 10;
@@ -104,27 +105,28 @@ static void TaskMeasureHeight(void *parameters)
         .mode         = GPIO_MODE_INPUT,
         .pull_up_en   = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type    = GPIO_INTR_POSEDGE 
+        .intr_type    = GPIO_INTR_DISABLE 
     };
     //set PresSens Pin as Interrupt 
-    gpio_config(&gpio_config_INT_DPS310);
+    //gpio_config(&gpio_config_INT_DPS310);
     //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+    //gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     while(1)
     {
         //wait till unblocked from Interrupt
-        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
-        if (notificationValue == 0) {
-            ESP_LOGW(TAG, "Interrupt didn't fire");
-        }
+        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
+        //if (notificationValue == 0) {
+            //ESP_LOGW(TAG, "Interrupt didn't fire");
+        //}
         dsp310_get_Pressure(&DPS310_Data);
         if(count % 34 == 0)
         {
             dps310_get_Temperature(&DPS310_Data);
         }
         count++;
+        ESP_LOGI(TAG, "Pressure: %.2f", DPS310_Data.Pressure);
         xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
         {
             pressure = DPS310_Data.Pressure;
@@ -205,9 +207,9 @@ static void TaskMeasureAcc(void *parameters)
         //int headingInt = (int)heading;
         //vario_state_set_member(&headingInt, vario_state_heading);
         count++;
-        //printf("X: %i, Y: %i, Z: %i\n", (int)mn, (int)me, (int)md);
-        if(count % 10 == 0)
-            printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
+        ////printf("X: %i, Y: %i, Z: %i\n", (int)mn, (int)me, (int)md);
+        //if(count % 10 == 0)
+            //printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
         /* Calculate global Acc in X Direction */
         float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * an + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * ae + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*ad;
         accX *= 9.81f;
@@ -411,7 +413,7 @@ void app_main(void)
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
     
     i2c_config_t conf_I2C = {
         .mode = I2C_MODE_MASTER,
@@ -451,6 +453,7 @@ void app_main(void)
 
     ButtonInput_Init();
 
+    startLogging();
     //AGL_startAGL(sdcard, gps_nmea_hdl);
     
     vTaskDelay(100 / portTICK_PERIOD_MS);

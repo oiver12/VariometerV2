@@ -13,7 +13,7 @@
 
 static const char *TAG = "IGCLogger";
 
-static const char *directory = "/Tracklogs";
+static const char *directory = "/IGCFlights";
 static const char *sdcard_Mount_Point = "/sdcard";
 
 static const char *nameManufacture = "MIN";
@@ -157,7 +157,7 @@ static void igcLogget_Task(void *params)
 	}
 	const char* FileName = makeFileName(buffer, 26 + strlen(directory));
 	ESP_LOGI(TAG, "File Name: %s", FileName);
-	FILE *f = openFile_sdcard("/Tracklogs", FileName, "w");
+	FILE *f = openFile_sdcard("/IGCFlights", FileName, "w");
 	strcpy(logger.nameBuffer, FileName);
 	if(!f)
 	{

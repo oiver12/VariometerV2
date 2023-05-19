@@ -138,6 +138,8 @@ FILE *openFile_sdcard(const char *directory, const char* fileName, const char* o
         //ESP_LOGI(TAG, "Directory: %s", buffer);
         if(stat(buffer, &st) == -1)
         {
+            printf("Buffer: %s\n", buffer);
+            printf("Directory: %s\n", directory);
             if(mkdir(buffer, 0700) != 0)
             {
                 volatile char *testValue = strerror(errno);
@@ -212,12 +214,9 @@ void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
 {
     DIR *dir;
     struct dirent *ent;
-    char *extension = ".IGC";
-    char buffer[100];
-    strcpy(buffer, sdCardInstance.Mount_Point);
-    strcat(buffer, "/IGC");
+    char *extension = ".igc";
 
-    if((dir = opendir("IGC")) != NULL)
+    if((dir = opendir("IGCFlights")) != NULL)
     {
         int index = 0;
         int tookenFiles = 0;

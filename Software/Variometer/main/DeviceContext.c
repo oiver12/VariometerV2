@@ -59,7 +59,6 @@ static void TakeOff(gps_t* gps)
     };
     ScreenManager_showPopUp(config);
     SoundManager_playToneArray(takeOffMelody, 8);
-    startLogging();
     start_IGCLogger();
 }
 

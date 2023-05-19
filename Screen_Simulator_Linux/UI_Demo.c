@@ -97,7 +97,7 @@ void readAGL(double latitude, double longitude)
 void startRender()
 {
 
-    //airspaceParcer();
+    airspaceParcer();
     gps_t gsp;
     vario_state_get_member(&gsp, vario_state_gps_data, false);
     gsp.tim.hour = 12;

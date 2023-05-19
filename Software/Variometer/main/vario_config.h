@@ -19,4 +19,4 @@
 #define LandingSpeed 2 //km/h
 #define LandingTimout 10 //s
 
-#define SOUND_ON
+//#define SOUND_ON

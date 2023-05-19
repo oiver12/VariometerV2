@@ -64,6 +64,11 @@ void startLogging()
     ESP_LOGI(TAG, "Found file: %s", fileNameVario);
     //snprintf(fileNameVario, sizeof(fileNameVario), "Vario%02d.txt", --count);
     fileVario = openFile_sdcard(directoryLogs, fileNameVario, "w");
+    if(fileVario == NULL)
+    {
+        ESP_LOGE(TAG, "Could not create Vario File\n");
+        return;
+    }
     
     #ifdef NotifyNMEASentence
     count = 0;
@@ -81,6 +86,11 @@ void startLogging()
     ESP_LOGI(TAG, "Found file: %s", fileNameGPSUpdate);
     fileGPSUpdate = openFile_sdcard(directoryLogs, fileNameGPSUpdate, "w");
 
+    if(fileGPSUpdate == NULL)
+    {
+        ESP_LOGE(TAG, "Could not create GPS Update File\n");
+        return;
+    }
     sd_card_state_t sdstate;
     device_state_get_member(&sdstate, device_state_statusSDCard, false);
     sdstate.status |= SD_CARD_STATE_FLIGHTLOGGING;

@@ -27,9 +27,7 @@ void vario_display_PowerOffScreen()
 void vario_display_FlightStatistics(char *fileName)
 {
     char buffer[100];
-    strcpy(buffer, "IGC/");
-    strcat(buffer, fileName);
-    FILE *igcFile = fopen(buffer, "r");
+    FILE *igcFile = openFile_sdcard("IGCFlights", fileName, "r");
     if(igcFile == NULL)
     {
         printf("Couldn't open IGC File\n");
