@@ -11,6 +11,8 @@
 
 #define MAXDISTANCETOSEARCH 10000
 
+AirspaceParcer_State_t instanceAirspace;
+
 void airspaceCalculateValues(airspace *nearestAirspace, uint32_t startLineIndex, float myLat, float myLon, float myAlt)
 {
     uint32_t endLineIndex = startLineIndex + 1;
@@ -30,7 +32,7 @@ void airspaceCalculateValues(airspace *nearestAirspace, uint32_t startLineIndex,
     }
 }
 
-void searchNearestAirspace(double myLat, double myLon, float altitude, airspace *airspaces)
+void searchInNearestAirspace(double myLat, double myLon, float altitude, airspace *airspaces)
 {
     airspace *nearestAirspace = NULL;
     float nearestDistanceToAirspace = MAXDISTANCETOSEARCH;
@@ -127,7 +129,14 @@ void readToBufferTillNextChar(FILE *file, char character, char *buffer, int buff
     buffer[i] = '\0';
 }
 
-airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox)
+static airspace *createAirspaceOnHeap(size_t polygonSize)
+{
+    airspace *newAirspace = calloc(sizeof(airspace), 1);
+    newAirspace->polygons = calloc(sizeof(polygonSide), polygonSize);
+    return newAirspace;
+}
+
+airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace)
 {
     char nextChar = ',';
     int polygonSize = 0;
@@ -155,12 +164,35 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         *hasNext = readTilCharacter(fileptr, '{');
         return NULL;
     }
-    airspace *tempAirspace = calloc(sizeof(airspace), 1);
+    airspace *tempAirspace = instanceAirspace.nearestAirspace;
+    while (tempAirspace)
+    {
+        // Found old airspace, skip parsing and return old one
+        if (strcmp(tempAirspace->name, nameAirspace) == 0)
+        {
+            tempAirspace->isValid = true;
+            readTilCharacter(fileptr, '}');
+            return tempAirspace;
+        }
+        // Airspace does not yet exist append to end
+        if (!tempAirspace->next)
+        {
+            airspace *newAirspace = createAirspaceOnHeap(polygonSize);
+            tempAirspace->next = tempAirspace;
+            break;
+        }
+        tempAirspace = tempAirspace->next;
+    }
+    // No Airspace does yet exist at all
+    if (!tempAirspace)
+    {
+        tempAirspace = createAirspaceOnHeap(polygonSize);
+    }
+    tempAirspace->isValid = true;
     tempAirspace->polygonSize = polygonSize;
 
     fseek(fileptr, posPolyStart, SEEK_SET);
 
-    tempAirspace->polygons = calloc(sizeof(polygonSide), polygonSize);
     int i = 0;
     nextChar = ',';
     while (nextChar == ',')
@@ -179,8 +211,18 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
     return tempAirspace;
 }
 
+void deInitAirspaceList()
+{
+}
+
 void airspaceParse()
 {
+    airspace *listNearest = instanceAirspace.nearestAirspace;
+    while (listNearest)
+    {
+        listNearest->isValid = false;
+        listNearest = listNearest->next;
+    }
     double myLat = 47.429665;
     double myLon = 9.388993;
 
@@ -198,7 +240,6 @@ void airspaceParse()
     bool hasNext = true;
     uint32_t airspacesCount = 0;
 
-    airspace *headerAirspace = NULL;
     airspace *prev = NULL;
     uint32_t airspacesCounted = 0;
     BoundingBox_LatLong_t myBoundingBox;
@@ -210,8 +251,6 @@ void airspaceParse()
         readTilCharacter(fileptr, ':');
         fgetc(fileptr);
         readToBufferTillNextChar(fileptr, '"', nameBuffer, 50);
-        if (strcmp(nameBuffer, "LS-R31 Emmen east") == 0)
-            printf("Now");
         readTilCharacterTimes(fileptr, ',', 6);
         fgetc(fileptr);
         char temp = fgetc(fileptr);
@@ -297,24 +336,18 @@ void airspaceParse()
         readTilCharacter(fileptr, '[');
         readTilCharacter(fileptr, '[');
 
-        if (strcmp(nameBuffer, "TMA Zurich 13") == 0)
-        {
-            printf("Heress\n");
-        }
-        airspace *tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox);
+        airspace *tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox, nameBuffer);
         if (!tempAirspace)
             continue;
 
         airspacesCount++;
 
-        if (!headerAirspace)
-            headerAirspace = tempAirspace;
+        // if (!headerAirspace)
+        // headerAirspace = tempAirspace;
         tempAirspace->lowerLimit = lowerLimit;
         tempAirspace->upperLimit = uppperLimit;
         tempAirspace->heightTypeLower = heightTypeLower;
         tempAirspace->heightTypeUpper = heightTypeUpper;
-        tempAirspace->name = calloc(strlen(nameBuffer) + 1, 1);
-        strcpy(tempAirspace->name, nameBuffer);
 
         // bool isEnclosed = isEnclosedByPolygon(tempAirspace->polygons, tempAirspace->polygonSize, myLat, myLon);
 
@@ -326,6 +359,16 @@ void airspaceParse()
 
         hasNext = readTilCharacter(fileptr, '{');
     }
-    searchNearestAirspace(myLat, myLon, 0, headerAirspace);
+    // searchInNearestAirspace(myLat, myLon, 0, headerAirspace);
     fclose(fileptr);
+}
+
+void AirspaceTask()
+{
+    airspaceParse();
+}
+
+void startAirspaceParse()
+{
+    // TODO: Request Airspace Update, if the file is an old one --> download from API SHV Airspace
 }

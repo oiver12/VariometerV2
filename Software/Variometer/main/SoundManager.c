@@ -113,6 +113,8 @@ void SoundManager_Task(void *parameters)
                 printf("Write Task: i2s write failed\n");
             }
         }
+#else
+        vTaskDelay(500 / portTICK_PERIOD_MS);
 #endif
         // spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
         if (currentBiepState != constant_Deep)

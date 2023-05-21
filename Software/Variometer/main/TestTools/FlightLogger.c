@@ -29,16 +29,11 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
     {
 #ifdef NotifyNMEASentence
     case GPS_NMEA_SENTECE:
-        // ESP_LOGI(TAG, "NMEA Sentence:%s", (char *)event_data);
-        time = esp_timer_get_time();
-        fwrite(&time, sizeof(time), 1, fileNMEA);      // write time to file
-        fprintf(fileNMEA, "%s\n", (char *)event_data); // write NMEA Sentence and new line to file
-        if (count % 20 == 0)
-            fflush(fileNMEA);
         break;
 #endif
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
+        volatile gps_t gpsObjec = *gps;
         time = esp_timer_get_time();
         fwrite(&time, sizeof(time), 1, fileGPSUpdate); // write time to file
         // Write GPS Time
@@ -46,14 +41,20 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
         fwrite(&gps->tim.minute, sizeof(uint8_t), 1, fileGPSUpdate);
         fwrite(&gps->tim.second, sizeof(uint8_t), 1, fileGPSUpdate);
         fwrite(&gps->tim.thousand, sizeof(uint8_t), 1, fileGPSUpdate);
-        fwrite(&gps->fix, sizeof(gps_fix_t), 1, fileNameGPSUpdate);
-        fwrite(&gps->fix_mode, sizeof(gps_fix_mode_t), 1, fileNameGPSUpdate);
+        fwrite(&gps->fix, sizeof(gps_fix_t), 1, fileGPSUpdate);
+        fwrite(&gps->fix_mode, sizeof(gps_fix_mode_t), 1, fileGPSUpdate);
         fwrite(&gps->valid, sizeof(bool), 1, fileGPSUpdate);
         fwrite(&gps->dop_h, sizeof(float), 1, fileGPSUpdate);
         fwrite(&gps->dop_p, sizeof(float), 1, fileGPSUpdate);
         fwrite(&gps->dop_v, sizeof(float), 1, fileGPSUpdate);
         fwrite(&gps->sats_in_use, sizeof(uint8_t), 1, fileGPSUpdate);
         fwrite(&gps->sats_in_view, sizeof(uint8_t), 1, fileGPSUpdate);
+        fwrite(&gps->latitude, sizeof(float), 1, fileGPSUpdate);
+        fwrite(&gps->longitude, sizeof(float), 1, fileGPSUpdate);
+        fwrite(&gps->altitude, sizeof(float), 1, fileGPSUpdate);
+        fwrite(&gps->speed, sizeof(float), 1, fileGPSUpdate);
+        fwrite(&gps->cog, sizeof(float), 1, fileGPSUpdate);
+        fwrite(&gps->variation, sizeof(float), 1, fileGPSUpdate);
         fprintf(fileGPSUpdate, "\n"); // new line
         if (count % 10 == 0)
         {
@@ -83,16 +84,6 @@ void startLogging()
         ESP_LOGE(TAG, "Could not create Vario File\n");
         return;
     }
-
-#ifdef NotifyNMEASentence
-    count = 0;
-    do
-    {
-        snprintf(fileNameNMEA, sizeof(fileNameNMEA), "NMEA%02d.txt", count++);
-    } while (fileExists_sdcard(sdcard, directoryLogs, fileNameNMEA));
-    ESP_LOGI(TAG, "Found file: %s", fileNameNMEA);
-    fileNMEA = openFile_sdcard(sdcard, directoryLogs, fileNameNMEA, true);
-#endif
 
     count = 0;
     do

@@ -122,7 +122,7 @@ void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_ti
 
 void AnalyzeGPS()
 {
-    FILE *f = fopen("Trackloggs/GPS08.txt", "r");
+    FILE *f = fopen("Trackloggs/GPS37.txt", "r");
     if (!f)
     {
         printf("Couldn't open GPS Log File\n");
@@ -131,12 +131,12 @@ void AnalyzeGPS()
     fseek(f, 0, SEEK_END);
     size_t bufferSize = ftell(f);
     rewind(f);
-    uint8_t *bufferRead[bufferSize];
+    uint8_t bufferRead[bufferSize];
     fread(bufferRead, bufferSize, 1, f);
     fclose(f);
     size_t currPos = 0;
     int currPosGPSObj = 0;
-    bufferSize = bufferSize / sizeof(gps_t);
+    size_t gpsSize = bufferSize / sizeof(gps_t);
     gps_t gps_Objs[bufferSize];
     bool firstValid = false;
     bool firstGPS = false;
@@ -145,7 +145,7 @@ void AnalyzeGPS()
     bool first3D = false;
     gps_analyze_t gpsAnalyze;
     memset(&gpsAnalyze, 0, sizeof(gps_analyze_t));
-    while (currPos != bufferSize)
+    while (currPosGPSObj < gpsSize)
     {
         int64_t *time = (int64_t *)&bufferRead[currPos];
         currPos += sizeof(int64_t);
@@ -174,7 +174,32 @@ void AnalyzeGPS()
         currPos++;
         uint8_t satsInView = *((uint8_t *)&bufferRead[currPos]);
         currPos++;
-        currPos += sizeof(char);
+        float latitude = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float longitude = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float altitude = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float speed = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float cog = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        float variation = *((float *)&bufferRead[currPos]);
+        currPos += sizeof(float);
+        char lastChar = bufferRead[currPos];
+        if (lastChar != '\n')
+        {
+            int i = 0;
+            while (lastChar != '\n')
+            {
+                i++;
+                currPos++;
+                lastChar = bufferRead[currPos];
+            }
+            printf("Can't parse GPS\n");
+            return;
+        }
+        currPos++;
         if (!firstValid && valid)
         {
             Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToValid);
@@ -230,7 +255,7 @@ void fastForwardSimulation(float percentage)
 
 int main(void)
 {
-    // AnalyzeGPS();
+    AnalyzeGPS();
     airspaceParse();
     SDL_Renderer *renderer;
     SDL_Window *window;

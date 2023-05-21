@@ -40,7 +40,8 @@ static const char *GPS_TAG = "nmea_parser";
  * @brief GPS parser library runtime structure
  *
  */
-typedef struct {
+typedef struct
+{
     uint8_t item_pos;                              /*!< Current position in item */
     uint8_t item_num;                              /*!< Current item number */
     uint8_t asterisk;                              /*!< Asterisk detected flag */
@@ -48,7 +49,7 @@ typedef struct {
     uint8_t parsed_statement;                      /*!< OR'd of statements that have been parsed */
     uint8_t sat_num;                               /*!< Satellite number */
     uint8_t sat_count;                             /*!< Satellite count */
-    uint16_t cur_statement;                         /*!< Current statement ID */
+    uint16_t cur_statement;                        /*!< Current statement ID */
     uint32_t all_statements;                       /*!< All statements mask */
     char item_str[NMEA_MAX_STATEMENT_ITEM_LENGTH]; /*!< Current item */
     gps_t parent;                                  /*!< Parent class */
@@ -100,10 +101,12 @@ static void parse_utc_time(esp_gps_t *esp_gps)
     esp_gps->parent.tim.hour = convert_two_digit2number(esp_gps->item_str + 0);
     esp_gps->parent.tim.minute = convert_two_digit2number(esp_gps->item_str + 2);
     esp_gps->parent.tim.second = convert_two_digit2number(esp_gps->item_str + 4);
-    if (esp_gps->item_str[6] == '.') {
+    if (esp_gps->item_str[6] == '.')
+    {
         uint16_t tmp = 0;
         uint8_t i = 7;
-        while (esp_gps->item_str[i]) {
+        while (esp_gps->item_str[i])
+        {
             tmp = 10 * tmp + esp_gps->item_str[i] - '0';
             i++;
         }
@@ -120,7 +123,8 @@ static void parse_utc_time(esp_gps_t *esp_gps)
 static void parse_gga(esp_gps_t *esp_gps)
 {
     /* Process GGA statement */
-    switch (esp_gps->item_num) {
+    switch (esp_gps->item_num)
+    {
     case 1: /* Process UTC time */
         parse_utc_time(esp_gps);
         break;
@@ -128,7 +132,8 @@ static void parse_gga(esp_gps_t *esp_gps)
         esp_gps->parent.latitude = parse_lat_long(esp_gps);
         break;
     case 3: /* Latitude north(1)/south(-1) information */
-        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's') {
+        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's')
+        {
             esp_gps->parent.latitude *= -1;
         }
         break;
@@ -136,7 +141,8 @@ static void parse_gga(esp_gps_t *esp_gps)
         esp_gps->parent.longitude = parse_lat_long(esp_gps);
         break;
     case 5: /* Longitude east(1)/west(-1) information */
-        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w') {
+        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w')
+        {
             esp_gps->parent.longitude *= -1;
         }
         break;
@@ -170,7 +176,8 @@ static void parse_gga(esp_gps_t *esp_gps)
 static void parse_gsa(esp_gps_t *esp_gps)
 {
     /* Process GSA statement */
-    switch (esp_gps->item_num) {
+    switch (esp_gps->item_num)
+    {
     case 2: /* Process fix mode */
         esp_gps->parent.fix_mode = (gps_fix_mode_t)strtol(esp_gps->item_str, NULL, 10);
         break;
@@ -185,7 +192,8 @@ static void parse_gsa(esp_gps_t *esp_gps)
         break;
     default:
         /* Parse satellite IDs */
-        if (esp_gps->item_num >= 3 && esp_gps->item_num <= 14) {
+        if (esp_gps->item_num >= 3 && esp_gps->item_num <= 14)
+        {
             esp_gps->parent.sats_id_in_use[esp_gps->item_num - 3] = (uint8_t)strtol(esp_gps->item_str, NULL, 10);
         }
         break;
@@ -202,7 +210,8 @@ static void parse_gsa(esp_gps_t *esp_gps)
 static void parse_gsv(esp_gps_t *esp_gps)
 {
     /* Process GSV statement */
-    switch (esp_gps->item_num) {
+    switch (esp_gps->item_num)
+    {
     case 1: /* total GSV numbers */
         esp_gps->sat_count = (uint8_t)strtol(esp_gps->item_str, NULL, 10);
         break;
@@ -213,14 +222,17 @@ static void parse_gsv(esp_gps_t *esp_gps)
         esp_gps->parent.sats_in_view = (uint8_t)strtol(esp_gps->item_str, NULL, 10);
         break;
     default:
-        if (esp_gps->item_num >= 4 && esp_gps->item_num <= 19) {
+        if (esp_gps->item_num >= 4 && esp_gps->item_num <= 19)
+        {
             uint8_t item_num = esp_gps->item_num - 4; /* Normalize item number from 4-19 to 0-15 */
             uint8_t index;
             uint32_t value;
             index = 4 * (esp_gps->sat_num - 1) + item_num / 4; /* Get array index */
-            if (index < GPS_MAX_SATELLITES_IN_VIEW) {
+            if (index < GPS_MAX_SATELLITES_IN_VIEW)
+            {
                 value = strtol(esp_gps->item_str, NULL, 10);
-                switch (item_num % 4) {
+                switch (item_num % 4)
+                {
                 case 0:
                     esp_gps->parent.sats_desc_in_view[index].num = (uint8_t)value;
                     break;
@@ -252,18 +264,20 @@ static void parse_gsv(esp_gps_t *esp_gps)
 static void parse_rmc(esp_gps_t *esp_gps)
 {
     /* Process GPRMC statement */
-    switch (esp_gps->item_num) {
-    case 1:/* Process UTC time */
+    switch (esp_gps->item_num)
+    {
+    case 1: /* Process UTC time */
         parse_utc_time(esp_gps);
         break;
     case 2: /* Process valid status */
         esp_gps->parent.valid = (esp_gps->item_str[0] == 'A');
         break;
-    case 3:/* Latitude */
+    case 3: /* Latitude */
         esp_gps->parent.latitude = parse_lat_long(esp_gps);
         break;
     case 4: /* Latitude north(1)/south(-1) information */
-        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's') {
+        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's')
+        {
             esp_gps->parent.latitude *= -1;
         }
         break;
@@ -271,7 +285,8 @@ static void parse_rmc(esp_gps_t *esp_gps)
         esp_gps->parent.longitude = parse_lat_long(esp_gps);
         break;
     case 6: /* Longitude east(1)/west(-1) information */
-        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w') {
+        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w')
+        {
             esp_gps->parent.longitude *= -1;
         }
         break;
@@ -282,7 +297,7 @@ static void parse_rmc(esp_gps_t *esp_gps)
         esp_gps->parent.cog = strtof(esp_gps->item_str, NULL);
         break;
     case 9: /* Process date */
-        //ESP_LOGI(GPS_TAG, "%s", esp_gps->item_str);
+        // ESP_LOGI(GPS_TAG, "%s", esp_gps->item_str);
         esp_gps->parent.date.day = convert_two_digit2number(esp_gps->item_str + 0);
         esp_gps->parent.date.month = convert_two_digit2number(esp_gps->item_str + 2);
         esp_gps->parent.date.year = convert_two_digit2number(esp_gps->item_str + 4);
@@ -305,12 +320,14 @@ static void parse_rmc(esp_gps_t *esp_gps)
 static void parse_gll(esp_gps_t *esp_gps)
 {
     /* Process GPGLL statement */
-    switch (esp_gps->item_num) {
-    case 1:/* Latitude */
+    switch (esp_gps->item_num)
+    {
+    case 1: /* Latitude */
         esp_gps->parent.latitude = parse_lat_long(esp_gps);
         break;
     case 2: /* Latitude north(1)/south(-1) information */
-        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's') {
+        if (esp_gps->item_str[0] == 'S' || esp_gps->item_str[0] == 's')
+        {
             esp_gps->parent.latitude *= -1;
         }
         break;
@@ -318,11 +335,12 @@ static void parse_gll(esp_gps_t *esp_gps)
         esp_gps->parent.longitude = parse_lat_long(esp_gps);
         break;
     case 4: /* Longitude east(1)/west(-1) information */
-        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w') {
+        if (esp_gps->item_str[0] == 'W' || esp_gps->item_str[0] == 'w')
+        {
             esp_gps->parent.longitude *= -1;
         }
         break;
-    case 5:/* Process UTC time */
+    case 5: /* Process UTC time */
         parse_utc_time(esp_gps);
         break;
     case 6: /* Process valid status */
@@ -343,18 +361,19 @@ static void parse_gll(esp_gps_t *esp_gps)
 static void parse_vtg(esp_gps_t *esp_gps)
 {
     /* Process GPVGT statement */
-    switch (esp_gps->item_num) {
+    switch (esp_gps->item_num)
+    {
     case 1: /* Process true course over ground */
         esp_gps->parent.cog = strtof(esp_gps->item_str, NULL);
         break;
-    case 3:/* Process magnetic variation */
+    case 3: /* Process magnetic variation */
         esp_gps->parent.variation = strtof(esp_gps->item_str, NULL);
         break;
-    case 5:/* Process ground speed in unit m/s */
-        esp_gps->parent.speed = strtof(esp_gps->item_str, NULL) * 1.852;//knots to m/s
+    case 5:                                                              /* Process ground speed in unit m/s */
+        esp_gps->parent.speed = strtof(esp_gps->item_str, NULL) * 1.852; // knots to m/s
         break;
-    case 7:/* Process ground speed in unit m/s */
-        esp_gps->parent.speed = strtof(esp_gps->item_str, NULL) / 3.6;//km/h to m/s
+    case 7:                                                            /* Process ground speed in unit m/s */
+        esp_gps->parent.speed = strtof(esp_gps->item_str, NULL) / 3.6; // km/h to m/s
         break;
     default:
         break;
@@ -363,37 +382,39 @@ static void parse_vtg(esp_gps_t *esp_gps)
 #endif
 static void parse_txt(esp_gps_t *esp_gps)
 {
-    switch (esp_gps->item_num) {
-        case 1: //sentence Number 
-            break;
-        case 2: //Text identifier
-            break;
-        case 3: //Text message
-            break;
-        case 4:
-            strcpy(esp_gps->parent.infoString, esp_gps->item_str);
-        default:
-            break;
+    switch (esp_gps->item_num)
+    {
+    case 1: // sentence Number
+        break;
+    case 2: // Text identifier
+        break;
+    case 3: // Text message
+        break;
+    case 4:
+        strcpy(esp_gps->parent.infoString, esp_gps->item_str);
+    default:
+        break;
     }
 }
 static void parse_gnzda(esp_gps_t *esp_gps)
 {
     //$GNZDA,132145.000,14,04,2022,00,00*4B
-    switch (esp_gps->item_num) {
-        case 1:
-            parse_utc_time(esp_gps);
-            break;
-        case 2:
-            esp_gps->parent.date.day = convert_two_digit2number(esp_gps->item_str);
-            break;
-        case 3:
-            esp_gps->parent.date.month = convert_two_digit2number(esp_gps->item_str);
-            break;
-        case 4:
-            esp_gps->parent.date.year = convert_four_digit2number(esp_gps->item_str);
-            break;
-        default:
-            break;
+    switch (esp_gps->item_num)
+    {
+    case 1:
+        parse_utc_time(esp_gps);
+        break;
+    case 2:
+        esp_gps->parent.date.day = convert_two_digit2number(esp_gps->item_str);
+        break;
+    case 3:
+        esp_gps->parent.date.month = convert_two_digit2number(esp_gps->item_str);
+        break;
+    case 4:
+        esp_gps->parent.date.year = convert_four_digit2number(esp_gps->item_str);
+        break;
+    default:
+        break;
     }
 }
 
@@ -407,36 +428,44 @@ static esp_err_t parse_item(esp_gps_t *esp_gps)
 {
     esp_err_t err = ESP_OK;
     /* start of a statement */
-    if (esp_gps->item_num == 0 && esp_gps->item_str[0] == '$') {
-        if (0) {
+    if (esp_gps->item_num == 0 && esp_gps->item_str[0] == '$')
+    {
+        if (0)
+        {
         }
 #if CONFIG_NMEA_STATEMENT_GGA
-        else if (strstr(esp_gps->item_str, "GGA")) {
+        else if (strstr(esp_gps->item_str, "GGA"))
+        {
             esp_gps->cur_statement = STATEMENT_GGA;
         }
 #endif
 #if CONFIG_NMEA_STATEMENT_GSA
-        else if (strstr(esp_gps->item_str, "GSA")) {
+        else if (strstr(esp_gps->item_str, "GSA"))
+        {
             esp_gps->cur_statement = STATEMENT_GSA;
         }
 #endif
 #if CONFIG_NMEA_STATEMENT_RMC
-        else if (strstr(esp_gps->item_str, "RMC")) {
+        else if (strstr(esp_gps->item_str, "RMC"))
+        {
             esp_gps->cur_statement = STATEMENT_RMC;
         }
 #endif
 #if CONFIG_NMEA_STATEMENT_GSV
-        else if (strstr(esp_gps->item_str, "GSV")) {
+        else if (strstr(esp_gps->item_str, "GSV"))
+        {
             esp_gps->cur_statement = STATEMENT_GSV;
         }
 #endif
 #if CONFIG_NMEA_STATEMENT_GLL
-        else if (strstr(esp_gps->item_str, "GLL")) {
+        else if (strstr(esp_gps->item_str, "GLL"))
+        {
             esp_gps->cur_statement = STATEMENT_GLL;
         }
 #endif
 #if CONFIG_NMEA_STATEMENT_VTG
-        else if (strstr(esp_gps->item_str, "VTG")) {
+        else if (strstr(esp_gps->item_str, "VTG"))
+        {
             esp_gps->cur_statement = STATEMENT_VTG;
         }
 #endif
@@ -448,42 +477,50 @@ static esp_err_t parse_item(esp_gps_t *esp_gps)
         {
             esp_gps->cur_statement = STATEMENT_GNZDA;
         }
-        else {
+        else
+        {
             esp_gps->cur_statement = STATEMENT_UNKNOWN;
         }
         goto out;
     }
     /* Parse each item, depend on the type of the statement */
-    if (esp_gps->cur_statement == STATEMENT_UNKNOWN) {
+    if (esp_gps->cur_statement == STATEMENT_UNKNOWN)
+    {
         goto out;
     }
 #if CONFIG_NMEA_STATEMENT_GGA
-    else if (esp_gps->cur_statement == STATEMENT_GGA) {
+    else if (esp_gps->cur_statement == STATEMENT_GGA)
+    {
         parse_gga(esp_gps);
     }
 #endif
 #if CONFIG_NMEA_STATEMENT_GSA
-    else if (esp_gps->cur_statement == STATEMENT_GSA) {
+    else if (esp_gps->cur_statement == STATEMENT_GSA)
+    {
         parse_gsa(esp_gps);
     }
 #endif
 #if CONFIG_NMEA_STATEMENT_GSV
-    else if (esp_gps->cur_statement == STATEMENT_GSV) {
+    else if (esp_gps->cur_statement == STATEMENT_GSV)
+    {
         parse_gsv(esp_gps);
     }
 #endif
 #if CONFIG_NMEA_STATEMENT_RMC
-    else if (esp_gps->cur_statement == STATEMENT_RMC) {
+    else if (esp_gps->cur_statement == STATEMENT_RMC)
+    {
         parse_rmc(esp_gps);
     }
 #endif
 #if CONFIG_NMEA_STATEMENT_GLL
-    else if (esp_gps->cur_statement == STATEMENT_GLL) {
+    else if (esp_gps->cur_statement == STATEMENT_GLL)
+    {
         parse_gll(esp_gps);
     }
 #endif
 #if CONFIG_NMEA_STATEMENT_VTG
-    else if (esp_gps->cur_statement == STATEMENT_VTG) {
+    else if (esp_gps->cur_statement == STATEMENT_VTG)
+    {
         parse_vtg(esp_gps);
     }
 #endif
@@ -491,12 +528,13 @@ static esp_err_t parse_item(esp_gps_t *esp_gps)
     {
         parse_txt(esp_gps);
     }
-    else if(esp_gps->cur_statement == STATEMENT_GNZDA)
+    else if (esp_gps->cur_statement == STATEMENT_GNZDA)
     {
         parse_gnzda(esp_gps);
     }
-    else {
-        err =  ESP_FAIL;
+    else
+    {
+        err = ESP_FAIL;
     }
 out:
     return err;
@@ -512,9 +550,11 @@ out:
 static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
 {
     const uint8_t *d = esp_gps->buffer;
-    while (*d) {
+    while (*d)
+    {
         /* Start of a statement */
-        if (*d == '$') {
+        if (*d == '$')
+        {
             /* Reset runtime information */
             esp_gps->asterisk = 0;
             esp_gps->item_num = 0;
@@ -528,7 +568,8 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
             esp_gps->item_str[esp_gps->item_pos] = '\0';
         }
         /* Detect item separator character */
-        else if (*d == ',') {
+        else if (*d == ',')
+        {
             /* Parse current item */
             parse_item(esp_gps);
             /* Add character to CRC computation */
@@ -539,7 +580,8 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
             esp_gps->item_num++;
         }
         /* End of CRC computation */
-        else if (*d == '*') {
+        else if (*d == '*')
+        {
             /* Parse current item */
             parse_item(esp_gps);
             /* Asterisk detected */
@@ -550,12 +592,15 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
             esp_gps->item_num++;
         }
         /* End of statement */
-        else if (*d == '\r') {
+        else if (*d == '\r')
+        {
             /* Convert received CRC from string (hex) to number */
             uint8_t crc = (uint8_t)strtol(esp_gps->item_str, NULL, 16);
             /* CRC passed */
-            if (esp_gps->crc == crc) {
-                switch (esp_gps->cur_statement) {
+            if (esp_gps->crc == crc)
+            {
+                switch (esp_gps->cur_statement)
+                {
 #if CONFIG_NMEA_STATEMENT_GGA
                 case STATEMENT_GGA:
                     esp_gps->parsed_statement |= 1 << STATEMENT_GGA;
@@ -573,7 +618,8 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
 #endif
 #if CONFIG_NMEA_STATEMENT_GSV
                 case STATEMENT_GSV:
-                    if (esp_gps->sat_num == esp_gps->sat_count) {
+                    if (esp_gps->sat_num == esp_gps->sat_count)
+                    {
                         esp_gps->parsed_statement |= 1 << STATEMENT_GSV;
                     }
                     break;
@@ -592,28 +638,34 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
                     break;
                 }
                 /* Check if all statements have been parsed */
-                if (((esp_gps->parsed_statement) & esp_gps->all_statements) == esp_gps->all_statements) {
+                if (((esp_gps->parsed_statement) & esp_gps->all_statements) == esp_gps->all_statements)
+                {
                     esp_gps->parsed_statement = 0;
                     /* Send signal to notify that GPS information has been updated */
                     esp_event_post_to(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, GPS_UPDATE,
                                       &(esp_gps->parent), sizeof(gps_t), 100 / portTICK_PERIOD_MS);
                 }
-            } else {
+            }
+            else
+            {
                 ESP_LOGD(GPS_TAG, "CRC Error for statement:%s", esp_gps->buffer);
             }
-            if (esp_gps->cur_statement == STATEMENT_UNKNOWN) {
+            if (esp_gps->cur_statement == STATEMENT_UNKNOWN)
+            {
                 /* Send signal to notify that one unknown statement has been met */
                 esp_event_post_to(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, GPS_UNKNOWN,
                                   esp_gps->buffer, len, 100 / portTICK_PERIOD_MS);
             }
-            #ifdef NotifyNMEASentence
+#ifdef NotifyNMEASentence
             esp_event_post_to(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, GPS_NMEA_SENTECE,
-                                  esp_gps->buffer, len, 100 / portTICK_PERIOD_MS);
-            #endif
+                              esp_gps->buffer, len, 100 / portTICK_PERIOD_MS);
+#endif
         }
         /* Other non-space character */
-        else {
-            if (!(esp_gps->asterisk)) {
+        else
+        {
+            if (!(esp_gps->asterisk))
+            {
                 /* Add to CRC */
                 esp_gps->crc ^= (uint8_t)(*d);
             }
@@ -635,16 +687,20 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
 static void esp_handle_uart_pattern(esp_gps_t *esp_gps)
 {
     int pos = uart_pattern_pop_pos(esp_gps->uart_port);
-    if (pos != -1) {
+    if (pos != -1)
+    {
         /* read one line(include '\n') */
         int read_len = uart_read_bytes(esp_gps->uart_port, esp_gps->buffer, pos + 1, 100 / portTICK_PERIOD_MS);
         /* make sure the line is a standard string */
         esp_gps->buffer[read_len] = '\0';
         /* Send new line to handle */
-        if (gps_decode(esp_gps, read_len + 1) != ESP_OK) {
+        if (gps_decode(esp_gps, read_len + 1) != ESP_OK)
+        {
             ESP_LOGW(GPS_TAG, "GPS decode line failed");
         }
-    } else {
+    }
+    else
+    {
         ESP_LOGW(GPS_TAG, "Pattern Queue Size too small");
         uart_flush_input(esp_gps->uart_port);
     }
@@ -659,10 +715,25 @@ static void nmea_parser_task_entry(void *arg)
 {
     esp_gps_t *esp_gps = (esp_gps_t *)arg;
     uart_event_t event;
-    while (1) {
-        if (xQueueReceive(esp_gps->event_queue, &event, pdMS_TO_TICKS(200))) {
-            switch (event.type) {
+    while (1)
+    {
+        if (xQueueReceive(esp_gps->event_queue, &event, pdMS_TO_TICKS(200)))
+        {
+            switch (event.type)
+            {
             case UART_DATA:
+                uint8_t data;
+                while (uart_read_bytes(esp_gps->uart_port, &data, 1, 0) == 1)
+                {
+                    // Process or store the received data as needed
+                    printf("%c", data);
+                    static int i = 0;
+                    if (i % 20 == 0)
+                    {
+                        printf("\n");
+                        i++;
+                    }
+                }
                 break;
             case UART_FIFO_OVF:
                 ESP_LOGW(GPS_TAG, "HW FIFO Overflow");
@@ -675,7 +746,7 @@ static void nmea_parser_task_entry(void *arg)
                 xQueueReset(esp_gps->event_queue);
                 break;
             case UART_BREAK:
-                //ESP_LOGW(GPS_TAG, "Rx Break");
+                // ESP_LOGW(GPS_TAG, "Rx Break");
                 break;
             case UART_PARITY_ERR:
                 ESP_LOGE(GPS_TAG, "Parity Error");
@@ -684,6 +755,7 @@ static void nmea_parser_task_entry(void *arg)
                 ESP_LOGE(GPS_TAG, "Frame Error");
                 break;
             case UART_PATTERN_DET:
+                ESP_LOGI(GPS_TAG, "Handle string\n");
                 esp_handle_uart_pattern(esp_gps);
                 break;
             default:
@@ -706,12 +778,14 @@ static void nmea_parser_task_entry(void *arg)
 nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config, uint32_t taskStackSize)
 {
     esp_gps_t *esp_gps = calloc(1, sizeof(esp_gps_t));
-    if (!esp_gps) {
+    if (!esp_gps)
+    {
         ESP_LOGE(GPS_TAG, "calloc memory for esp_fps failed");
         goto err_gps;
     }
     esp_gps->buffer = calloc(1, NMEA_PARSER_RUNTIME_BUFFER_SIZE);
-    if (!esp_gps->buffer) {
+    if (!esp_gps->buffer)
+    {
         ESP_LOGE(GPS_TAG, "calloc memory for runtime buffer failed");
         goto err_buffer;
     }
@@ -746,16 +820,19 @@ nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config, uint32
         .source_clk = UART_SCLK_APB,
     };
     if (uart_driver_install(esp_gps->uart_port, CONFIG_NMEA_PARSER_RING_BUFFER_SIZE, 0,
-                            config->uart.event_queue_size, &esp_gps->event_queue, 0) != ESP_OK) {
+                            config->uart.event_queue_size, &esp_gps->event_queue, 0) != ESP_OK)
+    {
         ESP_LOGE(GPS_TAG, "install uart driver failed");
         goto err_uart_install;
     }
-    if (uart_param_config(esp_gps->uart_port, &uart_config) != ESP_OK) {
+    if (uart_param_config(esp_gps->uart_port, &uart_config) != ESP_OK)
+    {
         ESP_LOGE(GPS_TAG, "config uart parameter failed");
         goto err_uart_config;
     }
     if (uart_set_pin(esp_gps->uart_port, UART_PIN_NO_CHANGE, config->uart.rx_pin,
-                     UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) != ESP_OK) {
+                     UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE) != ESP_OK)
+    {
         ESP_LOGE(GPS_TAG, "config uart gpio failed");
         goto err_uart_config;
     }
@@ -767,21 +844,22 @@ nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config, uint32
     /* Create Event loop */
     esp_event_loop_args_t loop_args = {
         .queue_size = NMEA_EVENT_LOOP_QUEUE_SIZE,
-        .task_name = NULL
-    };
-    if (esp_event_loop_create(&loop_args, &esp_gps->event_loop_hdl) != ESP_OK) {
+        .task_name = NULL};
+    if (esp_event_loop_create(&loop_args, &esp_gps->event_loop_hdl) != ESP_OK)
+    {
         ESP_LOGE(GPS_TAG, "create event loop faild");
         goto err_eloop;
     }
     /* Create NMEA Parser task */
     BaseType_t err = xTaskCreate(
-                         nmea_parser_task_entry,
-                         "nmea_parser",
-                         taskStackSize,
-                         esp_gps,
-                         CONFIG_NMEA_PARSER_TASK_PRIORITY,
-                         &esp_gps->tsk_hdl);
-    if (err != pdTRUE) {
+        nmea_parser_task_entry,
+        "nmea_parser",
+        taskStackSize,
+        esp_gps,
+        CONFIG_NMEA_PARSER_TASK_PRIORITY,
+        &esp_gps->tsk_hdl);
+    if (err != pdTRUE)
+    {
         ESP_LOGE(GPS_TAG, "create NMEA Parser task failed");
         goto err_task_create;
     }
@@ -833,7 +911,7 @@ esp_err_t nmea_parser_deinit(nmea_parser_handle_t nmea_hdl)
 esp_err_t nmea_parser_add_handler(nmea_parser_handle_t nmea_hdl, esp_event_handler_t event_handler, void *handler_args, int32_t eventID)
 {
     esp_gps_t *esp_gps = (esp_gps_t *)nmea_hdl;
-    //ESP_EVENT_ANY_ID
+    // ESP_EVENT_ANY_ID
     return esp_event_handler_register_with(esp_gps->event_loop_hdl, ESP_NMEA_EVENT, eventID, event_handler, handler_args);
 }
 

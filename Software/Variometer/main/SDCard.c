@@ -15,9 +15,9 @@ static const char *TAG = "SDCard";
 #define SDCARD_DETECT 14
 sdcard_t sdCardInstance;
 
-void sdcard_storageCheck(void* params)
+void sdcard_storageCheck(void *params)
 {
-    while(1)
+    while (1)
     {
         sdcard_remainingSpace_update();
         vTaskDelay(20000 / portTICK_PERIOD_MS);
@@ -26,7 +26,7 @@ void sdcard_storageCheck(void* params)
 
 esp_err_t init_sdcard(const char *Mount_Point)
 {
-    if(sdCardInstance.cardInit)
+    if (sdCardInstance.cardInit)
         return ESP_OK;
     // /* Configure SDCard */
     gpio_config_t sdcard_detect_conf = {
@@ -34,18 +34,16 @@ esp_err_t init_sdcard(const char *Mount_Point)
         .mode = GPIO_MODE_INPUT,
         .pin_bit_mask = 1ULL << SDCARD_DETECT,
         .pull_down_en = 0,
-        .pull_up_en = 0
-    };
+        .pull_up_en = 0};
     gpio_config(&sdcard_detect_conf);
     int sdCardLevel = gpio_get_level(SDCARD_DETECT);
     ESP_LOGI(TAG, "SDCard level: %i", sdCardLevel);
-    
+
     esp_err_t ret;
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = true,
         .max_files = 8,
-        .allocation_unit_size = 16 * 1024
-    };
+        .allocation_unit_size = 16 * 1024};
     sdmmc_card_t *card;
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
 
@@ -59,19 +57,24 @@ esp_err_t init_sdcard(const char *Mount_Point)
     slot_config.d3 = 16;
     slot_config.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
-    sd_card_state_t sdcard_state_vario; //for Vario State
+    sd_card_state_t sdcard_state_vario; // for Vario State
     memset(&sdcard_state_vario, 0, sizeof(sd_card_state_t));
 
     ESP_LOGI(TAG, "Mounting filesystem");
     ret = esp_vfs_fat_sdmmc_mount(Mount_Point, &host, &slot_config, &mount_config, &card);
 
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
+    if (ret != ESP_OK)
+    {
+        if (ret == ESP_FAIL)
+        {
             ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        } else {
+                          "If you want the card to be formatted, set the EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        }
+        else
+        {
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+                          "Make sure SD card lines have pull-up resistors in place.",
+                     esp_err_to_name(ret));
         }
         sdcard_state_vario.status |= SD_CARD_STATE_ERROR_INIT;
         device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
@@ -85,32 +88,33 @@ esp_err_t init_sdcard(const char *Mount_Point)
     /* Get volume information and free clusters of sdcard */
     FATFS *fs;
     uint32_t fre_clust, fre_sect, tot_sect;
-	FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
-	if (res) {
-		printf("Couldn't find out SdCard size\n");
+    FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
+    if (res)
+    {
+        printf("Couldn't find out SdCard size\n");
         sdcard_state_vario.freeSpace = 0;
         sdcard_state_vario.maxSpace = 0;
         sdcard_state_vario.status |= SD_CARD_STATE_INIT;
         device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
         return ret;
-	}
+    }
 
-	/* Get total sectors and free sectors */
-	tot_sect = (fs->n_fatent - 2) * fs->csize;
-	fre_sect = fre_clust * fs->csize;
-	
-	uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
-	uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
+    /* Get total sectors and free sectors */
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
 
-	/* Print the free space in bytes */
-	printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
+    uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
+    uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
+
+    /* Print the free space in bytes */
+    printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
 
     sdcard_state_vario.status |= SD_CARD_STATE_INIT;
     sdcard_state_vario.maxSpace = tmp_total_bytes;
     sdcard_state_vario.freeSpace = tmp_free_bytes;
     device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
 
-    xTaskCreate(sdcard_storageCheck, "Storage Check", 1024 * 2, NULL, 2, NULL);
+    xTaskCreate(sdcard_storageCheck, "Storage Check", 1024 * 3, NULL, 2, NULL);
     return ret;
 }
 
@@ -126,21 +130,21 @@ esp_err_t deinit_sdcard()
     return ESP_OK;
 }
 
-//TODO: directory not working
-FILE *openFile_sdcard(const char *directory, const char* fileName, const char* openMethod)
+// TODO: directory not working
+FILE *openFile_sdcard(const char *directory, const char *fileName, const char *openMethod)
 {
     char buffer[100];
     strcpy(buffer, sdCardInstance.Mount_Point);
-    struct stat st = {0};   
-    if(directory != NULL)
+    struct stat st = {0};
+    if (directory != NULL)
     {
         strcat(buffer, directory);
-        //ESP_LOGI(TAG, "Directory: %s", buffer);
-        if(stat(buffer, &st) == -1)
+        // ESP_LOGI(TAG, "Directory: %s", buffer);
+        if (stat(buffer, &st) == -1)
         {
             printf("Buffer: %s\n", buffer);
             printf("Directory: %s\n", directory);
-            if(mkdir(buffer, 0700) != 0)
+            if (mkdir(buffer, 0700) != 0)
             {
                 volatile char *testValue = strerror(errno);
                 ESP_LOGE(TAG, "Could not create Directory: %s", testValue);
@@ -155,97 +159,98 @@ FILE *openFile_sdcard(const char *directory, const char* fileName, const char* o
     }
     strcat(buffer, "/");
     strcat(buffer, fileName);
-    //ESP_LOGI(TAG, "File Destination: %s", buffer);
-    // if(stat(buffer, &st) != -1 && createNew)
-    // {
-    //     ESP_LOGE(TAG, "File already exists");
-    // }
+    // ESP_LOGI(TAG, "File Destination: %s", buffer);
+    //  if(stat(buffer, &st) != -1 && createNew)
+    //  {
+    //      ESP_LOGE(TAG, "File already exists");
+    //  }
     return fopen(buffer, openMethod);
 }
 
-bool fileExists_sdcard(const char* directory ,const char *fileName)
+bool fileExists_sdcard(const char *directory, const char *fileName)
 {
     char buffer[strlen(sdCardInstance.Mount_Point) + strlen(directory) + strlen(fileName) + 2];
     strcpy(buffer, sdCardInstance.Mount_Point);
-    if(directory != NULL)
+    if (directory != NULL)
     {
         strcat(buffer, directory);
         strcat(buffer, "/");
     }
     strcat(buffer, fileName);
-    struct stat st = {0};   
+    struct stat st = {0};
     return stat(buffer, &st) != -1;
 }
 
 uint64_t sdcard_remainingSpace_update()
 {
-    if(!sdCardInstance.cardInit)
+    if (!sdCardInstance.cardInit)
         return 0;
     sd_card_state_t state;
     device_state_get_member(&state, device_state_statusSDCard, false);
 
     FATFS *fs;
     uint32_t fre_clust, fre_sect, tot_sect;
-	FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
-	if (res) {
-		printf("Couldn't find out SdCard size\n");
+    FRESULT res = f_getfree(sdCardInstance.Mount_Point, &fre_clust, &fs);
+    if (res)
+    {
+        printf("Couldn't find out SdCard size\n");
         state.freeSpace = 0;
         state.maxSpace = 0;
         state.status |= SD_CARD_STATE_INIT;
         device_state_set_member(&state, device_state_statusSDCard);
         return 0;
-	}
+    }
 
-	/* Get total sectors and free sectors */
-	tot_sect = (fs->n_fatent - 2) * fs->csize;
-	fre_sect = fre_clust * fs->csize;
-	
-	uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
-	uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
+    /* Get total sectors and free sectors */
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
+
+    uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
+    uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
 
     state.freeSpace = tmp_free_bytes;
     state.maxSpace = tmp_total_bytes;
-    printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
+    printf("%llu total bytes. %llu free bytes. sector_size=%u\n", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
     device_state_set_member(&state, device_state_statusSDCard);
     return tmp_free_bytes;
 }
 
-void GetFlights(int startIndex, widget_Settings_linkedList* flightListHead)
+void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
 {
     DIR *dir;
     struct dirent *ent;
     char *extension = ".igc";
 
-    if((dir = opendir("IGCFlights")) != NULL)
+    if ((dir = opendir("/sdcard/IGCFlights")) != NULL)
     {
         int index = 0;
         int tookenFiles = 0;
-        while((ent = readdir(dir)) != NULL)
+        while ((ent = readdir(dir)) != NULL)
         {
             char *fileName = ent->d_name;
             int len = strlen(fileName);
-            if(len > 4 && strcmp(fileName + len - 4, extension) == 0)
+            if (len > 4 && strcmp(fileName + len - 4, extension) == 0)
             {
                 index++;
-                if(index < startIndex)
+                if (index < startIndex)
                     continue;
-                if(flightListHead == NULL)
+                if (flightListHead == NULL)
                 {
                     printf("Couldn't find next Flight\n");
                     return;
                 }
                 printf("FlighName: %s\n", fileName);
-                strcpy(((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName, fileName);
+                strcpy(((FlightList_Widget_Data *)flightListHead->data.extr_data)->FlightName, fileName);
                 flightListHead = flightListHead->next;
                 tookenFiles++;
             }
-            if(tookenFiles >= 6)
+            if (tookenFiles >= 6)
                 break;
         }
         closedir(dir);
-        if(tookenFiles < 6 && flightListHead)
-        { 
-            ((FlightList_Widget_Data*)flightListHead->data.extr_data)->FlightName[0] = '\0';
+        if (tookenFiles < 6 && flightListHead)
+        {
+            ((FlightList_Widget_Data *)flightListHead->data.extr_data)->FlightName[0] = '\0';
         }
     }
     else

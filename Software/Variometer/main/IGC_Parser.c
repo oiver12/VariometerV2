@@ -132,9 +132,10 @@ static int parseB(const char *line, Track_t *track, TrackPointIGC_t *point, IFie
     if (strlen(line) < 35)
     {
         printf("Line not enough long\n");
+        printf("Line: %s, length: %i\n", line, (int)strlen(line));
         return 1;
     }
-
+    printf("Gone trough\n");
     char tempBuffer[MAX_LINELENGTH];
     // Parse Latitude
     sliceString(line, tempBuffer, 7, 8);
@@ -291,6 +292,7 @@ int ParseIGCFile(Track_t *track, size_t maxSizeTrackPoints, FILE *igcFile, bool 
                 ERROR_CHECK(parseI(line, track, parseIFields));
         }
     }
+    printf("Here%i\n", (int)track->totalPoints);
     fseek(igcFile, 0, SEEK_SET);
     memset(&track->flightStats, 0, sizeof(flight_stats_t));
     if (vario_fifo == NULL)
@@ -356,6 +358,7 @@ int ParseIGCFile(Track_t *track, size_t maxSizeTrackPoints, FILE *igcFile, bool 
             break;
         }
     }
+    printf("All done\n");
     track->flightStats.takeOffPosition.lat = track->trackPoints[0].lat;
     track->flightStats.takeOffPosition.lon = track->trackPoints[0].lon;
     // TODO: Take the last Valid GNSS Alt
@@ -392,11 +395,15 @@ int SetPointCountFromFile(Track_t *track, FILE *igcFile, size_t maxSizeTrackPoin
     // Determine total points in track, so that we can sample the points in the second run
     track->totalPoints = 0;
     memset(track, 0, sizeof(Track_t));
+    printf("Start COunt\n");
     while (fgets(line, sizeof(line), igcFile))
     {
         if (line[0] == 'B')
+        {
             track->totalPoints++;
+        }
     }
+    printf("Total: %i", (int)track->totalPoints);
     if (maxSizeTrackPoints > track->totalPoints)
         track->sizeTrackPoints = track->totalPoints;
     else

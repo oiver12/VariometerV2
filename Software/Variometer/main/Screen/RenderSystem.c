@@ -25,13 +25,13 @@ void rendering_Task(void *pvParameters)
     {
         if (currentRenderMode == RenderMode_Update)
         {
-            if(counter % 10 == 0)
+            if (counter % 10 == 0)
                 ScreenManager_draw_status_bar();
 
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             bool screenUpdate = ScreenManager_update();
-            xSemaphoreGive(buffer_Mutex);  
-            if(screenUpdate)
+            xSemaphoreGive(buffer_Mutex);
+            if (screenUpdate)
             {
                 refreshMode = fullRedraw || counter % 100 == 0 ? FULL_G_T_BW : PART_BW_T_BW;
                 xQueueSend(renderQueue, &refreshMode, portMAX_DELAY);
@@ -46,9 +46,9 @@ void rendering_Task(void *pvParameters)
 
 void displayRefreshTask(void *pvParameters)
 {
-    uint8_t* ScreenBuffer = (uint8_t*)pvParameters;
+    uint8_t *ScreenBuffer = (uint8_t *)pvParameters;
     Display_RefreshMode refreshMode;
-    while(1)
+    while (1)
     {
         xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
@@ -58,15 +58,15 @@ void displayRefreshTask(void *pvParameters)
     }
 }
 
-void startRendering(uint8_t* ScreenBuffer)
+void startRendering(uint8_t *ScreenBuffer)
 {
     DEV_Module_Init();
-    EPD_3IN7_1Gray_Init();       //init 1 Gray mode
+    EPD_3IN7_1Gray_Init(); // init 1 Gray mode
     EPD_3IN7_1Gray_Clear();
 
     buffer_Mutex = xSemaphoreCreateMutex();
     ScreenManager_init(buffer_Mutex);
-    
+
     static WidgetData widgetDataScreen0[8] = {
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Active, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_20_CONTENT, .h = 130, .w = 100, .style = Widget_Compass, .type = WidgetContent_CompassSensor, .x = 0, .y = 87},
@@ -74,19 +74,19 @@ void startRendering(uint8_t* ScreenBuffer)
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_VertAcc, .x = 160, .y = 27},
         {.extraStyle = WS_FONT_16_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Pressure, .x = 320, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_GPS, .x = 320, .y = 87},
-		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 147},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 147},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 73, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 320, .y = 207},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 8);
     static WidgetData widgetDataScreen1[4] = {
         {.extraStyle = WS_FONT_32_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Time_GPS, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
-		{.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
+        {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
         {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 4);
     ScreenManager_show_Screen(0);
-    
+
     renderQueue = xQueueCreate(1, sizeof(Display_RefreshMode));
 
     xTaskCreate(rendering_Task, "rendering_Task", 4096, NULL, 10, NULL);

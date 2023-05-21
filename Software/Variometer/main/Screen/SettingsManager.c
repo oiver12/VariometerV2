@@ -5,12 +5,12 @@
 #include "../SDCard.h"
 
 WidgetData widgetData_Audio_Settings[2] = {
-        {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
-        {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
+    {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
+    {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
 };
 
 WidgetData widgetData_Config_Settings[1] = {
-        {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
+    {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
 };
 
 static VarioScreen_Settings_t screenSettingsInstance;
@@ -22,18 +22,17 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     WidgetData pageButtonSettingsWidget[3] = {
         {.x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Audio, .extraStyle = 0},
         {.x = 10, .y = 67, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Config, .extraStyle = 0},
-        {.x = 10, .y = 67, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Flights, .extraStyle = 0}
-    };
-    WidgetData backButtonWidget = { .x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = 0 };
+        {.x = 10, .y = 67, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Flights, .extraStyle = 0}};
+    WidgetData backButtonWidget = {.x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_settings_BackButton, .extraStyle = 0};
 
     /* Init Page Buttons Setting Widgets */
-    widget_Settings_linkedList* backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    widget_Settings_linkedList *backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
     backButtonWidget.type = WidgetContent_Settings_PageButton;
     backButtonItem->data = backButtonWidget;
     screenSettingsInstance.headListPageButtons = backButtonItem;
     screenSettingsInstance.topFielPageButtons = backButtonItem;
-    widget_Settings_linkedList* prev = backButtonItem;
-    widget_Settings_linkedList* listElement;
+    widget_Settings_linkedList *prev = backButtonItem;
+    widget_Settings_linkedList *listElement;
     for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
     {
         listElement = calloc(1, sizeof(widget_Settings_linkedList));
@@ -43,7 +42,7 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
         listElement->data.x = 10;
         prev = listElement;
     }
-    //make it circular (skip to to top when all the way down)
+    // make it circular (skip to to top when all the way down)
     listElement->next = backButtonItem;
     backButtonItem->prev = listElement;
 
@@ -92,7 +91,7 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     screenSettingsInstance.headListFlightList = backButtonItem;
     screenSettingsInstance.topFieldFlightList = backButtonItem;
     prev = backButtonItem;
-    
+
     WidgetData widgetFlight = {.x = 10, .y = 67, .w = 459, .h = 35, .style = Widget_Settings_FlightListElement, .type = WidgetContent_Settings_FlightListElement};
     for (size_t i = 0; i < SIZE_FLIGHTS; i++)
     {
@@ -112,7 +111,7 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
 static void draw_Settings_Scrollbar()
 {
     uint32_t currY = 28;
-    widget_Settings_linkedList* startElement = screenSettingsInstance.topFielPageButtons;
+    widget_Settings_linkedList *startElement = screenSettingsInstance.topFielPageButtons;
     if (screenSettingsInstance.currPage == Settings_Page_Audio)
     {
         startElement = screenSettingsInstance.topFieldAudio;
@@ -126,7 +125,7 @@ static void draw_Settings_Scrollbar()
         startElement = screenSettingsInstance.topFieldFlightList;
     }
     Paint_ClearWindows(0, currY, Paint.Width, Paint.Height, WHITE);
-    widget_Settings_linkedList* element = startElement;
+    widget_Settings_linkedList *element = startElement;
     do
     {
         element->data.y = currY;
@@ -134,7 +133,7 @@ static void draw_Settings_Scrollbar()
             vario_display_add_settings_widget(&element->data, screenSettingsInstance.currPage, false, screenSettingsInstance.selectedField == element, false);
         currY += element->data.h;
         element = element->next;
-    } while(element != startElement && currY + element->data.h <= Paint.Height);
+    } while (element != startElement && currY + element->data.h <= Paint.Height);
     vario_display_add_settings_widget(&screenSettingsInstance.hoveredField->data, screenSettingsInstance.currPage, true, screenSettingsInstance.selectedField == element, false);
 }
 
@@ -152,11 +151,9 @@ void SettingsManager_openSettings()
     rendering_Push(true);
 }
 
-
-
 void SettingsManager__enter_press()
 {
-    //Erste Page Button Seite
+    // Erste Page Button Seite
     if (screenSettingsInstance.currPage == Settings_Page_PageButtons)
     {
         switch (screenSettingsInstance.hoveredField->data.type)
@@ -188,15 +185,15 @@ void SettingsManager__enter_press()
         xSemaphoreGive(buffer_Mutex);
         rendering_Push(false);
     }
-    else if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    else if (screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
     {
         screenSettingsInstance.currPage = Settings_Page_Flights;
         draw_Settings_Scrollbar();
     }
-    //Button in Setting drin
+    // Button in Setting drin
     else
     {
-        //deselect field
+        // deselect field
         if (screenSettingsInstance.selectedField)
         {
             screenSettingsInstance.selectedField = NULL;
@@ -217,15 +214,15 @@ void SettingsManager__enter_press()
                 rendering_Push(false);
                 return;
             }
-            else if(screenSettingsInstance.currPage == Settings_Page_Flights)
+            else if (screenSettingsInstance.currPage == Settings_Page_Flights)
             {
                 screenSettingsInstance.currPage = Settings_Page_FlightStatistics;
-                xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-                vario_display_FlightStatistics(((FlightList_Widget_Data*)screenSettingsInstance.hoveredField->data.extr_data)->FlightName);
-                rendering_Push(true);
+                // xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+                xTaskCreate(vario_display_FlightStatistics, "IGC Show", 1024 * 5, (void *)((FlightList_Widget_Data *)screenSettingsInstance.hoveredField->data.extr_data)->FlightName, 3, NULL);
+                // xSemaphoreGive(buffer_Mutex);
                 return;
             }
-            //select field
+            // select field
             screenSettingsInstance.selectedField = screenSettingsInstance.hoveredField;
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_add_settings_widget(&screenSettingsInstance.selectedField->data, screenSettingsInstance.currPage, true, true, false);
@@ -237,9 +234,9 @@ void SettingsManager__enter_press()
 
 void SettingsManager_up_press()
 {
-    if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    if (screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
     {
-        //TODO: Change Flight Stat Site etc.
+        // TODO: Change Flight Stat Site etc.
         return;
     }
     if (!screenSettingsInstance.selectedField)
@@ -249,7 +246,7 @@ void SettingsManager_up_press()
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_select_settings_widget(&screenSettingsInstance.hoveredField->data, screenSettingsInstance.currPage, false, false);
             screenSettingsInstance.hoveredField = screenSettingsInstance.hoveredField->prev;
-            //we are hovering a field
+            // we are hovering a field
             vario_display_select_settings_widget(&screenSettingsInstance.hoveredField->data, screenSettingsInstance.currPage, true, false);
             xSemaphoreGive(buffer_Mutex);
             rendering_Push(false);
@@ -258,7 +255,7 @@ void SettingsManager_up_press()
     else
     {
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        //change Value in Field
+        // change Value in Field
         vario_display_settings_widget_handle_input(&screenSettingsInstance.selectedField->data, Button_Direction_up);
         xSemaphoreGive(buffer_Mutex);
         rendering_Push(false);
@@ -267,17 +264,17 @@ void SettingsManager_up_press()
 
 void SettingsManager_down_press()
 {
-    if(screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
+    if (screenSettingsInstance.currPage == Settings_Page_FlightStatistics)
     {
-        //TODO: implement
+        // TODO: implement
         return;
     }
     if (!screenSettingsInstance.selectedField)
     {
-        //we are hovering a field
+        // we are hovering a field
         if (screenSettingsInstance.hoveredField->next)
         {
-            //TODO: Go to top of list, when last element
+            // TODO: Go to top of list, when last element
             xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
             vario_display_select_settings_widget(&screenSettingsInstance.hoveredField->data, screenSettingsInstance.currPage, false, false);
             screenSettingsInstance.hoveredField = screenSettingsInstance.hoveredField->next;
@@ -289,7 +286,7 @@ void SettingsManager_down_press()
     else
     {
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        //change Value in Field
+        // change Value in Field
         vario_display_settings_widget_handle_input(&screenSettingsInstance.selectedField->data, Button_Direction_down);
         xSemaphoreGive(buffer_Mutex);
         rendering_Push(false);

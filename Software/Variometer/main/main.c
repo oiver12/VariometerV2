@@ -29,10 +29,11 @@
 #include "flashMemory.h"
 #include "TestTools/performance.h"
 #include "esp_timer.h"
+#include "Sensor/MAXM10S.h"
 
 #define POWSW_ENABLE 13
 
-#define I2C_MASTER_FREQ_HZ 100000     
+#define I2C_MASTER_FREQ_HZ 100000
 #define I2C_SDA 37
 #define I2C_SCL 36
 #define PresSens_INT 38
@@ -41,42 +42,45 @@
 #define USART2_TX 17
 #define USART2_RX 18
 
+#define USART2_EX_RX 44
+#define OUT_EX_GPIO 35
+
 #define R_SPECIFIC 287.053
 #define GRAVITY_G 9.80665
 #define TEMPGRAD_L 0.0065
 
 /* Kalman Filter */
-float dps310_stnd_height = 0.1298; //Standardabweichung Höhenmessung
-float bmi088_stnd_acc = 0.9; //Standardabweichung Beschleunigungssensor
-TaskHandle_t TaskKalmanFilter_Handle; //zum entsperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
+float dps310_stnd_height = 0.1298;    // Standardabweichung Höhenmessung
+float bmi088_stnd_acc = 0.9;          // Standardabweichung Beschleunigungssensor
+TaskHandle_t TaskKalmanFilter_Handle; // zum entsperen des Kalman Filter Task, wird von TaskMeasureHeight gemacht
 
 /* GPS */
-#define TIME_ZONE (+1)   //Schweiz
-#define YEAR_BASE (2000) //date in GPS starts from 2000
+#define TIME_ZONE (+1)   // Schweiz
+#define YEAR_BASE (2000) // date in GPS starts from 2000
 
 static const char *TAG = "main";
 
 float accSum;
 float accCount;
 float rotationVario[4];
-SemaphoreHandle_t acc_Mutex = NULL; //Sync von TaskMeasureAcc und KalmanFilter
+SemaphoreHandle_t acc_Mutex = NULL; // Sync von TaskMeasureAcc und KalmanFilter
 
 float startPressure;
 float startTemperature;
 float pressure;
 float temperature;
-SemaphoreHandle_t pressure_temperature_Mutex = NULL; //Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
+SemaphoreHandle_t pressure_temperature_Mutex = NULL; // Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
 
 volatile bool hasMeasuredStartPressure = false;
 
 float headingCalc = 0.0f;
 
-static void IRAM_ATTR dps310ISR(void* arg)
-{   
-    TaskHandle_t taskHandle = *(TaskHandle_t*)arg;
+static void IRAM_ATTR dps310ISR(void *arg)
+{
+    TaskHandle_t taskHandle = *(TaskHandle_t *)arg;
     configASSERT(taskHandle != NULL);
     BaseType_t HPTaskWoken = pdFALSE;
-    //unblock TaskMeasureAcc
+    // unblock TaskMeasureAcc
     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
     portYIELD_FROM_ISR(HPTaskWoken);
 }
@@ -102,32 +106,30 @@ static void TaskMeasureHeight(void *parameters)
     // Setup Interrupt
     gpio_config_t gpio_config_INT_DPS310 = {
         .pin_bit_mask = 1ULL << PresSens_INT,
-        .mode         = GPIO_MODE_INPUT,
-        .pull_up_en   = GPIO_PULLUP_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type    = GPIO_INTR_DISABLE 
-    };
-    //set PresSens Pin as Interrupt 
-    //gpio_config(&gpio_config_INT_DPS310);
-    //Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    //gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+        .intr_type = GPIO_INTR_DISABLE};
+    // set PresSens Pin as Interrupt
+    // gpio_config(&gpio_config_INT_DPS310);
+    // Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
+    // gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
-    while(1)
+    while (1)
     {
-        //wait till unblocked from Interrupt
-        //uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
-        //if (notificationValue == 0) {
-            //ESP_LOGW(TAG, "Interrupt didn't fire");
+        // wait till unblocked from Interrupt
+        // uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
+        // if (notificationValue == 0) {
+        // ESP_LOGW(TAG, "Interrupt didn't fire");
         //}
         dsp310_get_Pressure(&DPS310_Data);
-        if(count % 34 == 0)
+        if (count % 34 == 0)
         {
             dps310_get_Temperature(&DPS310_Data);
         }
         count++;
-        ESP_LOGI(TAG, "Pressure: %.2f", DPS310_Data.Pressure);
-        xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY );
+        xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
         {
             pressure = DPS310_Data.Pressure;
             temperature = DPS310_Data.Temperature;
@@ -135,7 +137,7 @@ static void TaskMeasureHeight(void *parameters)
         xSemaphoreGive(pressure_temperature_Mutex);
         float pressure = DPS310_Data.Pressure;
         vario_state_set_member(&pressure, vario_state_pressure);
-        //notify Kalman Filter of new Pressure Reading
+        // notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
         vTaskDelay(30 / portTICK_PERIOD_MS);
     }
@@ -144,8 +146,9 @@ static void TaskMeasureHeight(void *parameters)
 
 static void TaskMeasureAcc(void *parameters)
 {
-    //wait till StartPressure has read
-    while(!hasMeasuredStartPressure){
+    // wait till StartPressure has read
+    while (!hasMeasuredStartPressure)
+    {
         vTaskDelay(2);
     }
     float rotation[4];
@@ -154,29 +157,29 @@ static void TaskMeasureAcc(void *parameters)
     bmi088_init(&BMI088_Data, i2c_master_port, 0x18, 0x68);
 
     /* Init QMC588L */
-    qmc588l_t* QMC588L_Data;
+    qmc588l_t *QMC588L_Data;
     QMC588L_Data = qmc588l_init(i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_2G);
-    //qmc588l_calculateCalibration();
-    // bool hasFound = flashMemoryReadInt32("MagCaliMinX", &QMC588L_Data->_vCalibration[0][0]);
-    // if(hasFound)
-    // {
-    //     hasFound &= flashMemoryReadInt32("MagCaliMaxX", &QMC588L_Data->_vCalibration[0][1]);
-    //     hasFound &= flashMemoryReadInt32("MagCaliMinY", &QMC588L_Data->_vCalibration[1][0]);
-    //     hasFound &= flashMemoryReadInt32("MagCaliMaxY", &QMC588L_Data->_vCalibration[1][1]);
-    //     hasFound &= flashMemoryReadInt32("MagCaliMinZ", &QMC588L_Data->_vCalibration[2][0]);
-    //     hasFound &= flashMemoryReadInt32("MagCaliMaxZ", &QMC588L_Data->_vCalibration[2][1]);
-    //     if(hasFound)
-    //     {
-    //         ESP_LOGI(TAG, "Found Calibration Data");
-    //         QMC588L_Data->useCalibration = true;
-    //     }
-    // }
-    // if(!hasFound)
-    // {
-    //     ESP_LOGI(TAG, "No Calibration Data found");
-    // }
+    // qmc588l_calculateCalibration();
+    //  bool hasFound = flashMemoryReadInt32("MagCaliMinX", &QMC588L_Data->_vCalibration[0][0]);
+    //  if(hasFound)
+    //  {
+    //      hasFound &= flashMemoryReadInt32("MagCaliMaxX", &QMC588L_Data->_vCalibration[0][1]);
+    //      hasFound &= flashMemoryReadInt32("MagCaliMinY", &QMC588L_Data->_vCalibration[1][0]);
+    //      hasFound &= flashMemoryReadInt32("MagCaliMaxY", &QMC588L_Data->_vCalibration[1][1]);
+    //      hasFound &= flashMemoryReadInt32("MagCaliMinZ", &QMC588L_Data->_vCalibration[2][0]);
+    //      hasFound &= flashMemoryReadInt32("MagCaliMaxZ", &QMC588L_Data->_vCalibration[2][1]);
+    //      if(hasFound)
+    //      {
+    //          ESP_LOGI(TAG, "Found Calibration Data");
+    //          QMC588L_Data->useCalibration = true;
+    //      }
+    //  }
+    //  if(!hasFound)
+    //  {
+    //      ESP_LOGI(TAG, "No Calibration Data found");
+    //  }
     QuaternionFilter_init();
-    //reset Rotation
+    // reset Rotation
     rotation[0] = 1.0f;
     rotation[1] = 0.0f;
     rotation[2] = 0.0f;
@@ -184,7 +187,7 @@ static void TaskMeasureAcc(void *parameters)
 
     float lastTime = esp_timer_get_time();
     int count = 0;
-    while(1)
+    while (1)
     {
         qmc588l_readMag();
         bmi088_ReadAccelerometer(&BMI088_Data);
@@ -199,26 +202,26 @@ static void TaskMeasureAcc(void *parameters)
         float ge = -BMI088_Data.gyr_rps[0];
         float gd = -BMI088_Data.gyr_rps[2];
         float mn = -QMC588L_Data->CorrectedMagnValuemG[0];
-        float me =  QMC588L_Data->CorrectedMagnValuemG[1];
+        float me = QMC588L_Data->CorrectedMagnValuemG[1];
         float md = -QMC588L_Data->CorrectedMagnValuemG[2];
         QuaternionFilter_Madgwick(an, ae, ad, gn, ge, gd, mn, me, md, deltaT, rotation);
-        //float heading;
-        //compass_get(QMC588L_Data.magnValue, rotation, &heading);
-        //int headingInt = (int)heading;
-        //vario_state_set_member(&headingInt, vario_state_heading);
+        // float heading;
+        // compass_get(QMC588L_Data.magnValue, rotation, &heading);
+        // int headingInt = (int)heading;
+        // vario_state_set_member(&headingInt, vario_state_heading);
         count++;
         ////printf("X: %i, Y: %i, Z: %i\n", (int)mn, (int)me, (int)md);
-        //if(count % 10 == 0)
-            //printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
+        // if(count % 10 == 0)
+        // printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1]*1000), (int)(BMI088_Data.acc_mps2[2]*1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
         /* Calculate global Acc in X Direction */
-        float accX = (2*(rotation[1]*rotation[3] - rotation[0]*rotation[2])) * an + (2*(rotation[2]*rotation[3]+rotation[0]*rotation[1])) * ae + (2*(rotation[0]*rotation[0]+rotation[3]*rotation[3]) -1)*ad;
+        float accX = (2 * (rotation[1] * rotation[3] - rotation[0] * rotation[2])) * an + (2 * (rotation[2] * rotation[3] + rotation[0] * rotation[1])) * ae + (2 * (rotation[0] * rotation[0] + rotation[3] * rotation[3]) - 1) * ad;
         accX *= 9.81f;
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
             accSum += accX;
             accCount++;
             memcpy(rotationVario, rotation, sizeof(rotationVario));
-            //headingCalc = heading;
+            // headingCalc = heading;
         }
         xSemaphoreGive(acc_Mutex);
     }
@@ -227,8 +230,9 @@ static void TaskMeasureAcc(void *parameters)
 
 static void TaskKalmanFilter(void *parameters)
 {
-    //wait till StartPressure has read
-    while(!hasMeasuredStartPressure){
+    // wait till StartPressure has read
+    while (!hasMeasuredStartPressure)
+    {
         vTaskDelay(200 / portTICK_PERIOD_MS);
     }
     kalman_t kf;
@@ -246,16 +250,16 @@ static void TaskKalmanFilter(void *parameters)
     /* G = 0.5*t^2
            t        */
     matrix_t *G = &kf.G;
-    matrix_set(G, 0, 0, 0.5*deltaT*deltaT);
+    matrix_set(G, 0, 0, 0.5 * deltaT * deltaT);
     matrix_set(G, 1, 0, deltaT);
     /* Set  Process Noise Matrix*/
     /* Q = (t^4)/4  (t^3)/2
            (t^3)/2   t^2       * kalman_process_noise^2*/
     matrix_t *Q = &kf.Q;
-    matrix_set(Q, 0, 0, ((deltaT*deltaT*deltaT*deltaT)/4)*bmi088_stnd_acc*bmi088_stnd_acc);
-    matrix_set(Q, 0, 1, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
-    matrix_set(Q, 1, 0, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
-    matrix_set(Q, 1, 1, (deltaT*deltaT)*bmi088_stnd_acc*bmi088_stnd_acc);
+    matrix_set(Q, 0, 0, ((deltaT * deltaT * deltaT * deltaT) / 4) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 0, 1, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 1, 0, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 1, 1, (deltaT * deltaT) * bmi088_stnd_acc * bmi088_stnd_acc);
     /* Set Observation Matrix */
     /* H = [1   0] */
     matrix_t *H = &kf.H;
@@ -264,7 +268,7 @@ static void TaskKalmanFilter(void *parameters)
     /* Set Measurement covariance matrix */
     /* R = dps310_stnd_height^2 */
     matrix_t *R = &kf.R;
-    matrix_set(R, 0, 0, dps310_stnd_height*dps310_stnd_height);
+    matrix_set(R, 0, 0, dps310_stnd_height * dps310_stnd_height);
     /* Set Estimate Uncertainty Matrix*/
     /* P = 500   0
             0   500 */
@@ -284,30 +288,31 @@ static void TaskKalmanFilter(void *parameters)
     kalman_predict(&kf);
     matrix_t *z = &kf.z;
     float lastTime = esp_timer_get_time();
-    int countHeading =  0;
-    while(1)
+    int countHeading = 0;
+    while (1)
     {
-        //wait for new Result from Pressure Sensor
+        // wait for new Result from Pressure Sensor
         uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        if (notificationValue > 1) {
+        if (notificationValue > 1)
+        {
             ESP_LOGW(TAG, "Task Notification higher than 1, value: %lu", (unsigned long)notificationValue);
             continue;
         }
         float heightDifferenz;
         xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
         {
-            heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L)*(pow(pressure / startPressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
+            heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L) * (pow(pressure / startPressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
         }
         xSemaphoreGive(pressure_temperature_Mutex);
         float acc = 0;
-        //TODO: ist Mean am besten?
-        //read Acc Queue till its empty and compute mean from Acc
+        // TODO: ist Mean am besten?
+        // read Acc Queue till its empty and compute mean from Acc
         float rotation[4];
         xSemaphoreTake(acc_Mutex, portMAX_DELAY);
         {
-            if(accCount == 0)
+            if (accCount == 0)
             {
-                //ESP_LOGI(TAG, "Had no Acc Readings");
+                // ESP_LOGI(TAG, "Had no Acc Readings");
                 acc = 9.81f;
             }
             else
@@ -321,12 +326,12 @@ static void TaskKalmanFilter(void *parameters)
         xSemaphoreGive(acc_Mutex);
         deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         /* Set Q with new deltaT */
-        matrix_set(Q, 0, 0, ((deltaT*deltaT*deltaT*deltaT)/4)*bmi088_stnd_acc*bmi088_stnd_acc);
-        matrix_set(Q, 0, 1, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
-        matrix_set(Q, 1, 0, ((deltaT*deltaT*deltaT)/2)*bmi088_stnd_acc*bmi088_stnd_acc);
-        matrix_set(Q, 1, 1, (deltaT*deltaT)*bmi088_stnd_acc*bmi088_stnd_acc);
+        matrix_set(Q, 0, 0, ((deltaT * deltaT * deltaT * deltaT) / 4) * bmi088_stnd_acc * bmi088_stnd_acc);
+        matrix_set(Q, 0, 1, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+        matrix_set(Q, 1, 0, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+        matrix_set(Q, 1, 1, (deltaT * deltaT) * bmi088_stnd_acc * bmi088_stnd_acc);
         /* Set G with new deltaT */
-        matrix_set(G, 0, 0, 0.5*deltaT*deltaT);
+        matrix_set(G, 0, 0, 0.5 * deltaT * deltaT);
         matrix_set(G, 1, 0, deltaT);
         /* Set F with new deltaT */
         matrix_set(F, 0, 0, 1);
@@ -358,32 +363,32 @@ static void TaskKalmanFilter(void *parameters)
         float accXCorr = acc - 9.81;
         vario_state_set_member(&accXCorr, vario_state_vertAcc);
         vario_state_set_member(&heightDifferenz, vario_state_altitudeBaro);
-        if(countHeading % 10 == 0)
+        if (countHeading % 10 == 0)
         {
             float roll, pitch, yaw;
             Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
             int heading = (int)yaw;
-            while(heading > 360.0)
-    	        heading -= 360.0;
-            while(heading < 0.0)
-    	        heading += 360.0;
-            //printf("Yaw: %.2f\n", yaw);
+            while (heading > 360.0)
+                heading -= 360.0;
+            while (heading < 0.0)
+                heading += 360.0;
+            // printf("Yaw: %.2f\n", yaw);
             vario_state_set_member(&heading, vario_state_heading);
         }
         logVarioData(flight_state);
         SoundManager_calculateNewBiep(matrix_get(x, 1, 0));
-        //SoundManager_calculateNewBiep(2.5f);
-        //printf("%.2f\n", matrix_get(x, 1, 0));
+        // SoundManager_calculateNewBiep(2.5f);
+        // printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
-} 
+}
 
 void sendAttitude(void *params)
 {
     float rotation[4];
-    //float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
-    while(1)
+    // float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
+    while (1)
     {
         // Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &tmep);
         // fwrite(&roll, sizeof(float), 1, stdout);
@@ -399,14 +404,13 @@ void sendAttitude(void *params)
 }
 
 void app_main(void)
- {
+{
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = 1ULL << POWSW_ENABLE,
         .pull_down_en = 0,
-        .pull_up_en = 0
-    };
+        .pull_up_en = 0};
 
     gpio_config(&enableGPIOOutput);
     gpio_set_level(POWSW_ENABLE, 1);
@@ -414,7 +418,7 @@ void app_main(void)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
-    
+
     i2c_config_t conf_I2C = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_SDA,
@@ -426,22 +430,32 @@ void app_main(void)
     i2c_param_config(i2c_master_port, &conf_I2C);
     ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_I2C.mode, 0, 0, 0));
 
+    gpio_config_t gpio_gps_ex = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = 1ULL << OUT_EX_GPIO,
+        .pull_down_en = 0,
+        .pull_up_en = 0};
+
+    gpio_config(&gpio_gps_ex);
+    gpio_set_level(OUT_EX_GPIO, 1);
+    maxm10s_init();
     // // /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    gps_config.uart.rx_pin = USART2_RX;
-    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 4*1024);
+    gps_config.uart.rx_pin = USART2_EX_RX;
+    nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 5 * 1024);
     ESP_LOGI(TAG, "GPS started");
 
-    //sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
+    // sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     init_DeviceContext();
 
     init_sdcard("/sdcard");
     init_IGCLogger(gps_nmea_hdl);
     initLogging(gps_nmea_hdl);
 
-    //gps handle wird beim DeviceContext erst nach SD Karte gestartet, da wenn direkt abfulg ist, soll
-    //das loggen auf SDKarte direkt starten. Wenn die Sd Karte gestartet wird, muss jedoch device kontext
-    //schon gestartet sein
+    // gps handle wird beim DeviceContext erst nach SD Karte gestartet, da wenn direkt abfulg ist, soll
+    // das loggen auf SDKarte direkt starten. Wenn die Sd Karte gestartet wird, muss jedoch device kontext
+    // schon gestartet sein
     startGps_DeviceContext(gps_nmea_hdl);
 
     init_SoundManager();
@@ -454,16 +468,16 @@ void app_main(void)
     ButtonInput_Init();
 
     startLogging();
-    //AGL_startAGL(sdcard, gps_nmea_hdl);
-    
+    // AGL_startAGL(sdcard, gps_nmea_hdl);
+
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    
+
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
-    //xTaskCreate(sendAttitude, "Send Attitude", 4 * 1024, NULL, 6, NULL);
-    //perfmon_start();
+    // xTaskCreate(sendAttitude, "Send Attitude", 4 * 1024, NULL, 6, NULL);
+    // perfmon_start();
     return;
 }

@@ -13,7 +13,7 @@ typedef enum
 
 typedef struct
 {
-    char *name;
+    char name[100];
     uint16_t upperLimit;
     heightType heightTypeUpper;
     uint16_t lowerLimit;
@@ -21,6 +21,7 @@ typedef struct
     polygonSide *polygons;
     size_t polygonSize;
     void *next;
+    bool isValid;
 } airspace;
 
 typedef struct Airspace_Info_t
@@ -35,7 +36,7 @@ typedef struct Airspace_Info_t
 
 typedef struct AirspaceParcer_State_t
 {
-    Airspace_Info_t nearestAirspace;
+    airspace *nearestAirspace;
     uint64_t lastLineUpdate;
     Position_t nearestLineStart;
     Position_t nearestLineEnd;
