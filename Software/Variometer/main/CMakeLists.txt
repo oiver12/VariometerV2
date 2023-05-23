@@ -10,6 +10,7 @@ set(COMPONENT_SRCS
                     "Kalman/cholesky.c" "Kalman/kalman.c" "Kalman/matrix.c" "Kalman/Quaternion/matrixSensorFusion.c" "Kalman/Quaternion/SensorFusion.c"
                     "TestTools/FlightLogger.c" "TestTools/Simulation.c" "TestTools/performance.c"
                     "Screen/assets/test_logo.c" "Screen/assets/icons.c"
+                    "AirspaceParcer/airspaceParcer.c"
                     )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 register_component()
