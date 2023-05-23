@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "airspaceParcer.h"
+#include "freertos/FreeRTOS.h"
 
 #define BOUNDINGBOX_OPTIMIZATION
 
@@ -13,43 +14,71 @@
 
 AirspaceParcer_State_t instanceAirspace;
 
-void airspaceCalculateValues(airspace *nearestAirspace, uint32_t startLineIndex, float myLat, float myLon, float myAlt)
+void airspaceCalculateValuesToLine(float myLat, float myLon, float myAlt)
 {
-    uint32_t endLineIndex = startLineIndex + 1;
-    if (nearestAirspace->polygonSize >= endLineIndex)
-        endLineIndex = 0;
     float nearestLat, nearestLon = 0;
-    NearestPointOnLine(nearestAirspace->polygons[startLineIndex].latitude, nearestAirspace->polygons[startLineIndex].longitude, nearestAirspace->polygons[endLineIndex].latitude, nearestAirspace->polygons[endLineIndex].longitude, myLat, myLon, &nearestLat, &nearestLon);
+    NearestPointOnLine(instanceAirspace.nearestAirspaceInfo.nearestLineStart.lat, instanceAirspace.nearestAirspaceInfo.nearestLineStart.lon, instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lat, instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lon, myLat, myLon, &nearestLat, &nearestLon);
     float HorDist = GET_DISTANCEFAST(myLat, myLon, nearestLat, nearestLon);
     float VertDist = 0;
-    if (myAlt < nearestAirspace->lowerLimit)
+    if (myAlt < instanceAirspace.currentNearestAirspace->lowerLimit)
     {
-        VertDist = nearestAirspace->lowerLimit - myAlt;
+        VertDist = instanceAirspace.currentNearestAirspace->lowerLimit - myAlt;
     }
-    else if (myAlt > nearestAirspace->upperLimit)
+    else if (myAlt > instanceAirspace.currentNearestAirspace->upperLimit)
     {
-        VertDist = myAlt - nearestAirspace->upperLimit;
+        VertDist = myAlt - instanceAirspace.currentNearestAirspace->upperLimit;
     }
+    strcpy(instanceAirspace.nearestAirspaceInfo.name, instanceAirspace.currentNearestAirspace->name);
+    instanceAirspace.nearestAirspaceInfo.upperLimt = instanceAirspace.currentNearestAirspace->upperLimit;
+    instanceAirspace.nearestAirspaceInfo.heightTypeUpper = instanceAirspace.currentNearestAirspace->heightTypeUpper;
+    instanceAirspace.nearestAirspaceInfo.lowerLimit = instanceAirspace.currentNearestAirspace->lowerLimit;
+    instanceAirspace.nearestAirspaceInfo.heightTypeLower = instanceAirspace.currentNearestAirspace->heightTypeLower;
+    instanceAirspace.nearestAirspaceInfo.distanceToAirspaceHor = HorDist;
+    instanceAirspace.nearestAirspaceInfo.distanceToAirspaceVert = VertDist;
 }
 
-void searchInNearestAirspace(double myLat, double myLon, float altitude, airspace *airspaces)
+void nearestLineAirspace(double myLat, double myLon, float altitude)
+{
+
+    uint32_t tempStartIndex = 0;
+    uint32_t tempEndIndex = 0;
+    float minDistance = INFINITY;
+    for (size_t i = 0; i < instanceAirspace.currentNearestAirspace->polygonSize; i++)
+    {
+        size_t nextI = i + 1;
+        if (nextI >= instanceAirspace.currentNearestAirspace->polygonSize)
+            nextI = 0;
+        float dist = DistancePointToLineSqr(instanceAirspace.currentNearestAirspace->polygons[i].latitude, instanceAirspace.currentNearestAirspace->polygons[i].longitude, instanceAirspace.currentNearestAirspace->polygons[nextI].latitude, instanceAirspace.currentNearestAirspace->polygons[nextI].longitude, myLat, myLon);
+        if (dist < minDistance)
+        {
+            tempStartIndex = i;
+            tempEndIndex = nextI;
+            minDistance = dist;
+        }
+    }
+    instanceAirspace.nearestAirspaceInfo.nearestLineStart.lat = instanceAirspace.currentNearestAirspace->polygons[tempStartIndex].latitude;
+    instanceAirspace.nearestAirspaceInfo.nearestLineStart.lon = instanceAirspace.currentNearestAirspace->polygons[tempStartIndex].longitude;
+    instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lat = instanceAirspace.currentNearestAirspace->polygons[tempEndIndex].latitude;
+    instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lon = instanceAirspace.currentNearestAirspace->polygons[tempEndIndex].longitude;
+}
+
+void searchInNearestAirspace(double myLat, double myLon, float altitude)
 {
     airspace *nearestAirspace = NULL;
     float nearestDistanceToAirspace = MAXDISTANCETOSEARCH;
     uint32_t lineStartIndex = 0;
+    airspace *airspaces = instanceAirspace.nearestAirspaceList;
     while (airspaces != NULL)
     {
-        uint32_t tempStartIndex = 0;
         float minDistance = INFINITY;
         for (size_t i = 0; i < airspaces->polygonSize; i++)
         {
             size_t nextI = i + 1;
-            if (nextI > airspaces->polygonSize)
+            if (nextI >= airspaces->polygonSize)
                 nextI = 0;
             float dist = DistancePointToLineSqr(airspaces->polygons[i].latitude, airspaces->polygons[i].longitude, airspaces->polygons[nextI].latitude, airspaces->polygons[nextI].longitude, myLat, myLon);
             if (dist < minDistance)
             {
-                tempStartIndex = i;
                 minDistance = dist;
             }
         }
@@ -69,19 +98,11 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude, airspac
             {
                 nearestDistanceToAirspace = minDistance;
                 nearestAirspace = airspaces;
-                lineStartIndex = tempStartIndex;
             }
         }
         airspaces = airspaces->next;
     }
-    if (nearestAirspace != NULL)
-    {
-        printf("Nearest airspace is %s, distance is %f\n", nearestAirspace->name, nearestDistanceToAirspace);
-    }
-    else
-    {
-        printf("No airspace found within %d meters\n", MAXDISTANCETOSEARCH);
-    }
+    instanceAirspace.currentNearestAirspace = nearestAirspace;
 }
 
 bool readTilCharacter(FILE *file, char character)
@@ -136,6 +157,17 @@ static airspace *createAirspaceOnHeap(size_t polygonSize)
     return newAirspace;
 }
 
+static bool existsInLinkedList(char *name)
+{
+    airspace *tempAirspace = instanceAirspace.nearestAirspaceList;
+    while (tempAirspace)
+    {
+        if (strcmp(name, tempAirspace->name))
+            return true;
+    }
+    return false;
+}
+
 airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace)
 {
     char nextChar = ',';
@@ -164,21 +196,15 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         *hasNext = readTilCharacter(fileptr, '{');
         return NULL;
     }
-    airspace *tempAirspace = instanceAirspace.nearestAirspace;
+    airspace *tempAirspace = instanceAirspace.nearestAirspaceList;
     while (tempAirspace)
     {
-        // Found old airspace, skip parsing and return old one
-        if (strcmp(tempAirspace->name, nameAirspace) == 0)
-        {
-            tempAirspace->isValid = true;
-            readTilCharacter(fileptr, '}');
-            return tempAirspace;
-        }
         // Airspace does not yet exist append to end
         if (!tempAirspace->next)
         {
             airspace *newAirspace = createAirspaceOnHeap(polygonSize);
-            tempAirspace->next = tempAirspace;
+            tempAirspace->next = newAirspace;
+            tempAirspace = tempAirspace->next;
             break;
         }
         tempAirspace = tempAirspace->next;
@@ -217,7 +243,7 @@ void deInitAirspaceList()
 
 void airspaceParse()
 {
-    airspace *listNearest = instanceAirspace.nearestAirspace;
+    airspace *listNearest = instanceAirspace.nearestAirspaceList;
     while (listNearest)
     {
         listNearest->isValid = false;
@@ -342,14 +368,12 @@ void airspaceParse()
 
         airspacesCount++;
 
-        // if (!headerAirspace)
-        // headerAirspace = tempAirspace;
+        if (!instanceAirspace.nearestAirspaceList)
+            instanceAirspace.nearestAirspaceList = tempAirspace;
         tempAirspace->lowerLimit = lowerLimit;
         tempAirspace->upperLimit = uppperLimit;
         tempAirspace->heightTypeLower = heightTypeLower;
         tempAirspace->heightTypeUpper = heightTypeUpper;
-
-        // bool isEnclosed = isEnclosedByPolygon(tempAirspace->polygons, tempAirspace->polygonSize, myLat, myLon);
 
         if (prev)
         {
@@ -359,13 +383,48 @@ void airspaceParse()
 
         hasNext = readTilCharacter(fileptr, '{');
     }
+    listNearest = instanceAirspace.nearestAirspaceList;
+    airspace *prev = NULL;
+    while (listNearest)
+    {
+        if (!listNearest->isValid)
+        {
+            // Delete from LinkedList
+            if (!prev) // First Item to delete
+                instanceAirspace.nearestAirspaceList = listNearest->next;
+            else // Delete other item
+                prev->next = listNearest->next;
+            airspace *oldObj = listNearest;
+            listNearest = listNearest->next;
+            free(oldObj);
+            continue;
+        }
+        prev = listNearest;
+        listNearest = listNearest->next;
+    }
     // searchInNearestAirspace(myLat, myLon, 0, headerAirspace);
     fclose(fileptr);
 }
 
 void AirspaceTask()
 {
+    gps_t gpsData;
+    vario_state_get_member(&gpsData, vario_state_gps_data, false);
+    gpsData.valid = true;
+    while (!gpsData.valid)
+    {
+        // vTaskDelay(1000 / vPorttickper);
+        vario_state_get_member(&gpsData, vario_state_gps_data, false);
+    }
+    instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
+    instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
     airspaceParse();
+    searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+    nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+    airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+    while (true)
+    {
+    }
 }
 
 void startAirspaceParse()

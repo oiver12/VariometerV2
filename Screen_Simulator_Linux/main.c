@@ -122,7 +122,7 @@ void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_ti
 
 void AnalyzeGPS()
 {
-    FILE *f = fopen("Trackloggs/GPS37.txt", "r");
+    FILE *f = fopen("Trackloggs/GPS65.txt", "r");
     if (!f)
     {
         printf("Couldn't open GPS Log File\n");

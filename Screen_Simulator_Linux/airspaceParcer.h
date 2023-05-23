@@ -31,20 +31,22 @@ typedef struct Airspace_Info_t
     heightType heightTypeUpper;
     uint16_t lowerLimit;
     heightType heightTypeLower;
-    float distanceToAirspace;
+    float distanceToAirspaceVert;
+    float distanceToAirspaceHor;
+    Position_t nearestLineStart;
+    Position_t nearestLineEnd;
 } Airspace_Info_t;
 
 typedef struct AirspaceParcer_State_t
 {
-    airspace *nearestAirspace;
-    uint64_t lastLineUpdate;
-    Position_t nearestLineStart;
-    Position_t nearestLineEnd;
-    Position_t lastInNearestAirspaceUpdatePoint;
-    Position_t lastInNearAirspaceUpdatePoint;
-    Position_t lastAllAirspaceUpdatePoint;
-    float diffFirstToSecondAirspace;
+    airspace *nearestAirspaceList;
+    airspace *currentNearestAirspace;
     Airspace_Info_t nearestAirspaceInfo;
+    uint64_t lastLineUpdate;
+    Position_t lastInNearestAirspaceUpdatePoint; // Point where nearestLine was found in the nearest Airspace
+    Position_t lastInNearAirspacesUpdatePoint;   // Point where all near Airspaces where searched and the nearest was picked
+    Position_t lastAllAirspaceUpdatePoint;       // Point where whole JSON File was last parsed
+    float diffFirstToSecondAirspace;
 } AirspaceParcer_State_t;
 
 void startAirspaceParse();
