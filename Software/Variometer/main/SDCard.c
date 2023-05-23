@@ -130,7 +130,6 @@ esp_err_t deinit_sdcard()
     return ESP_OK;
 }
 
-// TODO: directory not working
 FILE *openFile_sdcard(const char *directory, const char *fileName, const char *openMethod)
 {
     char buffer[100];
@@ -138,6 +137,8 @@ FILE *openFile_sdcard(const char *directory, const char *fileName, const char *o
     struct stat st = {0};
     if (directory != NULL)
     {
+        if (directory[0] != '/')
+            strcat(buffer, "/");
         strcat(buffer, directory);
         // ESP_LOGI(TAG, "Directory: %s", buffer);
         if (stat(buffer, &st) == -1)

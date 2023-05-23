@@ -5,6 +5,8 @@
 #include "../DeviceContext.h"
 
 #define AIRSPACE_NAMEBUFFERSIZE 100
+#define PREALLOCATEDAIRSPACES 10
+#define PREALLOCATEDPOLYGONS 100
 
 typedef enum
 {
@@ -20,10 +22,13 @@ typedef struct
     heightType heightTypeUpper;
     uint16_t lowerLimit;
     heightType heightTypeLower;
-    polygonSide *polygons;
+    polygonSide polygons[PREALLOCATEDPOLYGONS];
+    polygonSide *allocatedPolygons;
+    size_t currentIndexPolygons;
     size_t polygonSize;
     void *next;
     bool isValid;
+    bool isAllocated;
 } airspace;
 
 typedef struct Airspace_Info_t
@@ -41,7 +46,8 @@ typedef struct Airspace_Info_t
 
 typedef struct AirspaceParcer_State_t
 {
-    airspace *nearestAirspaceList;
+    airspace nearestAirspaceList[PREALLOCATEDAIRSPACES];
+    size_t currentIndexAirspaces;
     airspace *currentNearestAirspace;
     Airspace_Info_t nearestAirspaceInfo;
     uint64_t lastLineUpdate;

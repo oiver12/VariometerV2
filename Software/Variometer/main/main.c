@@ -30,6 +30,7 @@
 #include "TestTools/performance.h"
 #include "esp_timer.h"
 #include "Sensor/MAXM10S.h"
+#include "AirspaceParcer/airspaceParcer.h"
 
 #define POWSW_ENABLE 13
 
@@ -439,7 +440,6 @@ void app_main(void)
 
     gpio_config(&gpio_gps_ex);
     gpio_set_level(OUT_EX_GPIO, 1);
-    maxm10s_init();
     // // /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
     gps_config.uart.rx_pin = USART2_EX_RX;
@@ -459,7 +459,7 @@ void app_main(void)
     startGps_DeviceContext(gps_nmea_hdl);
 
     init_SoundManager();
-    init_Display();
+    // init_Display();
 
     flashMemoryInit();
 
@@ -469,6 +469,8 @@ void app_main(void)
 
     startLogging();
     // AGL_startAGL(sdcard, gps_nmea_hdl);
+
+    StartAirspaceParse();
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
 

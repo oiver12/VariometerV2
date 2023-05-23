@@ -33,7 +33,6 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
 #endif
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
-        volatile gps_t gpsObjec = *gps;
         time = esp_timer_get_time();
         fwrite(&time, sizeof(time), 1, fileGPSUpdate); // write time to file
         // Write GPS Time

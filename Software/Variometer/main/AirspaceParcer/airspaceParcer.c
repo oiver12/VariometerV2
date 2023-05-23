@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "airspaceParcer.h"
-#include <freertos/FreeRTOS.h>
+#include "freertos/FreeRTOS.h"
 #include <freertos/task.h>
+#include "../SDCard.h"
+#include <esp_timer.h>
 
 #define BOUNDINGBOX_OPTIMIZATION
 
@@ -66,8 +68,9 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude)
     airspace *nearestAirspace = NULL;
     float nearestDistanceToAirspace = MAXDISTANCETOSEARCH;
     float secondNearestDistanceToAirspace = INFINITY;
-    uint32_t lineStartIndex = 0;
     airspace *airspaces = instanceAirspace.nearestAirspaceList;
+    if (airspaces == NULL)
+        printf("Is null!!!!\n");
     while (airspaces != NULL)
     {
         float minDistance = INFINITY;
@@ -118,24 +121,32 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude)
     instanceAirspace.lastInNearAirspacesUpdatePoint.lon = myLon;
 }
 
-bool readTilCharacter(FILE *file, char character)
+bool readTilCharacter(FILE *file, int character)
 {
-    char c;
-    while ((c = fgetc(file)) != character && (int)c != EOF)
-        ;
+    int c;
+    while (1)
     {
+        c = fgetc(file);
+        if (c == EOF)
+            break;
+        if (c == character)
+            break;
     }
     return (int)c != EOF;
 }
 
 bool readTilCharacterTimes(FILE *file, char character, uint8_t times)
 {
-    char c;
+    int c;
     for (size_t i = 0; i < times; i++)
     {
-        while ((c = fgetc(file)) != character && (int)c != EOF)
-            ;
+        while (1)
         {
+            c = fgetc(file);
+            if (c == EOF)
+                break;
+            if (c == character)
+                break;
         }
         if ((int)c == EOF)
             return false;
@@ -163,11 +174,25 @@ void readToBufferTillNextChar(FILE *file, char character, char *buffer, int buff
     buffer[i] = '\0';
 }
 
-static airspace *createAirspaceOnHeap(size_t polygonSize)
+static airspace *createAirspaceOnHeapOrInArray(size_t polygonSize)
 {
-    airspace *newAirspace = calloc(sizeof(airspace), 1);
-    newAirspace->polygons = calloc(sizeof(polygonSide), polygonSize);
-    return newAirspace;
+    airspace *tempAirspace;
+    if (instanceAirspace.currentIndexAirspaces < PREALLOCATEDAIRSPACES)
+    {
+        tempAirspace = &instanceAirspace.nearestAirspaceList[instanceAirspace.currentIndexAirspaces];
+        tempAirspace->isAllocated = false;
+        instanceAirspace.currentIndexAirspaces++;
+    }
+    else
+    {
+        tempAirspace = calloc(sizeof(airspace), 1);
+        tempAirspace->isAllocated = true;
+    }
+    if (polygonSize > PREALLOCATEDPOLYGONS)
+    {
+        tempAirspace->allocatedPolygons = calloc(sizeof(polygonSide), polygonSize - PREALLOCATEDPOLYGONS);
+    }
+    return tempAirspace;
 }
 
 static bool existsInLinkedList(char *name)
@@ -209,7 +234,7 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         *hasNext = readTilCharacter(fileptr, '{');
         return NULL;
     }
-    airspace *tempAirspace = instanceAirspace.nearestAirspaceList;
+    airspace *tempAirspace = &instanceAirspace.nearestAirspaceList[0];
     while (tempAirspace)
     {
         // Already exists
@@ -222,9 +247,10 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         // Airspace does not yet exist append to end
         if (!tempAirspace->next)
         {
-            airspace *newAirspace = createAirspaceOnHeap(polygonSize);
+            airspace *newAirspace = createAirspaceOnHeapOrInArray(polygonSize);
             tempAirspace->next = newAirspace;
             tempAirspace = tempAirspace->next;
+            tempAirspace->next = NULL;
             break;
         }
         tempAirspace = tempAirspace->next;
@@ -232,7 +258,8 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
     // No Airspace does yet exist at all
     if (!tempAirspace)
     {
-        tempAirspace = createAirspaceOnHeap(polygonSize);
+        tempAirspace = createAirspaceOnHeapOrInArray(polygonSize);
+        tempAirspace->next = NULL;
     }
     tempAirspace->isValid = true;
     tempAirspace->polygonSize = polygonSize;
@@ -243,7 +270,11 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
     nextChar = ',';
     while (nextChar == ',')
     {
-        polygonSide *tempPolygon = &tempAirspace->polygons[i];
+        polygonSide *tempPolygon;
+        if (i < PREALLOCATEDPOLYGONS)
+            tempPolygon = &tempAirspace->polygons[i];
+        else
+            tempPolygon = &tempAirspace->allocatedPolygons[i - PREALLOCATEDPOLYGONS];
         i++;
         readTilCharacter(fileptr, '[');
         fscanf(fileptr, "%f", &tempPolygon->longitude);
@@ -263,6 +294,7 @@ void deInitAirspaceList()
 
 int airspaceParse(float myLat, float myLon)
 {
+    printf("Start parse with: %.2f, %.2f", myLat, myLon);
     airspace *listNearest = instanceAirspace.nearestAirspaceList;
     while (listNearest)
     {
@@ -270,12 +302,12 @@ int airspaceParse(float myLat, float myLon)
         listNearest = listNearest->next;
     }
 
-    FILE *fileptr;
-    fileptr = fopen("airspace/airspaces.json", "rb");
+    FILE *fileptr = openFile_sdcard("/airspace", "airspaces.json", "r");
+    // FILE *fileptr = fopen("airspace/airspaces.json", "r");
     if (!fileptr)
     {
-        printf("Error opening file");
-        return;
+        printf("Error opening file\n");
+        return 1;
     }
     readTilCharacter(fileptr, '{');
     char nameBuffer[50];
@@ -381,12 +413,12 @@ int airspaceParse(float myLat, float myLon)
         readTilCharacter(fileptr, '[');
         airspace *tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox, nameBuffer);
         if (!tempAirspace)
+        {
             continue;
+        }
 
         airspacesCount++;
 
-        if (!instanceAirspace.nearestAirspaceList)
-            instanceAirspace.nearestAirspaceList = tempAirspace;
         tempAirspace->lowerLimit = lowerLimit;
         tempAirspace->upperLimit = uppperLimit;
         tempAirspace->heightTypeLower = heightTypeLower;
@@ -404,6 +436,7 @@ int airspaceParse(float myLat, float myLon)
         prev = tempAirspace;
 
         hasNext = readTilCharacter(fileptr, '{');
+        // vPortYield();
     }
     listNearest = instanceAirspace.nearestAirspaceList;
     prev = NULL;
@@ -412,19 +445,24 @@ int airspaceParse(float myLat, float myLon)
         if (!listNearest->isValid)
         {
             // Delete from LinkedList
-            if (!prev) // First Item to delete
-                instanceAirspace.nearestAirspaceList = listNearest->next;
-            else // Delete other item
-                prev->next = listNearest->next;
+            // if (!prev) // First Item to delete
+            //     instanceAirspace.nearestAirspaceList = listNearest->next;
+            // else // Delete other item
+            prev->next = listNearest->next;
             airspace *oldObj = listNearest;
             listNearest = listNearest->next;
-            free(oldObj);
+            oldObj->next = NULL;
+            if (oldObj->allocatedPolygons != NULL)
+                free(oldObj->allocatedPolygons);
+            if (oldObj->isAllocated)
+                free(oldObj);
             continue;
         }
         prev = listNearest;
         listNearest = listNearest->next;
     }
     fclose(fileptr);
+    return 0;
 }
 
 void AirspaceTask()
@@ -434,18 +472,38 @@ void AirspaceTask()
     gpsData.valid = true;
     while (!gpsData.valid)
     {
-        // vTaskDelay(1000 / vPorttickper);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         vario_state_get_member(&gpsData, vario_state_gps_data, false);
     }
+    gpsData.latitude = 47.50733020688501f;
+    gpsData.longitude = 7.525586773402665f;
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    printf("Start JSON File Parse\n");
+    uint64_t startTime = esp_timer_get_time();
     airspaceParse(gpsData.latitude, gpsData.longitude);
+    printf("All took: %i\n", (int)((esp_timer_get_time() - startTime) / 1000));
+    //  TODO: handle this case
     instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
     instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
-    searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-    nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-    airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+    if (instanceAirspace.currentIndexAirspaces > 0)
+    {
+        startTime = esp_timer_get_time();
+        searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        printf("In Airspace took: %i\n", (int)((esp_timer_get_time() - startTime) / 1000));
+        startTime = esp_timer_get_time();
+        nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        printf("To all Lines took: %i\n", (int)(esp_timer_get_time() - startTime));
+        startTime = esp_timer_get_time();
+        airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        printf("In Line took: %i\n", (int)(esp_timer_get_time() - startTime));
+    }
+    else
+        printf("Cant find airspace nearby\n");
     while (true)
     {
         vario_state_get_member(&gpsData, vario_state_gps_data, false);
+        gpsData.latitude = 47.38407637662871,
+        gpsData.longitude = 8.525115677931941f;
         float distanceToNearest = instanceAirspace.nearestAirspaceInfo.distanceToAirspaceVert;
         // Parse whole JSON, when distance to last parsed of 7km
         if (GET_DISTANCEFASTSQ(gpsData.latitude, gpsData.longitude, instanceAirspace.lastAllAirspaceUpdatePoint.lat, instanceAirspace.lastAllAirspaceUpdatePoint.lon) > (7 * 7))
@@ -474,12 +532,12 @@ void AirspaceTask()
         else
         {
             airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            // xTaskDelay(..)
+            // vTaskDelay(4000 / portTICK_PERIOD_MS);
         }
     }
 }
 
-void startAirspaceParse()
+void StartAirspaceParse()
 {
-    // xTaskCreate();
+    xTaskCreate(AirspaceTask, "Airspace Parcer", 1024 * 3, NULL, 0, NULL);
 }

@@ -256,7 +256,7 @@ void fastForwardSimulation(float percentage)
 int main(void)
 {
     AnalyzeGPS();
-    airspaceParse();
+    // airspaceParse();
     SDL_Renderer *renderer;
     SDL_Window *window;
 
