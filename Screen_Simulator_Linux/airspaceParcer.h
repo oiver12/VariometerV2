@@ -4,6 +4,8 @@
 #include "Screen/Util.h"
 #include "Screen/DeviceContext.h"
 
+#define AIRSPACE_NAMEBUFFERSIZE 100
+
 typedef enum
 {
     HeightType_mQNH = 1,
@@ -26,7 +28,7 @@ typedef struct
 
 typedef struct Airspace_Info_t
 {
-    char name[100];
+    char name[AIRSPACE_NAMEBUFFERSIZE];
     uint16_t upperLimt;
     heightType heightTypeUpper;
     uint16_t lowerLimit;
@@ -50,6 +52,5 @@ typedef struct AirspaceParcer_State_t
 } AirspaceParcer_State_t;
 
 void startAirspaceParse();
-void airspaceParse();
 
 #endif
