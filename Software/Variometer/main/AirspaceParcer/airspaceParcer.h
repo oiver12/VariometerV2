@@ -3,10 +3,11 @@
 
 #include "../Util.h"
 #include "../DeviceContext.h"
+#include "file_layer.h"
 
 #define AIRSPACE_NAMEBUFFERSIZE 100
 #define PREALLOCATEDAIRSPACES 10
-#define PREALLOCATEDPOLYGONS 100
+#define PREALLOCATEDPOLYGONS 60
 
 typedef enum
 {
@@ -55,6 +56,7 @@ typedef struct AirspaceParcer_State_t
     Position_t lastInNearAirspacesUpdatePoint;   // Point where all near Airspaces where searched and the nearest was picked
     Position_t lastAllAirspaceUpdatePoint;       // Point where whole JSON File was last parsed
     float diffFirstToSecondAirspace;
+    FileLayer_t layer;
 } AirspaceParcer_State_t;
 
 void StartAirspaceParse();

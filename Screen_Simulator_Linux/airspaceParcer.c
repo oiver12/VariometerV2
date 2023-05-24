@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "airspaceParcer.h"
+#include "file_layer.h"
 // #include "freertos/FreeRTOS.h"
 //  #include "freertos/task.h>
 // #include "../SDCard.h"
@@ -121,59 +122,6 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude)
     instanceAirspace.lastInNearAirspacesUpdatePoint.lon = myLon;
 }
 
-bool readTilCharacter(FILE *file, int character)
-{
-    int c;
-    while (1)
-    {
-        c = fgetc(file);
-        if (c == EOF)
-            break;
-        if (c == character)
-            break;
-    }
-    return (int)c != EOF;
-}
-
-bool readTilCharacterTimes(FILE *file, char character, uint8_t times)
-{
-    int c;
-    for (size_t i = 0; i < times; i++)
-    {
-        while (1)
-        {
-            c = fgetc(file);
-            if (c == EOF)
-                break;
-            if (c == character)
-                break;
-        }
-        if ((int)c == EOF)
-            return false;
-    }
-    return true;
-}
-
-void readToBufferTillNextChar(FILE *file, char character, char *buffer, int bufferSize)
-{
-    char c;
-    int i = 0;
-    while ((c = fgetc(file)) != character)
-    {
-        if (i < bufferSize - 1)
-        {
-            buffer[i] = c;
-            i++;
-        }
-        else
-        {
-            printf("Name Buffer to small!\n");
-            break;
-        }
-    }
-    buffer[i] = '\0';
-}
-
 static airspace *createAirspaceOnHeapOrInArray(size_t polygonSize)
 {
     airspace *tempAirspace;
@@ -206,32 +154,33 @@ static bool existsInLinkedList(char *name)
     return false;
 }
 
-airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace)
+airspace *readPolygonsFirst(bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace, FILE *cachedFile, long airspaceStartPos)
 {
     char nextChar = ',';
     int polygonSize = 0;
-    long posPolyStart = ftell(fileptr);
+    long posPolyStart = ftellFileLayer(&instanceAirspace.layer);
     BoundingBox_LatLong_t boundingBoxAirspace = {.maxLat = 0, .maxLong = 0, .minLat = INFINITY, .minLong = INFINITY};
     while (nextChar == ',')
     {
         polygonSize++;
-        readTilCharacter(fileptr, '[');
+        readTilCharFileLayer(&instanceAirspace.layer, '[');
         float lonitude;
-        fscanf(fileptr, "%f", &lonitude);
+        getFloatSize(&instanceAirspace.layer, 16, &lonitude);
+        skipNextFileLayer(&instanceAirspace.layer);
         boundingBoxAirspace.maxLong = fmax(boundingBoxAirspace.maxLong, lonitude);
         boundingBoxAirspace.minLong = fmin(boundingBoxAirspace.minLong, lonitude);
-        fgetc(fileptr);
         float latitude;
-        fscanf(fileptr, "%f", &latitude);
+        getFloatSize(&instanceAirspace.layer, 16, &latitude);
         boundingBoxAirspace.maxLat = fmax(boundingBoxAirspace.maxLat, latitude);
         boundingBoxAirspace.minLat = fmin(boundingBoxAirspace.minLat, latitude);
-
-        fgetc(fileptr);
-        nextChar = fgetc(fileptr);
+        skipNextFileLayer(&instanceAirspace.layer);
+        nextChar = fgetCFileLayer(&instanceAirspace.layer);
     }
+    fwrite(&boundingBoxAirspace, sizeof(BoundingBox_LatLong_t), 1, cachedFile);
+    fwrite(&airspaceStartPos, sizeof(float), 1, cachedFile);
     if (overlappBoundingBox(myBoundingBox, &boundingBoxAirspace))
     {
-        *hasNext = readTilCharacter(fileptr, '{');
+        *hasNext = readTilCharFileLayer(&instanceAirspace.layer, '{');
         return NULL;
     }
     airspace *tempAirspace = &instanceAirspace.nearestAirspaceList[0];
@@ -241,7 +190,7 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         if (strcmp(nameAirspace, tempAirspace->name) == 0)
         {
             tempAirspace->isValid = true;
-            *hasNext = readTilCharacter(fileptr, '{');
+            *hasNext = readTilCharFileLayer(&instanceAirspace.layer, '{');
             return NULL;
         }
         // Airspace does not yet exist append to end
@@ -264,7 +213,7 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
     tempAirspace->isValid = true;
     tempAirspace->polygonSize = polygonSize;
 
-    fseek(fileptr, posPolyStart, SEEK_SET);
+    startFileLayer(&instanceAirspace.layer, posPolyStart, instanceAirspace.layer.f);
 
     int i = 0;
     nextChar = ',';
@@ -276,13 +225,13 @@ airspace *readPolygonsFirst(FILE *fileptr, bool *hasNext, BoundingBox_LatLong_t 
         else
             tempPolygon = &tempAirspace->allocatedPolygons[i - PREALLOCATEDPOLYGONS];
         i++;
-        readTilCharacter(fileptr, '[');
-        fscanf(fileptr, "%f", &tempPolygon->longitude);
-        fgetc(fileptr);
-        fscanf(fileptr, "%f", &tempPolygon->latitude);
+        readTilCharFileLayer(&instanceAirspace.layer, '[');
+        getFloatSize(&instanceAirspace.layer, 16, &tempPolygon->longitude);
+        skipNextFileLayer(&instanceAirspace.layer);
+        getFloatSize(&instanceAirspace.layer, 16, &tempPolygon->latitude);
 
-        fgetc(fileptr);
-        nextChar = fgetc(fileptr);
+        skipNextFileLayer(&instanceAirspace.layer);
+        nextChar = fgetCFileLayer(&instanceAirspace.layer);
     }
     *hasNext = true;
     return tempAirspace;
@@ -292,8 +241,9 @@ void deInitAirspaceList()
 {
 }
 
-int airspaceParse(float myLat, float myLon)
+int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
 {
+    startFileLayer(&instanceAirspace.layer, 0, jsonFile);
     printf("Start parse with: %.2f, %.2f", myLat, myLon);
     airspace *listNearest = instanceAirspace.nearestAirspaceList;
     while (listNearest)
@@ -303,16 +253,15 @@ int airspaceParse(float myLat, float myLon)
     }
 
     // FILE *fileptr = openFile_sdcard("/airspace", "airspaces.json", "r");
-    FILE *fileptr = fopen("airspace/airspaces.json", "r");
-    if (!fileptr)
+    if (!jsonFile)
     {
         printf("Error opening file\n");
         return 1;
     }
-    readTilCharacter(fileptr, '{');
+    readTilCharFileLayer(&instanceAirspace.layer, '{');
     char nameBuffer[50];
     char heightBuffer[10];
-    readTilCharacter(fileptr, '{');
+    readTilCharFileLayer(&instanceAirspace.layer, '{');
     bool hasNext = true;
     uint32_t airspacesCount = 0;
 
@@ -323,35 +272,42 @@ int airspaceParse(float myLat, float myLon)
     while (hasNext)
     {
         airspacesCounted++;
-        readTilCharacter(fileptr, '{');
-        readTilCharacter(fileptr, ':');
-        fgetc(fileptr);
-        readToBufferTillNextChar(fileptr, '"', nameBuffer, 50);
-        readTilCharacterTimes(fileptr, ',', 6);
-        fgetc(fileptr);
-        char temp = fgetc(fileptr);
-        // Check if Freqeuncy Field exists
-        if (temp == 'F')
-            readTilCharacter(fileptr, ',');
-        fgetc(fileptr);
-        char temp1 = fgetc(fileptr);
-        // check if Callsign Field exists
-        if (temp1 == 'C' || temp == 'C')
-            readTilCharacter(fileptr, ',');
-        readTilCharacter(fileptr, ',');
-        fgetc(fileptr);
-        temp = fgetc(fileptr);
-        // Check if Validity Field exists
-        // TODO: save the validity
-        if (temp == 'V')
+        long airspaceStartPos = ftellFileLayer(&instanceAirspace.layer);
+        readTilCharFileLayer(&instanceAirspace.layer, '{');
+        readToBufferTillNextCharFileLayer(&instanceAirspace.layer, ':', nameBuffer, 50);
+        if (strcmp(nameBuffer, "\"Name\"") != 0)
         {
-            readTilCharacter(fileptr, '{');
+            printf("Not in the right position\n");
+            return 1;
         }
-        readTilCharacterTimes(fileptr, '{', 3);
-        readTilCharacter(fileptr, ':');
-        fgetc(fileptr);
+        skipNextFileLayer(&instanceAirspace.layer);
+        readToBufferTillNextCharFileLayer(&instanceAirspace.layer, '"', nameBuffer, 50);
+        if (strcmp(nameBuffer, "CTA Geneva Plateau/Jura") == 0)
+            printf("Jetzte\n");
+        char nextChar = fgetCFileLayer(&instanceAirspace.layer);
+        while (1)
+        {
+            skipNextFileLayer(&instanceAirspace.layer);
+            nextChar = fgetCFileLayer(&instanceAirspace.layer);
+            if (nextChar == 'V')
+            {
+                // TODO: parse Validity
+                readTilCharFileLayer(&instanceAirspace.layer, '{');
+                readTilCharFileLayer(&instanceAirspace.layer, '{');
+                break;
+            }
+            if (nextChar == 'U')
+            {
+                readTilCharFileLayer(&instanceAirspace.layer, '{');
+                break;
+            }
+            readTilCharFileLayer(&instanceAirspace.layer, ',');
+        }
+        readTilCharTimesFileLayer(&instanceAirspace.layer, '{', 2);
+        readTilCharFileLayer(&instanceAirspace.layer, ':');
+        skipNextFileLayer(&instanceAirspace.layer);
         heightType heightTypeUpper;
-        readToBufferTillNextChar(fileptr, '"', heightBuffer, 10);
+        readToBufferTillNextCharFileLayer(&instanceAirspace.layer, '"', heightBuffer, 10);
         if (strcmp(heightBuffer, "m QNH") == 0)
         {
             heightTypeUpper = HeightType_mQNH;
@@ -369,25 +325,23 @@ int airspaceParse(float myLat, float myLon)
             printf("Unknown height type %s\n", heightBuffer);
             return 1;
         }
-        readTilCharacter(fileptr, ':');
+        readTilCharFileLayer(&instanceAirspace.layer, ':');
         int uppperLimit;
-        fscanf(fileptr, "%i", &uppperLimit);
-        readTilCharacter(fileptr, '{');
-        fgetc(fileptr);
-        temp = fgetc(fileptr);
+        getIntTilCharacter(&instanceAirspace.layer, '}', &uppperLimit);
+        readTilCharFileLayer(&instanceAirspace.layer, '{');
+        skipNextFileLayer(&instanceAirspace.layer);
+        char temp = fgetCFileLayer(&instanceAirspace.layer);
         // TODO: Save Alt2
         if (temp == 'T')
         {
-            readTilCharacter(fileptr, '{');
-            readTilCharacter(fileptr, '}');
+            readTilCharFileLayer(&instanceAirspace.layer, '{');
+            readTilCharFileLayer(&instanceAirspace.layer, '}');
         }
-        readTilCharacter(fileptr, '}');
-        readTilCharacter(fileptr, '{');
-        readTilCharacter(fileptr, '{');
-        readTilCharacter(fileptr, '{');
-        readTilCharacter(fileptr, ':');
-        fgetc(fileptr);
-        readToBufferTillNextChar(fileptr, '"', heightBuffer, 10);
+        readTilCharFileLayer(&instanceAirspace.layer, '}');
+        readTilCharTimesFileLayer(&instanceAirspace.layer, '{', 3);
+        readTilCharFileLayer(&instanceAirspace.layer, ':');
+        skipNextFileLayer(&instanceAirspace.layer);
+        readToBufferTillNextCharFileLayer(&instanceAirspace.layer, '"', heightBuffer, 10);
         heightType heightTypeLower;
         if (strcmp(heightBuffer, "m QNH") == 0)
         {
@@ -406,12 +360,11 @@ int airspaceParse(float myLat, float myLon)
             printf("Unknown height type %s\n", heightBuffer);
             return 1;
         }
-        readTilCharacter(fileptr, ':');
+        readTilCharFileLayer(&instanceAirspace.layer, ':');
         int lowerLimit;
-        fscanf(fileptr, "%i", &lowerLimit);
-        readTilCharacter(fileptr, '[');
-        readTilCharacter(fileptr, '[');
-        airspace *tempAirspace = readPolygonsFirst(fileptr, &hasNext, &myBoundingBox, nameBuffer);
+        getIntTilCharacter(&instanceAirspace.layer, '}', &lowerLimit);
+        readTilCharTimesFileLayer(&instanceAirspace.layer, '[', 2);
+        airspace *tempAirspace = readPolygonsFirst(&hasNext, &myBoundingBox, nameBuffer, cachedFile, airspaceStartPos);
         if (!tempAirspace)
         {
             continue;
@@ -435,7 +388,7 @@ int airspaceParse(float myLat, float myLon)
         }
         prev = tempAirspace;
 
-        hasNext = readTilCharacter(fileptr, '{');
+        hasNext = readTilCharFileLayer(&instanceAirspace.layer, '{');
         // vPortYield();
     }
     listNearest = instanceAirspace.nearestAirspaceList;
@@ -461,7 +414,6 @@ int airspaceParse(float myLat, float myLon)
         prev = listNearest;
         listNearest = listNearest->next;
     }
-    fclose(fileptr);
     return 0;
 }
 
@@ -477,10 +429,41 @@ void AirspaceTask()
     //}
     gpsData.latitude = 47.50733020688501f;
     gpsData.longitude = 7.525586773402665f;
+    gpsData.date.year = 2023;
+    gpsData.date.month = 05;
+    gpsData.date.day = 24;
+    char nameBuffer[100];
+    snprintf(nameBuffer, 100, "cache/airspace%i:%i:%i", gpsData.date.year, gpsData.date.month, gpsData.date.day);
+    // FILE *cachedFile = fopen(nameBuffer, "r");
+    FILE *cachedFile = NULL;
+    if (cachedFile == NULL)
+    {
+        FILE *jsonFile = fopen("airspace/airspaces.json", "r");
+        if (jsonFile == NULL)
+        {
+            printf("Cant open JSON File, please donwload it\n");
+            return;
+        }
+        cachedFile = fopen(nameBuffer, "w");
+        if (cachedFile == NULL)
+        {
+            printf("Cached File should always be able to open\n");
+            return;
+        }
+        if (ParseAirspaceJSON(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile) != 0)
+        {
+            printf("Cant parse JSON File");
+            fclose(jsonFile);
+            fclose(cachedFile);
+            return;
+        }
+        fclose(jsonFile);
+        fclose(cachedFile);
+    }
     // vTaskDelay(1000 / portTICK_PERIOD_MS);
     printf("Start JSON File Parse\n");
     // uint64_t startTime = esp_timer_get_time();
-    airspaceParse(gpsData.latitude, gpsData.longitude);
+    // ParseAirspaceJSON(gpsData.latitude, gpsData.longitude);
     // printf("All took: %i\n", (int)((esp_timer_get_time() - startTime) / 1000));
     //  TODO: handle this case
     instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
@@ -508,7 +491,7 @@ void AirspaceTask()
         // Parse whole JSON, when distance to last parsed of 7km
         if (GET_DISTANCEFASTSQ(gpsData.latitude, gpsData.longitude, instanceAirspace.lastAllAirspaceUpdatePoint.lat, instanceAirspace.lastAllAirspaceUpdatePoint.lon) > (7 * 7))
         {
-            airspaceParse(gpsData.latitude, gpsData.longitude);
+            // airspaceParse(gpsData.latitude, gpsData.longitude);
             instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
             instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
             searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);

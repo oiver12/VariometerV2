@@ -3,6 +3,7 @@
 
 #include "Screen/Util.h"
 #include "Screen/DeviceContext.h"
+#include "file_layer.h"
 
 #define AIRSPACE_NAMEBUFFERSIZE 100
 #define PREALLOCATEDAIRSPACES 10
@@ -55,6 +56,7 @@ typedef struct AirspaceParcer_State_t
     Position_t lastInNearAirspacesUpdatePoint;   // Point where all near Airspaces where searched and the nearest was picked
     Position_t lastAllAirspaceUpdatePoint;       // Point where whole JSON File was last parsed
     float diffFirstToSecondAirspace;
+    FileLayer_t layer;
 } AirspaceParcer_State_t;
 
 void StartAirspaceParse();

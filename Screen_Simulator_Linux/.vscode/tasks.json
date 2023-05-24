@@ -16,6 +16,7 @@
                 "${workspaceFolder}/Screen/freertos/*.c",
                 "${workspaceFolder}/Screen/assets/*.c",
                 "${workspaceFolder}/UI_Demo.c",
+                "${workspaceFolder}/file_layer.c",
                 "-o",
                 "${workspaceFolder}/main",
                 "-lm",
