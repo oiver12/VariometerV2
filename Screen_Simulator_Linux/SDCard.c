@@ -6,6 +6,22 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
+FILE *openFile_sdcard(const char *directory, const char *fileName, const char *openMethod)
+{
+    char buffer[100];
+    buffer[0] = '\0';
+    if (directory != NULL)
+    {
+        if (directory[0] == '/')
+            strcat(buffer, directory + 1);
+        else
+            strcat(buffer, directory);
+    }
+    strcat(buffer, "/");
+    strcat(buffer, fileName);
+    return fopen(buffer, openMethod);
+}
+
 void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
 {
     DIR *dir;

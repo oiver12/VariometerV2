@@ -17,6 +17,7 @@
                 "${workspaceFolder}/Screen/assets/*.c",
                 "${workspaceFolder}/UI_Demo.c",
                 "${workspaceFolder}/file_layer.c",
+                "${workspaceFolder}/esp_timer.c",
                 "-o",
                 "${workspaceFolder}/main",
                 "-lm",

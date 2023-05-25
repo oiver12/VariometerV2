@@ -5,6 +5,7 @@
 #include "SoundManager.h"
 #include "Widget_Vario.h"
 #include "Util.h"
+#include "../esp_timer.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
     {
@@ -213,6 +214,9 @@ void vario_state_set_member(void *value, vario_state_member_t member)
     case vario_state_latitude:
         vario_state.latitude = *((float *)value);
         break;
+    case vario_state_airspaceInfo:
+        vario_state.airspaceInfo = *((Airspace_Info_t *)value);
+        break;
     default:
         printf(" Member von Vario State konnte nicht gefunden werden!\n");
         break;
@@ -267,6 +271,9 @@ bool vario_state_get_member(void *value, vario_state_member_t member, bool state
         break;
     case vario_state_latitude:
         *(float *)value = vario_state.latitude;
+        break;
+    case vario_state_airspaceInfo:
+        *(Airspace_Info_t *)value = vario_state.airspaceInfo;
         break;
     default:
         printf("Member von Vario State konnte nicht gefunden werden!\n");

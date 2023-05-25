@@ -6,6 +6,11 @@
 
 #define PI 3.1415926535897932384626433832795
 
+typedef struct
+{
+    float lon;
+    float lat;
+} Point2D_t;
 struct list_head
 {
     struct list_head *next, *prev;

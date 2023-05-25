@@ -1,11 +1,13 @@
 #include "file_layer.h"
+#include <errno.h>
+#include <string.h>
 
 // File ended
 static int getToBuffer(FileLayer_t *layer)
 {
-    layer->lastChunkPos += BUFFERSIZELAYER;
     // fseek(layer->f, BUFFERSIZELAYER, SEEK_SET);
     long currPos = ftell(layer->f);
+    layer->lastChunkPos = currPos;
     // Normaler Fall: Einlesen vom Buffer
     if (currPos + BUFFERSIZELAYER < layer->fileLength)
     {
@@ -48,14 +50,19 @@ int startFileLayer(FileLayer_t *layer, long fileStartPos, FILE *f)
         return 1;
     }
     layer->f = f;
-    fseek(layer->f, 0, SEEK_END);
+    if (fseek(layer->f, 0, SEEK_END) != 0)
+    {
+        char *testValue = strerror(errno);
+        printf("Could not go tot the end of the file: %s\n", testValue);
+        return 1;
+    }
     layer->fileLength = ftell(layer->f);
     fseek(layer->f, fileStartPos, SEEK_SET);
-    if (getToBuffer(layer) != 0)
-        return 1;
     layer->lastChunkPos = fileStartPos;
     layer->currPosBuffer = 0;
     layer->endInBuffer = BUFFERSIZELAYER;
+    if (getToBuffer(layer) != 0)
+        return 1;
     return 0;
 }
 
@@ -81,6 +88,7 @@ bool readTilCharTimesFileLayer(FileLayer_t *layer, int character, uint8_t times)
     {
         readTilCharFileLayer(layer, character);
     }
+    return 0;
 }
 
 int fgetCFileLayer(FileLayer_t *layer)
@@ -103,13 +111,13 @@ int getFloatTilCharacter(FileLayer_t *layer, char character, float *value)
         tempBuffer[currPos] = fgetCFileLayer(layer);
         if (tempBuffer[currPos] == character)
         {
-            // Wenn letzter Character gerade der letzte vom Buffer war
-            if (layer->currPosBuffer == 0)
-            {
-                printf("Scheissseeeee!\n");
-                return 1;
-            }
-            layer->currPosBuffer--;
+            // // Wenn letzter Character gerade der letzte vom Buffer war
+            // if (layer->currPosBuffer == 0)
+            // {
+            //     printf("Scheissseeeee!\n");
+            //     return 1;
+            // }
+            // layer->currPosBuffer--;
             break;
         }
         currPos++;
@@ -123,7 +131,6 @@ int getFloatSize(FileLayer_t *layer, uint8_t size, float *value)
     if (checkAndMakeBuffer(layer) != 0)
         return 1;
     char tempBuffer[size + 1];
-    uint8_t currPos = 0;
     for (size_t i = 0; i < size; i++)
     {
         tempBuffer[i] = fgetCFileLayer(layer);
