@@ -156,6 +156,7 @@ int skipNextFileLayer(FileLayer_t *layer)
     if (checkAndMakeBuffer(layer) != 0)
         return 1;
     layer->currPosBuffer++;
+    return 0;
 }
 
 long ftellFileLayer(FileLayer_t *layer)

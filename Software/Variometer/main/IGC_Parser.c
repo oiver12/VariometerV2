@@ -7,6 +7,7 @@
 #include "Util.h"
 #include <math.h>
 #include "Screen/FIFO.h"
+#include <esp_timer.h>
 
 #define MAX_LINELENGTH 256
 #define POINTS_MEAN_VARIO 5
@@ -276,6 +277,7 @@ void updateFlightStats(TrackPointIGC_t trackPoint, TrackPointIGC_t previousTrack
 int ParseIGCFile(Track_t *track, size_t maxSizeTrackPoints, FILE *igcFile, bool pointStackInit, bool parseIFields)
 {
     printf("Start parse IGC \n");
+    uint64_t startTime = esp_timer_get_time();
     char line[MAX_LINELENGTH];
     if (igcFile == NULL)
         return 1;
@@ -292,7 +294,6 @@ int ParseIGCFile(Track_t *track, size_t maxSizeTrackPoints, FILE *igcFile, bool 
                 ERROR_CHECK(parseI(line, track, parseIFields));
         }
     }
-    printf("Here%i\n", (int)track->totalPoints);
     fseek(igcFile, 0, SEEK_SET);
     memset(&track->flightStats, 0, sizeof(flight_stats_t));
     if (vario_fifo == NULL)
@@ -368,7 +369,7 @@ int ParseIGCFile(Track_t *track, size_t maxSizeTrackPoints, FILE *igcFile, bool 
     track->flightStats.takeOffPosition.lon = track->trackPoints[track->sizeTrackPoints - 1].lon;
     // TODO: Take the first Valid GNSS Alt
     track->flightStats.takeOffPosition.alt = track->trackPoints[track->sizeTrackPoints - 1].gnssAlt;
-    printf("End parse IGC \n");
+    printf("IGC Took: %i", (int)(esp_timer_get_time() - startTime));
     return 0;
 }
 

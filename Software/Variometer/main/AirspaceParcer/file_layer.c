@@ -51,11 +51,11 @@ int startFileLayer(FileLayer_t *layer, long fileStartPos, FILE *f)
     fseek(layer->f, 0, SEEK_END);
     layer->fileLength = ftell(layer->f);
     fseek(layer->f, fileStartPos, SEEK_SET);
-    if (getToBuffer(layer) != 0)
-        return 1;
     layer->lastChunkPos = fileStartPos;
     layer->currPosBuffer = 0;
     layer->endInBuffer = BUFFERSIZELAYER;
+    if (getToBuffer(layer) != 0)
+        return 1;
     return 0;
 }
 
@@ -81,6 +81,7 @@ bool readTilCharTimesFileLayer(FileLayer_t *layer, int character, uint8_t times)
     {
         readTilCharFileLayer(layer, character);
     }
+    return 0;
 }
 
 int fgetCFileLayer(FileLayer_t *layer)
@@ -156,6 +157,7 @@ int skipNextFileLayer(FileLayer_t *layer)
     if (checkAndMakeBuffer(layer) != 0)
         return 1;
     layer->currPosBuffer++;
+    return 0;
 }
 
 long ftellFileLayer(FileLayer_t *layer)
