@@ -104,6 +104,8 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
         printf("In View:%i\n", (int)gps->sats_in_view);
+        if (gps->valid)
+            printf("GPS Valid\n");
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;
         vario_state_set_member(&speedGroundKMH, vario_state_groundSpeed);

@@ -722,18 +722,18 @@ static void nmea_parser_task_entry(void *arg)
             switch (event.type)
             {
             case UART_DATA:
-                uint8_t data;
-                while (uart_read_bytes(esp_gps->uart_port, &data, 1, 0) == 1)
-                {
-                    // Process or store the received data as needed
-                    printf("%c", data);
-                    static int i = 0;
-                    if (i % 20 == 0)
-                    {
-                        printf("\n");
-                        i++;
-                    }
-                }
+                // uint8_t data;
+                // while (uart_read_bytes(esp_gps->uart_port, &data, 1, 0) == 1)
+                // {
+                //     // Process or store the received data as needed
+                //     printf("%c", data);
+                //     static int i = 0;
+                //     if (i % 20 == 0)
+                //     {
+                //         printf("\n");
+                //         i++;
+                //     }
+                // }
                 break;
             case UART_FIFO_OVF:
                 ESP_LOGW(GPS_TAG, "HW FIFO Overflow");
@@ -755,7 +755,6 @@ static void nmea_parser_task_entry(void *arg)
                 ESP_LOGE(GPS_TAG, "Frame Error");
                 break;
             case UART_PATTERN_DET:
-                ESP_LOGI(GPS_TAG, "Handle string\n");
                 esp_handle_uart_pattern(esp_gps);
                 break;
             default:

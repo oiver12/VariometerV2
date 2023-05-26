@@ -470,7 +470,7 @@ void app_main(void)
     startLogging();
     // AGL_startAGL(sdcard, gps_nmea_hdl);
 
-    StartAirspaceParse();
+    // StartAirspaceParse();
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
 

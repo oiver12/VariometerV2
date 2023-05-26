@@ -1391,7 +1391,7 @@
     (uuid ffce5a7e-5cc3-40d0-ab96-1c4dc71497ce)
   )
 
-  (text "Active Antenna: JP2, JP3 closed, JP1 open\nPassiv Antenna: JP2 closed, JP1, JP3 open\nInternal Antenna: JP1 closed, JP2, JP3 closed"
+  (text "Active Antenna: JP2, JP3 closed, JP1 open\nPassiv Antenna: JP2 closed, JP1, JP3 open\nInternal Antenna: JP1 closed, JP2, JP3 open"
     (at 22.86 30.48 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid a2624e35-8ff7-4cc6-8c80-78ba96ba00f8)
