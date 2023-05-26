@@ -8,7 +8,7 @@
 #include "../SDCard.h"
 #include "Widget_Vario.h"
 #include <time.h>
-#include "RenderSystem.h"
+#include "esp_timer.h"
 
 void vario_display_PowerOffScreen()
 {
@@ -25,32 +25,42 @@ void vario_display_PowerOffScreen()
     Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
 }
 
-void vario_display_FlightStatistics(void *params)
+void vario_display_FlightStatistics(char *fileName)
 {
-    // TODO: add Mutex for drawing
-    char *fileName = (char *)params;
     char buffer[100];
-    FILE *igcFile = openFile_sdcard("/IGCFlights", fileName, "r");
+    strcpy(buffer, "IGCFlights/");
+    strcat(buffer, fileName);
+    FILE *igcFile = fopen(buffer, "r");
     if (igcFile == NULL)
     {
         printf("Couldn't open IGC File\n");
         return;
     }
-    Paint_Clear(WHITE);
-    DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
     const int x = 5;
     const int y = 50;
     const int width = 470;
     const int height = 100;
-    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
-    DrawTextWithAlign("Height Diagramm", 240, y, &Font16, true, ALIGN_CENTER, ALIGN_MID);
     Track_t track;
     memset(&track, 0, sizeof(Track_t));
-    // SetPointCountFromFile(&track, igcFile, width);
-    // TrackPointIGC_t trackPointsStack[track.sizeTrackPoints];
-    // track.trackPoints = trackPointsStack;
-    ParseIGCFile(&track, width, igcFile, false, false);
-    printf("Start drawing\n");
+    FILE *cachedFile = openFile_sdcard("/cache", fileName, "r");
+    if (cachedFile == NULL)
+    {
+        // doesn't exist
+        // maybe deleted so parse full and write cache
+        long time = esp_timer_get_time();
+        ParseIGCFile(&track, width, igcFile, false, false, fileName);
+        printf("Clock: %i\n", (int)(esp_timer_get_time() - time));
+    }
+    else
+    {
+        long time = esp_timer_get_time();
+        ParseIGCWithCached(&track, width, igcFile, cachedFile, false, false, fileName);
+        printf("Clock cached: %i\n", (int)(esp_timer_get_time() - time));
+    }
+    Paint_Clear(WHITE);
+    DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
+    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
+    DrawTextWithAlign("Height Diagramm", 240, y, &Font16, true, ALIGN_CENTER, ALIGN_MID);
     int gapDia = (track.flightStats.altitudeMax - track.flightStats.altitudeMin) * 0.1f;
     int maxHeightDiagramm = track.flightStats.altitudeMax + gapDia;
     int minHeightDiagramm = track.flightStats.altitudeMin - gapDia;
@@ -109,7 +119,4 @@ void vario_display_FlightStatistics(void *params)
     strcat(buffer, track.flightStats.takeOffPosition.lat < 0 ? "W" : "E");
     DrawTextWithAlign(buffer, 465, 257, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     FreeTrackFile(&track);
-    rendering_Push(true);
-    printf("Pushed\n");
-    vTaskDelete(NULL);
 }

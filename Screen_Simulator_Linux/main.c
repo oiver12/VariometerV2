@@ -46,6 +46,7 @@ void open_ReadFile()
     }
 
     FILE *fileptr;
+    char *FileName = "2023-05-06-XCT-TLE-09.igc";
     fileptr = fopen("IGCFlights/2023-05-06-XCT-TLE-09.igc", "r");
     if (fileptr == NULL)
     {
@@ -55,7 +56,7 @@ void open_ReadFile()
     }
     Track_t track;
     memset(&track, 0, sizeof(Track_t));
-    if (ParseIGCFile(&track, 50, fileptr, false, false) != 0)
+    if (ParseIGCFile(&track, 50, fileptr, false, false, FileName) != 0)
     {
         printf("Failed to parse IGC File\n");
     }
@@ -122,7 +123,7 @@ void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_ti
 
 void AnalyzeGPS()
 {
-    FILE *f = fopen("Trackloggs/GPS65.txt", "r");
+    FILE *f = fopen("Trackloggs/GPSPassivThin.txt", "r");
     if (!f)
     {
         printf("Couldn't open GPS Log File\n");
@@ -145,48 +146,55 @@ void AnalyzeGPS()
     bool first3D = false;
     gps_analyze_t gpsAnalyze;
     memset(&gpsAnalyze, 0, sizeof(gps_analyze_t));
+    FILE *pythonArrayF = fopen("pythonArray", "w");
+    fprintf(pythonArrayF, "y=[");
     while (currPosGPSObj < gpsSize)
     {
         int64_t *time = (int64_t *)&bufferRead[currPos];
         currPos += sizeof(int64_t);
-        gps_time_t timeGPS;
-        timeGPS.hour = bufferRead[currPos];
+        gps_t data;
+        data.tim.hour = bufferRead[currPos];
         currPos++;
-        timeGPS.minute = bufferRead[currPos];
+        data.tim.minute = bufferRead[currPos];
         currPos++;
-        timeGPS.second = bufferRead[currPos];
+        data.tim.second = bufferRead[currPos];
         currPos++;
-        timeGPS.thousand = bufferRead[currPos];
+        data.tim.thousand = bufferRead[currPos];
         currPos++;
-        gps_fix_t gpsFix = *((gps_fix_t *)&bufferRead[currPos]);
+        data.fix = *((gps_fix_t *)&bufferRead[currPos]);
         currPos += sizeof(gps_fix_t);
-        gps_fix_mode_t gpsFixMode = *((gps_fix_mode_t *)&bufferRead[currPos]);
+        data.fix_mode = *((gps_fix_mode_t *)&bufferRead[currPos]);
         currPos += sizeof(gps_fix_mode_t);
-        bool valid = *((bool *)&bufferRead[currPos]);
+        data.valid = *((bool *)&bufferRead[currPos]);
         currPos += sizeof(bool);
-        float dop_h = *((float *)&bufferRead[currPos]);
+        data.dop_h = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float dop_p = *((float *)&bufferRead[currPos]);
+        data.dop_p = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float dop_v = *((float *)&bufferRead[currPos]);
+        data.dop_v = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        uint8_t satsInUse = *((uint8_t *)&bufferRead[currPos]);
+        data.sats_in_use = *((uint8_t *)&bufferRead[currPos]);
         currPos++;
-        uint8_t satsInView = *((uint8_t *)&bufferRead[currPos]);
+        data.sats_in_view = *((uint8_t *)&bufferRead[currPos]);
         currPos++;
-        float latitude = *((float *)&bufferRead[currPos]);
+        data.latitude = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float longitude = *((float *)&bufferRead[currPos]);
+        data.longitude = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float altitude = *((float *)&bufferRead[currPos]);
+        data.altitude = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float speed = *((float *)&bufferRead[currPos]);
+        data.speed = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float cog = *((float *)&bufferRead[currPos]);
+        data.cog = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
-        float variation = *((float *)&bufferRead[currPos]);
+        data.variation = *((float *)&bufferRead[currPos]);
         currPos += sizeof(float);
         char lastChar = bufferRead[currPos];
+        if (currPosGPSObj != 0)
+        {
+            fprintf(pythonArrayF, ",");
+        }
+        fprintf(pythonArrayF, "%.2f", data.dop_p);
         if (lastChar != '\n')
         {
             int i = 0;
@@ -200,41 +208,52 @@ void AnalyzeGPS()
             return;
         }
         currPos++;
-        if (!firstValid && valid)
+        if (!firstValid && data.valid)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToValid);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, data.tim, &gpsAnalyze.timeToValid);
             firstValid = true;
         }
-        if (!firstGPS && gpsFix == GPS_FIX_GPS)
+        if (!firstGPS && data.fix == GPS_FIX_GPS)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToGPS);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, data.tim, &gpsAnalyze.timeToGPS);
             firstGPS = true;
         }
-        if (!firstDGPS && gpsFix == GPS_FIX_DGPS)
+        if (!firstDGPS && data.fix == GPS_FIX_DGPS)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeToDGPS);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, data.tim, &gpsAnalyze.timeToDGPS);
             firstDGPS = true;
         }
-        if (!first2D && gpsFixMode == GPS_MODE_2D)
+        if (!first2D && data.fix_mode == GPS_MODE_2D)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeTo2D);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, data.tim, &gpsAnalyze.timeTo2D);
             first2D = true;
         }
-        if (!first3D && gpsFixMode == GPS_MODE_3D)
+        if (!first3D && data.fix_mode == GPS_MODE_3D)
         {
-            Get_duration_diffGPSTime(gps_Objs[0].tim, timeGPS, &gpsAnalyze.timeTo3D);
+            Get_duration_diffGPSTime(gps_Objs[0].tim, data.tim, &gpsAnalyze.timeTo3D);
             first3D = true;
         }
         if (firstValid)
         {
-            gpsAnalyze.meanDopH += dop_h;
-            gpsAnalyze.meanDopP += dop_p;
-            gpsAnalyze.meanDopV += dop_v;
-            gpsAnalyze.meanSatsInUseValid += satsInUse;
-            gpsAnalyze.meanSatsInViewValid += satsInView;
+            gpsAnalyze.meanDopH += data.dop_h;
+            gpsAnalyze.meanDopP += data.dop_p;
+            gpsAnalyze.meanDopV += data.dop_v;
+            gpsAnalyze.meanSatsInUseValid += data.sats_in_use;
+            gpsAnalyze.meanSatsInViewValid += data.sats_in_view;
         }
+        memcpy(&gps_Objs[currPosGPSObj], &data, sizeof(gps_t));
         currPosGPSObj++;
     }
+    fprintf(pythonArrayF, "]");
+    fprintf(pythonArrayF, "\nx=[");
+    for (size_t i = 0; i < currPosGPSObj; i++)
+    {
+        if (i != 0)
+            fprintf(pythonArrayF, ",");
+        fprintf(pythonArrayF, "%i", (int)i);
+    }
+    fprintf(pythonArrayF, "]");
+    fclose(pythonArrayF);
     gpsAnalyze.meanDopH += ((double)gpsAnalyze.meanDopH) / (double)(currPosGPSObj);
     gpsAnalyze.meanDopP += ((double)gpsAnalyze.meanDopP) / (double)(currPosGPSObj);
     gpsAnalyze.meanDopV += ((double)gpsAnalyze.meanDopV) / (double)(currPosGPSObj);
@@ -255,8 +274,7 @@ void fastForwardSimulation(float percentage)
 
 int main(void)
 {
-    AnalyzeGPS();
-    // airspaceParse();
+    // AnalyzeGPS();
     SDL_Renderer *renderer;
     SDL_Window *window;
 

@@ -8,6 +8,7 @@
 #include "../SDCard.h"
 #include "Widget_Vario.h"
 #include <time.h>
+#include "../esp_timer.h"
 
 void vario_display_PowerOffScreen()
 {
@@ -35,20 +36,31 @@ void vario_display_FlightStatistics(char *fileName)
         printf("Couldn't open IGC File\n");
         return;
     }
-    Paint_Clear(WHITE);
-    DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
     const int x = 5;
     const int y = 50;
     const int width = 470;
     const int height = 100;
-    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
-    DrawTextWithAlign("Height Diagramm", 240, y, &Font16, true, ALIGN_CENTER, ALIGN_MID);
     Track_t track;
     memset(&track, 0, sizeof(Track_t));
-    SetPointCountFromFile(&track, igcFile, width);
-    TrackPointIGC_t trackPointsStack[track.sizeTrackPoints];
-    track.trackPoints = trackPointsStack;
-    ParseIGCFile(&track, width, igcFile, true, false);
+    FILE *cachedFile = openFile_sdcard("cache", fileName, "r");
+    if (cachedFile == NULL)
+    {
+        // doesn't exist
+        // maybe deleted so write
+        long time = esp_timer_get_time();
+        ParseIGCFile(&track, width, igcFile, false, false, fileName);
+        printf("Clock: %i\n", (int)(esp_timer_get_time() - time));
+    }
+    else
+    {
+        long time = esp_timer_get_time();
+        ParseIGCWithCached(&track, width, igcFile, cachedFile, false, false, fileName);
+        printf("Clock cached: %i\n", (int)(esp_timer_get_time() - time));
+    }
+    Paint_Clear(WHITE);
+    DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
+    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
+    DrawTextWithAlign("Height Diagramm", 240, y, &Font16, true, ALIGN_CENTER, ALIGN_MID);
     int gapDia = (track.flightStats.altitudeMax - track.flightStats.altitudeMin) * 0.1f;
     int maxHeightDiagramm = track.flightStats.altitudeMax + gapDia;
     int minHeightDiagramm = track.flightStats.altitudeMin - gapDia;

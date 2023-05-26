@@ -137,7 +137,7 @@ void startRender()
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
         {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
-        {.extraStyle = WS_FONT_12_CONTENT, .h = 150, .w = 100, .style = Widget_Airspace, .type = WidgetContent_Airspace, .x = 0, .y = 87}};
+        {.extraStyle = WS_FONT_12_CONTENT, .h = 100, .w = 200, .style = Widget_Airspace, .type = WidgetContent_Airspace, .x = 0, .y = 87}};
     ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 5);
     ScreenManager_show_Screen(1);
     FILE *fileptr;

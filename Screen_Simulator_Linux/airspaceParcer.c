@@ -581,13 +581,18 @@ void AirspaceTask()
         printf("In Line took: %i\n", (int)(esp_timer_get_time() - startTime));
     }
     else
+    {
         printf("Cant find airspace nearby\n");
+        // Screen displays "No Airspace found"
+        instanceAirspace.nearestAirspaceInfo.name[0] = '\0';
+    }
     return;
     while (true)
     {
         // No Airspace Nearby
         if (!instanceAirspace.currentNearestAirspace)
         {
+            instanceAirspace.nearestAirspaceInfo.name[0] = '\0';
             // Wait 10s and try again
             //  vTaskDelay(10000 / portTICK_PERIOD_MS)
             vario_state_get_member(&gpsData, vario_state_gps_data, false);

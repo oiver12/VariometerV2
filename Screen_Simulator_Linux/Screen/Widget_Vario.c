@@ -381,15 +381,51 @@ static void add_Airspace_Widget(WidgetData *widget)
 {
     Airspace_Info_t airspaceInfo;
     vario_state_get_member(&airspaceInfo, vario_state_airspaceInfo, true);
+    if (airspaceInfo.name[0] == '\0')
+    {
+        DrawWidgetBone(widget, "No Airspace nearby found");
+        return;
+    }
     DrawWidgetBone(widget, airspaceInfo.name);
-    char buffer[50];
+    char buffer[100];
+    snprintf(buffer, 100, "%im", (int)airspaceInfo.lowerLimit);
+    switch (airspaceInfo.heightTypeLower)
+    {
+    case HeightType_mQNH:
+        strcat(buffer, " QNH");
+        break;
+    case HeightType_mSTD:
+        strcat(buffer, " STD");
+        break;
+    case HeightType_mAGL:
+        if (airspaceInfo.lowerLimit == 0)
+        {
+            strcpy(buffer, "GND");
+            break;
+        }
+        strcat(buffer, " AGL");
+        break;
+    }
     char tempBuffer[25];
-    snprintf(tempBuffer, 25, "%i", (int)airspaceInfo.lowerLimit);
-    // switch(airspaceInfo.heightTypeLower)
-    // {
-    //     case
-    // }
-    // DrawTextWithAlignOffset(widget, )
+    snprintf(tempBuffer, 25, " - %im", (int)airspaceInfo.upperLimt);
+    strcat(buffer, tempBuffer);
+    switch (airspaceInfo.heightTypeUpper)
+    {
+    case HeightType_mQNH:
+        strcat(buffer, " QHN");
+        break;
+    case HeightType_mSTD:
+        strcat(buffer, " STD");
+        break;
+    case HeightType_mAGL:
+        strcat(buffer, " AGL");
+        break;
+    }
+    DrawTextWithAlignOffset(widget, buffer, widget->w / 2, 20, &Font12, true, ALIGN_CENTER, ALIGN_TOP);
+    snprintf(buffer, 100, "Hor: %i m", (int)airspaceInfo.distanceToAirspaceHor);
+    DrawTextWithAlignOffset(widget, buffer, widget->w / 2, 40, &Font12, true, ALIGN_CENTER, ALIGN_TOP);
+    snprintf(buffer, 100, "Vert: %i m", (int)airspaceInfo.distanceToAirspaceVert);
+    DrawTextWithAlignOffset(widget, buffer, widget->w / 2, 60, &Font12, true, ALIGN_CENTER, ALIGN_TOP);
 }
 
 /************************ Update Widgets ************************/

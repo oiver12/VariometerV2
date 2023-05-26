@@ -576,7 +576,10 @@ void AirspaceTask()
         // printf("In Line took: %i\n", (int)(esp_timer_get_time() - startTime));
     }
     else
+    {
         printf("Cant find airspace nearby\n");
+        instanceAirspace.nearestAirspaceInfo.name[0] = '\0';
+    }
     while (true)
     {
         vario_state_get_member(&gpsData, vario_state_gps_data, false);
