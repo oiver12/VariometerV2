@@ -1,14 +1,12 @@
 ﻿#include "DeviceContext.h"
 #include <math.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/semphr.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include "SoundManager.h"
 #include "Screen/Widget_Vario.h"
-#include "esp_log.h"
 #include "Util.h"
-#include "TestTools/FlightLogger.h"
-#include "IGCLogger.h"
 #include "esp_timer.h"
+#include <esp_log.h>
 #include "Screen/ScreenManager.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
@@ -59,7 +57,8 @@ static void TakeOff(gps_t *gps)
     };
     ScreenManager_showPopUp(config);
     SoundManager_playToneArray(takeOffMelody, 8);
-    start_IGCLogger();
+    // startLogging();
+    // start_IGCLogger();
 }
 
 static void updateFlightStats(gps_t *gps)
@@ -79,7 +78,7 @@ static void updateFlightStats(gps_t *gps)
     }
     else
     {
-        if (gps->speed * 3.6f > TakeOffSpeed)
+        if (gps->speed * 3.6f > 1)
         {
             TakeOff(gps);
         }
@@ -103,9 +102,6 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
     {
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
-        printf("In View:%i\n", (int)gps->sats_in_view);
-        if (gps->valid)
-            printf("GPS Valid\n");
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;
         vario_state_set_member(&speedGroundKMH, vario_state_groundSpeed);
@@ -220,6 +216,9 @@ void vario_state_set_member(void *value, vario_state_member_t member)
     case vario_state_latitude:
         vario_state.latitude = *((float *)value);
         break;
+    case vario_state_airspaceInfo:
+        vario_state.airspaceInfo = *((Airspace_Info_t *)value);
+        break;
     default:
         printf(" Member von Vario State konnte nicht gefunden werden!\n");
         break;
@@ -274,6 +273,9 @@ bool vario_state_get_member(void *value, vario_state_member_t member, bool state
         break;
     case vario_state_latitude:
         *(float *)value = vario_state.latitude;
+        break;
+    case vario_state_airspaceInfo:
+        *(Airspace_Info_t *)value = vario_state.airspaceInfo;
         break;
     default:
         printf("Member von Vario State konnte nicht gefunden werden!\n");

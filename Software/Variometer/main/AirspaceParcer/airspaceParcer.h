@@ -2,7 +2,6 @@
 #define __AIRSPACEPARCER__H
 
 #include "../Util.h"
-#include "../DeviceContext.h"
 #include "file_layer.h"
 
 #define AIRSPACE_NAMEBUFFERSIZE 100
@@ -41,8 +40,8 @@ typedef struct Airspace_Info_t
     heightType heightTypeLower;
     float distanceToAirspaceVert;
     float distanceToAirspaceHor;
-    Position_t nearestLineStart;
-    Position_t nearestLineEnd;
+    Point2D_t nearestLineStart;
+    Point2D_t nearestLineEnd;
 } Airspace_Info_t;
 
 typedef struct AirspaceParcer_State_t
@@ -52,9 +51,9 @@ typedef struct AirspaceParcer_State_t
     airspace *currentNearestAirspace;
     Airspace_Info_t nearestAirspaceInfo;
     uint64_t lastLineUpdate;
-    Position_t lastInNearestAirspaceUpdatePoint; // Point where nearestLine was found in the nearest Airspace
-    Position_t lastInNearAirspacesUpdatePoint;   // Point where all near Airspaces where searched and the nearest was picked
-    Position_t lastAllAirspaceUpdatePoint;       // Point where whole JSON File was last parsed
+    Point2D_t lastInNearestAirspaceUpdatePoint; // Point where nearestLine was found in the nearest Airspace
+    Point2D_t lastInNearAirspacesUpdatePoint;   // Point where all near Airspaces where searched and the nearest was picked
+    Point2D_t lastAllAirspaceUpdatePoint;       // Point where whole JSON File was last parsed
     float diffFirstToSecondAirspace;
     FileLayer_t layer;
 } AirspaceParcer_State_t;

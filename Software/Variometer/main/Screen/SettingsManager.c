@@ -189,6 +189,7 @@ void SettingsManager__enter_press()
     {
         screenSettingsInstance.currPage = Settings_Page_Flights;
         draw_Settings_Scrollbar();
+        rendering_Push(false);
     }
     // Button in Setting drin
     else
@@ -218,7 +219,7 @@ void SettingsManager__enter_press()
             {
                 screenSettingsInstance.currPage = Settings_Page_FlightStatistics;
                 // xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-                xTaskCreate(vario_display_FlightStatistics, "IGC Show", 1024 * 5, (void *)((FlightList_Widget_Data *)screenSettingsInstance.hoveredField->data.extr_data)->FlightName, 3, NULL);
+                xTaskCreate(vario_display_FlightStatistics, "IGC Show", 1024 * 3, (void *)((FlightList_Widget_Data *)screenSettingsInstance.hoveredField->data.extr_data)->FlightName, 3, NULL);
                 // xSemaphoreGive(buffer_Mutex);
                 return;
             }

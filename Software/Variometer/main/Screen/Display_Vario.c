@@ -163,7 +163,17 @@ esp_err_t init_Display()
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4092};
-    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO));
+    int i = 0;
+    esp_err_t err;
+    while ((err = spi_bus_initialize(SPI2_HOST, &spi2cfg, SPI_DMA_CH_AUTO)) != ESP_OK && i < 5)
+    {
+        i++;
+    }
+    if (err != ESP_OK)
+    {
+        printf("Could not initialize SPI Bus: %s\n", esp_err_to_name(err));
+        return err;
+    }
     ESP_LOGI(TAG, "SPI initialized");
 
     DEV_Module_Init();

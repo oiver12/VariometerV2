@@ -33,70 +33,66 @@
 #include <esp_log.h>
 #include <esp_timer.h>
 
-#define SPIBUS_READ     (0x80)  /*!< addr | SPIBUS_READ  */
-#define SPIBUS_WRITE    (0x7F)  /*!< addr & SPIBUS_WRITE */
+#define SPIBUS_READ (0x80)  /*!< addr | SPIBUS_READ  */
+#define SPIBUS_WRITE (0x7F) /*!< addr & SPIBUS_WRITE */
 
 spi_device_handle_t screen_spi_handle;
 
 static const UBYTE lut_4Gray_GC[] =
-{
-0x2A,0x06,0x15,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//1
-0x28,0x06,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//2
-0x20,0x06,0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//3
-0x14,0x06,0x28,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//4
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//5
-0x00,0x02,0x02,0x0A,0x00,0x00,0x00,0x08,0x08,0x02,//6
-0x00,0x02,0x02,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,//7
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//8
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//9
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//10
-0x22,0x22,0x22,0x22,0x22
-};	
+    {
+        0x2A, 0x06, 0x15, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1
+        0x28, 0x06, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 2
+        0x20, 0x06, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 3
+        0x14, 0x06, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 4
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 5
+        0x00, 0x02, 0x02, 0x0A, 0x00, 0x00, 0x00, 0x08, 0x08, 0x02, // 6
+        0x00, 0x02, 0x02, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 7
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 8
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 9
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10
+        0x22, 0x22, 0x22, 0x22, 0x22};
 
 static const UBYTE lut_1Gray_GC[] =
-{
-0x2A,0x05,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//1
-0x05,0x2A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//2
-0x2A,0x15,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//3
-0x05,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//4
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//5
-0x00,0x02,0x03,0x0A,0x00,0x02,0x06,0x0A,0x05,0x00,//6
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//7
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//8
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//9
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//10
-0x22,0x22,0x22,0x22,0x22
-};  
+    {
+        0x2A, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1
+        0x05, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 2
+        0x2A, 0x15, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 3
+        0x05, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 4
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 5
+        0x00, 0x02, 0x03, 0x0A, 0x00, 0x02, 0x06, 0x0A, 0x05, 0x00, // 6
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 7
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 8
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 9
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10
+        0x22, 0x22, 0x22, 0x22, 0x22};
 
 static const UBYTE lut_1Gray_DU[] =
-{
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//1
-0x01,0x2A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-0x0A,0x55,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//3
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//5
-0x00,0x00,0x05,0x05,0x00,0x05,0x03,0x05,0x05,0x00,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//7
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,//9
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-0x22,0x22,0x22,0x22,0x22
-}; 
+    {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1
+        0x01, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x0A, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 3
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 5
+        0x00, 0x00, 0x05, 0x05, 0x00, 0x05, 0x03, 0x05, 0x05, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 7
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 9
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x22, 0x22, 0x22, 0x22, 0x22};
 
 static const UBYTE lut_1Gray_A2[] =
-{
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //1
-0x0A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //2
-0x05,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //3
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //4
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //5
-0x00,0x00,0x03,0x05,0x00,0x00,0x00,0x00,0x00,0x00, //6
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //7
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //8
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //9
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, //10
-0x22,0x22,0x22,0x22,0x22
-}; 
+    {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1
+        0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 2
+        0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 3
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 4
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 5
+        0x00, 0x00, 0x03, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 6
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 7
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 8
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 9
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10
+        0x22, 0x22, 0x22, 0x22, 0x22};
 
 void EPD_3IN7_SPI_Init()
 {
@@ -114,14 +110,22 @@ void EPD_3IN7_SPI_Init()
     // dev_config.queue_size = 1;
     // dev_config.pre_cb = NULL;
     // dev_config.post_cb = NULL;
-    spi_device_interface_config_t devcfg={
-        .clock_speed_hz=20*1000*1000,           //Clock out at 10 MHz
-        .mode=0,                                //SPI mode 0
-        .spics_io_num=EPD_CS_PIN,               //CS pin
-        .queue_size=7,                          //We want to be able to queue 7 transactions at a time
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = 20 * 1000 * 1000, // Clock out at 10 MHz
+        .mode = 0,                          // SPI mode 0
+        .spics_io_num = EPD_CS_PIN,         // CS pin
+        .queue_size = 7,                    // We want to be able to queue 7 transactions at a time
     };
-    volatile esp_err_t err = spi_bus_add_device(SPI2_HOST, &devcfg, &screen_spi_handle);
-    ESP_ERROR_CHECK(err);
+    int i = 0;
+    esp_err_t err;
+    while ((err = spi_bus_add_device(SPI2_HOST, &devcfg, &screen_spi_handle)) != ESP_OK && i <= 5)
+    {
+        i++;
+    }
+    if (err != ESP_OK)
+    {
+        printf("Could not add Screen to spi bus: %s\n", esp_err_to_name(err));
+    }
 }
 
 void DEV_SPI_WriteByte(UBYTE value)
@@ -157,29 +161,27 @@ int DEV_Module_Init(void)
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = (1ULL << EPD_DC_PIN) | (1ULL << EPD_RST_PIN),
         .pull_down_en = 0,
-        .pull_up_en = 0
-    };
+        .pull_up_en = 0};
     gpio_config(&io_conf_output);
     gpio_config_t io_conf_input = {
         .intr_type = GPIO_INTR_NEGEDGE,
         .mode = GPIO_MODE_INPUT,
         .pin_bit_mask = (1ULL << EPD_BUSY_PIN),
         .pull_down_en = 0,
-        .pull_up_en = 0
-    };
+        .pull_up_en = 0};
     gpio_config(&io_conf_input);
     DEV_Digital_Write(EPD_DC_PIN, 0);
-    //DEV_Digital_Write(EPD_CS_PIN, 0);
+    // DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_Digital_Write(EPD_RST_PIN, 1);
     EPD_3IN7_SPI_Init();
-	return 0;
+    return 0;
 }
 
 void DEV_Module_Exit(void)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
-    //DEV_Digital_Write(EPD_CS_PIN, 0);
-    //close 5V
+    // DEV_Digital_Write(EPD_CS_PIN, 0);
+    // close 5V
     DEV_Digital_Write(EPD_RST_PIN, 0);
 }
 
@@ -205,9 +207,9 @@ parameter:
 static void EPD_3IN7_SendCommand(UBYTE Reg)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
-    //DEV_Digital_Write(EPD_CS_PIN, 0);
+    // DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Reg);
-    //DEV_Digital_Write(EPD_CS_PIN, 1);
+    // DEV_Digital_Write(EPD_CS_PIN, 1);
 }
 
 /******************************************************************************
@@ -218,9 +220,9 @@ parameter:
 static void EPD_3IN7_SendData(UBYTE Data)
 {
     DEV_Digital_Write(EPD_DC_PIN, 1);
-    //DEV_Digital_Write(EPD_CS_PIN, 0);
+    // DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Data);
-    //DEV_Digital_Write(EPD_CS_PIN, 1);
+    // DEV_Digital_Write(EPD_CS_PIN, 1);
 }
 
 static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
@@ -231,44 +233,46 @@ static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
     {
         if (i + blockSize > size)
         {
-            //printf("Send Data lastd: %i, %i \n", i, size);
+            // printf("Send Data lastd: %i, %i \n", i, size);
             DEV_SPI_WriteBytes(&Data[i], size - i);
         }
         else
         {
-            //printf("Send Data: %i \n", i);
+            // printf("Send Data: %i \n", i);
             DEV_SPI_WriteBytes(&Data[i], blockSize);
         }
     }
 }
 
-static void IRAM_ATTR gpio_busy_isr_handler(void* arg)
+static void IRAM_ATTR gpio_busy_isr_handler(void *arg)
 {
     TaskHandle_t taskHandle = (TaskHandle_t)arg;
     BaseType_t HPTaskWoken = pdFALSE;
-    //unblock TaskMeasureAcc
+    // unblock TaskMeasureAcc
     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-    if (HPTaskWoken == pdTRUE) portYIELD_FROM_ISR();
+    if (HPTaskWoken == pdTRUE)
+        portYIELD_FROM_ISR();
 }
 
 static void EPD_3IN7_ReadBusy_HIGH(void)
 {
-    //printf("e-Paper busy\r\n");
-    // UBYTE busy;
-    // do {
-    //     busy = DEV_Digital_Read(EPD_BUSY_PIN);
-    //     DEV_Delay_ms(10);
-    // } while(busy);
-    //uint64_t startTime = esp_timer_get_time();
+    // printf("e-Paper busy\r\n");
+    //  UBYTE busy;
+    //  do {
+    //      busy = DEV_Digital_Read(EPD_BUSY_PIN);
+    //      DEV_Delay_ms(10);
+    //  } while(busy);
+    // uint64_t startTime = esp_timer_get_time();
     gpio_isr_handler_add((gpio_num_t)EPD_BUSY_PIN, gpio_busy_isr_handler, xTaskGetCurrentTaskHandle());
     uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 5000 / portTICK_PERIOD_MS);
-    if (notificationValue == 0) {
+    if (notificationValue == 0)
+    {
         ESP_LOGW("EPD", "Interrupt didn't fire");
     }
-    //printf("Busy high after: %i ms\n", (int)((esp_timer_get_time() - startTime) / 1000));
+    // printf("Busy high after: %i ms\n", (int)((esp_timer_get_time() - startTime) / 1000));
     gpio_isr_handler_remove(EPD_BUSY_PIN);
-    //DEV_Delay_ms(100);
-    //printf("e-Paper busy release\r\n");
+    // DEV_Delay_ms(100);
+    // printf("e-Paper busy release\r\n");
 }
 
 /******************************************************************************
@@ -282,30 +286,30 @@ LUT3 (1Gray_A2): Part Display Update from B/W to B/W (=0.397s)
 void EPD_3IN7_Load_LUT(UBYTE lut)
 {
     EPD_3IN7_SendCommand(0x32);
-    if(lut == 0)
+    if (lut == 0)
         EPD_3IN7_SendDataStream(lut_4Gray_GC, 105);
-    else if(lut == 1)
+    else if (lut == 1)
         EPD_3IN7_SendDataStream(lut_1Gray_GC, 105);
-    else if(lut == 2)
+    else if (lut == 2)
         EPD_3IN7_SendDataStream(lut_1Gray_DU, 105);
-    else if(lut == 3)
-        EPD_3IN7_SendDataStream(lut_1Gray_A2, 105);  
+    else if (lut == 3)
+        EPD_3IN7_SendDataStream(lut_1Gray_A2, 105);
     else
         printf("There is no such lut \r\n");
-//  UWORD i;
-//   for (i = 0; i < 105; i++)
-//   {
-//     if(lut == 0)
-//         EPD_3IN7_SendData(lut_4Gray_GC[i]);
-//     else if(lut == 1)
-//         EPD_3IN7_SendData(lut_1Gray_GC[i]);
-//     else if(lut == 2)
-//         EPD_3IN7_SendData(lut_1Gray_DU[i]);
-//     else if(lut == 3)
-//         EPD_3IN7_SendData(lut_1Gray_A2[i]);  
-//     else
-//         printf("There is no such lut \r\n");
-//   }
+    //  UWORD i;
+    //   for (i = 0; i < 105; i++)
+    //   {
+    //     if(lut == 0)
+    //         EPD_3IN7_SendData(lut_4Gray_GC[i]);
+    //     else if(lut == 1)
+    //         EPD_3IN7_SendData(lut_1Gray_GC[i]);
+    //     else if(lut == 2)
+    //         EPD_3IN7_SendData(lut_1Gray_DU[i]);
+    //     else if(lut == 3)
+    //         EPD_3IN7_SendData(lut_1Gray_A2[i]);
+    //     else
+    //         printf("There is no such lut \r\n");
+    //   }
 }
 
 /******************************************************************************
@@ -319,12 +323,12 @@ void EPD_3IN7_4Gray_Init(void)
     EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
 
-    EPD_3IN7_SendCommand(0x46); 
+    EPD_3IN7_SendCommand(0x46);
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH();
     EPD_3IN7_SendCommand(0x47);
     EPD_3IN7_SendData(0xF7);
-    EPD_3IN7_ReadBusy_HIGH(); 
+    EPD_3IN7_ReadBusy_HIGH();
 
     EPD_3IN7_SendCommand(0x01); // setting gaet number
     EPD_3IN7_SendData(0xDF);
@@ -342,7 +346,7 @@ void EPD_3IN7_4Gray_Init(void)
     EPD_3IN7_SendCommand(0x11); // set data entry sequence
     EPD_3IN7_SendData(0x03);
 
-    EPD_3IN7_SendCommand(0x3C); // set border 
+    EPD_3IN7_SendCommand(0x3C); // set border
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x0C); // set booster strength
@@ -350,7 +354,7 @@ void EPD_3IN7_4Gray_Init(void)
     EPD_3IN7_SendData(0xC7);
     EPD_3IN7_SendData(0xC3);
     EPD_3IN7_SendData(0xC0);
-    EPD_3IN7_SendData(0xC0);  
+    EPD_3IN7_SendData(0xC0);
 
     EPD_3IN7_SendCommand(0x18); // set internal sensor on
     EPD_3IN7_SendData(0x80);
@@ -363,12 +367,12 @@ void EPD_3IN7_4Gray_Init(void)
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);  
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);  
+    EPD_3IN7_SendData(0x00);
+    EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
     EPD_3IN7_SendData(0x00);
@@ -397,12 +401,12 @@ void EPD_3IN7_1Gray_Init(void)
     EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
 
-    EPD_3IN7_SendCommand(0x46); 
+    EPD_3IN7_SendCommand(0x46);
     EPD_3IN7_SendData(0xF7);
     EPD_3IN7_ReadBusy_HIGH();
     EPD_3IN7_SendCommand(0x47);
     EPD_3IN7_SendData(0xF7);
-    EPD_3IN7_ReadBusy_HIGH(); 
+    EPD_3IN7_ReadBusy_HIGH();
 
     EPD_3IN7_SendCommand(0x01); // setting gaet number
     EPD_3IN7_SendData(0xDF);
@@ -420,7 +424,7 @@ void EPD_3IN7_1Gray_Init(void)
     EPD_3IN7_SendCommand(0x11); // set data entry sequence
     EPD_3IN7_SendData(0x03);
 
-    EPD_3IN7_SendCommand(0x3C); // set border 
+    EPD_3IN7_SendCommand(0x3C); // set border
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x0C); // set booster strength
@@ -428,7 +432,7 @@ void EPD_3IN7_1Gray_Init(void)
     EPD_3IN7_SendData(0xC7);
     EPD_3IN7_SendData(0xC3);
     EPD_3IN7_SendData(0xC0);
-    EPD_3IN7_SendData(0xC0);  
+    EPD_3IN7_SendData(0xC0);
 
     EPD_3IN7_SendCommand(0x18); // set internal sensor on
     EPD_3IN7_SendData(0x80);
@@ -437,16 +441,16 @@ void EPD_3IN7_1Gray_Init(void)
     EPD_3IN7_SendData(0x44);
 
     EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
-    EPD_3IN7_SendData(0x00);     //can switch 1 gray or 4 gray
+    EPD_3IN7_SendData(0x00);    // can switch 1 gray or 4 gray
     EPD_3IN7_SendData(0xFF);
     EPD_3IN7_SendData(0xFF);
     EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);  
+    EPD_3IN7_SendData(0xFF);
     EPD_3IN7_SendData(0x4F);
     EPD_3IN7_SendData(0xFF);
     EPD_3IN7_SendData(0xFF);
     EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);  
+    EPD_3IN7_SendData(0xFF);
 
     EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
     EPD_3IN7_SendData(0x00);
@@ -472,7 +476,7 @@ void EPD_3IN7_4Gray_Clear(void)
 {
     uint64_t startTime = esp_timer_get_time();
     UWORD Width, Height;
-    Width = (EPD_3IN7_WIDTH % 8 == 0)? (EPD_3IN7_WIDTH / 8 ): (EPD_3IN7_WIDTH / 8 + 1);
+    Width = (EPD_3IN7_WIDTH % 8 == 0) ? (EPD_3IN7_WIDTH / 8) : (EPD_3IN7_WIDTH / 8 + 1);
     Height = EPD_3IN7_HEIGHT;
 
     EPD_3IN7_SendCommand(0x49);
@@ -485,10 +489,12 @@ void EPD_3IN7_4Gray_Clear(void)
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x24);
-    for (UWORD j = 0; j < Height; j++) {
-       for (UWORD i = 0; i < Width; i++) {
-           EPD_3IN7_SendData(0xff);
-       }
+    for (UWORD j = 0; j < Height; j++)
+    {
+        for (UWORD i = 0; i < Width; i++)
+        {
+            EPD_3IN7_SendData(0xff);
+        }
     }
 
     EPD_3IN7_SendCommand(0x4E);
@@ -500,10 +506,12 @@ void EPD_3IN7_4Gray_Clear(void)
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x26);
-    for (UWORD j = 0; j < Height; j++) {
-       for (UWORD i = 0; i < Width; i++) {
-           EPD_3IN7_SendData(0xff);
-       }
+    for (UWORD j = 0; j < Height; j++)
+    {
+        for (UWORD i = 0; i < Width; i++)
+        {
+            EPD_3IN7_SendData(0xff);
+        }
     }
 
     EPD_3IN7_Load_LUT(0);
@@ -511,7 +519,7 @@ void EPD_3IN7_4Gray_Clear(void)
     EPD_3IN7_SendData(0xC7);
 
     EPD_3IN7_SendCommand(0x20);
-    EPD_3IN7_ReadBusy_HIGH();     
+    EPD_3IN7_ReadBusy_HIGH();
     printf("Update Time: %llu \n\r", (esp_timer_get_time() - startTime) / 1000);
 }
 
@@ -540,7 +548,7 @@ void EPD_3IN7_1Gray_Clear(void)
     EPD_3IN7_Load_LUT(2);
 
     EPD_3IN7_SendCommand(0x20);
-    EPD_3IN7_ReadBusy_HIGH();    
+    EPD_3IN7_ReadBusy_HIGH();
 }
 
 /******************************************************************************
@@ -549,55 +557,55 @@ parameter:
 ******************************************************************************/
 void EPD_3IN7_4Gray_Display(const UBYTE *Image)
 {
-    UDOUBLE i,j,k;
-    UBYTE temp1,temp2,temp3;
+    UDOUBLE i, j, k;
+    UBYTE temp1, temp2, temp3;
 
     EPD_3IN7_SendCommand(0x49);
     EPD_3IN7_SendData(0x00);
 
-
     EPD_3IN7_SendCommand(0x4E);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
-
 
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x24);
-    for(i=0;i<16800;i++){
-        temp3=0;
-        for(j=0; j<2; j++) {
-            temp1 = Image[i*2+j];
-            for(k=0; k<2; k++) {
-                temp2 = temp1&0xC0;
-                if(temp2 == 0xC0)
-                    temp3 |= 0x01;//white
-                else if(temp2 == 0x00)
-                    temp3 |= 0x00;  //black
-                else if(temp2 == 0x80)
-                    temp3 |= 0x00;  //gray1
-                else //0x40
-                    temp3 |= 0x01; //gray2
+    for (i = 0; i < 16800; i++)
+    {
+        temp3 = 0;
+        for (j = 0; j < 2; j++)
+        {
+            temp1 = Image[i * 2 + j];
+            for (k = 0; k < 2; k++)
+            {
+                temp2 = temp1 & 0xC0;
+                if (temp2 == 0xC0)
+                    temp3 |= 0x01; // white
+                else if (temp2 == 0x00)
+                    temp3 |= 0x00; // black
+                else if (temp2 == 0x80)
+                    temp3 |= 0x00; // gray1
+                else               // 0x40
+                    temp3 |= 0x01; // gray2
                 temp3 <<= 1;
 
                 temp1 <<= 2;
-                temp2 = temp1&0xC0 ;
-                if(temp2 == 0xC0)  //white
+                temp2 = temp1 & 0xC0;
+                if (temp2 == 0xC0) // white
                     temp3 |= 0x01;
-                else if(temp2 == 0x00) //black
+                else if (temp2 == 0x00) // black
                     temp3 |= 0x00;
-                else if(temp2 == 0x80)
-                    temp3 |= 0x00; //gray1
-                else    //0x40
-                    temp3 |= 0x01;	//gray2
-                if(j!=1 || k!=1)
+                else if (temp2 == 0x80)
+                    temp3 |= 0x00; // gray1
+                else               // 0x40
+                    temp3 |= 0x01; // gray2
+                if (j != 1 || k != 1)
                     temp3 <<= 1;
 
                 temp1 <<= 2;
             }
-
         }
         EPD_3IN7_SendData(temp3);
     }
@@ -606,39 +614,41 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
 
-
     EPD_3IN7_SendCommand(0x4F);
     EPD_3IN7_SendData(0x00);
     EPD_3IN7_SendData(0x00);
 
     EPD_3IN7_SendCommand(0x26);
-    for(i=0; i<16800; i++) {
-        temp3=0;
-        for(j=0; j<2; j++) {
-            temp1 = Image[i*2+j];
-            for(k=0; k<2; k++) {
-                temp2 = temp1&0xC0 ;
-                if(temp2 == 0xC0)
-                    temp3 |= 0x01;//white
-                else if(temp2 == 0x00)
-                    temp3 |= 0x00;  //black
-                else if(temp2 == 0x80)
-                    temp3 |= 0x01;  //gray1
-                else //0x40
-                    temp3 |= 0x00; //gray2
+    for (i = 0; i < 16800; i++)
+    {
+        temp3 = 0;
+        for (j = 0; j < 2; j++)
+        {
+            temp1 = Image[i * 2 + j];
+            for (k = 0; k < 2; k++)
+            {
+                temp2 = temp1 & 0xC0;
+                if (temp2 == 0xC0)
+                    temp3 |= 0x01; // white
+                else if (temp2 == 0x00)
+                    temp3 |= 0x00; // black
+                else if (temp2 == 0x80)
+                    temp3 |= 0x01; // gray1
+                else               // 0x40
+                    temp3 |= 0x00; // gray2
                 temp3 <<= 1;
 
                 temp1 <<= 2;
-                temp2 = temp1&0xC0 ;
-                if(temp2 == 0xC0)  //white
+                temp2 = temp1 & 0xC0;
+                if (temp2 == 0xC0) // white
                     temp3 |= 0x01;
-                else if(temp2 == 0x00) //black
+                else if (temp2 == 0x00) // black
                     temp3 |= 0x00;
-                else if(temp2 == 0x80)
-                    temp3 |= 0x01; //gray1
-                else    //0x40
-                    temp3 |= 0x00;	//gray2
-                if(j!=1 || k!=1)
+                else if (temp2 == 0x80)
+                    temp3 |= 0x01; // gray1
+                else               // 0x40
+                    temp3 |= 0x00; // gray2
+                if (j != 1 || k != 1)
                     temp3 <<= 1;
 
                 temp1 <<= 2;
@@ -654,7 +664,7 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
 
     EPD_3IN7_SendCommand(0x20);
 
-    EPD_3IN7_ReadBusy_HIGH(); 
+    EPD_3IN7_ReadBusy_HIGH();
 }
 
 /******************************************************************************
@@ -663,7 +673,7 @@ parameter:
 ******************************************************************************/
 void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
-    //UWORD i;
+    // UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
     EPD_3IN7_SendCommand(0x4E);
@@ -681,8 +691,8 @@ void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
     //   }
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
-    EPD_3IN7_ReadBusy_HIGH(); 
-    //return refreshMode == FULL_G_T_BW; 
+    EPD_3IN7_ReadBusy_HIGH();
+    // return refreshMode == FULL_G_T_BW;
 }
 
 /******************************************************************************
@@ -692,25 +702,25 @@ parameter:
 void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
     UWORD Width;
-    //1 bit per Pixel. Pro Byte 8 Pixel. Muss ganzes Byte senden darum 8+1
-    Width = (Xend-Xstart)%8 == 0 ? (Xend-Xstart)/8 : (Xend-Xstart)/8+1;
-    UWORD IMAGE_COUNTER = Width * (Yend-Ystart);
+    // 1 bit per Pixel. Pro Byte 8 Pixel. Muss ganzes Byte senden darum 8+1
+    Width = (Xend - Xstart) % 8 == 0 ? (Xend - Xstart) / 8 : (Xend - Xstart) / 8 + 1;
+    UWORD IMAGE_COUNTER = Width * (Yend - Ystart);
 
     Xend -= 1;
-	Yend -= 1;
+    Yend -= 1;
 
-    //Sendet start Adresse von X und Endadresse von X
+    // Sendet start Adresse von X und Endadresse von X
     EPD_3IN7_SendCommand(0x44);
     EPD_3IN7_SendData(Xstart & 0xff);
-    EPD_3IN7_SendData((Xstart>>8) & 0x03);
+    EPD_3IN7_SendData((Xstart >> 8) & 0x03);
     EPD_3IN7_SendData(Xend & 0xff);
-    EPD_3IN7_SendData((Xend>>8) & 0x03);
-    //Sendet start Adresse von Y und Endadresse von Y
+    EPD_3IN7_SendData((Xend >> 8) & 0x03);
+    // Sendet start Adresse von Y und Endadresse von Y
     EPD_3IN7_SendCommand(0x45);
     EPD_3IN7_SendData(Ystart & 0xff);
-    EPD_3IN7_SendData((Ystart>>8) & 0x03);
+    EPD_3IN7_SendData((Ystart >> 8) & 0x03);
     EPD_3IN7_SendData(Yend & 0xff);
-    EPD_3IN7_SendData((Yend>>8) & 0x03);
+    EPD_3IN7_SendData((Yend >> 8) & 0x03);
 
     EPD_3IN7_SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
     EPD_3IN7_SendData(Xstart & 0xFF);
@@ -719,7 +729,7 @@ void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ys
     EPD_3IN7_SendData(Ystart & 0xFF);
     EPD_3IN7_SendData((Ystart >> 8) & 0xFF);
 
-    //Starte senden von Daten in den RAM
+    // Starte senden von Daten in den RAM
     EPD_3IN7_SendCommand(0x24);
     //   for (i = 0; i < IMAGE_COUNTER; i++)
     //   {
@@ -729,19 +739,19 @@ void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ys
 
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
-    EPD_3IN7_ReadBusy_HIGH();    
+    EPD_3IN7_ReadBusy_HIGH();
 }
 
 void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
-    //35 = Paint.WidthByte
+    // 35 = Paint.WidthByte
     UDOUBLE Addr = Xstart / 8 + Ystart * 35;
     EPD_3IN7_1Gray_Display_Part(&Image[Addr], Xstart, Ystart, Xend, Yend, refreshMode);
 }
 
 void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
-    //UWORD i;
+    // UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
     EPD_3IN7_SendCommand(0x4E);
@@ -759,13 +769,12 @@ void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
     //   }
     EPD_3IN7_Load_LUT(refreshMode);
     EPD_3IN7_SendCommand(0x20);
-    //return refreshMode == FULL_G_T_BW; 
+    // return refreshMode == FULL_G_T_BW;
 }
 void EPD_3IN7_1Gray_WaitBusy()
 {
     EPD_3IN7_ReadBusy_HIGH();
 }
-
 
 /******************************************************************************
 function :	Enter sleep mode
@@ -775,7 +784,7 @@ void EPD_3IN7_Sleep(void)
 {
     EPD_3IN7_SendCommand(0X50);
     EPD_3IN7_SendData(0xf7);
-    EPD_3IN7_SendCommand(0X02);  	//power off
-    EPD_3IN7_SendCommand(0X07);  	//deep sleep
+    EPD_3IN7_SendCommand(0X02); // power off
+    EPD_3IN7_SendCommand(0X07); // deep sleep
     EPD_3IN7_SendData(0xA5);
 }

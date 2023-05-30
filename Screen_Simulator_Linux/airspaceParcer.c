@@ -17,20 +17,55 @@
 
 AirspaceParcer_State_t instanceAirspace;
 
-void airspaceCalculateValuesToLine(float myLat, float myLon, float myAlt)
+static float VertDistanceToAirspace(float lowerLimit, heightType lowerType, float upperLimit, heightType upperType, float gnssAlt, float stdAlt, float aglH)
+{
+    float lowerDistance; // positive when heigher and negativ when lower
+    switch (lowerType)
+    {
+    case HeightType_mAGL:
+        lowerDistance = aglH - lowerLimit;
+        break;
+    case HeightType_mQNH:
+        lowerDistance = gnssAlt - lowerLimit;
+        break;
+    case HeightType_mSTD:
+        lowerDistance = stdAlt - lowerLimit;
+        break;
+    default:
+        printf("Can't find Height Type\n");
+        break;
+    }
+    float upperDistance; // positive when heigher and negative when lower
+    switch (upperType)
+    {
+    case HeightType_mAGL:
+        upperDistance = aglH - upperLimit;
+        break;
+    case HeightType_mQNH:
+        upperDistance = gnssAlt - upperLimit;
+        break;
+    case HeightType_mSTD:
+        upperDistance = stdAlt - upperLimit;
+        break;
+    default:
+        printf("Can't find Height Type\n");
+        break;
+    }
+    // we are in the airspace
+    if (lowerDistance > 0 && upperDistance < 0)
+        return 0;
+    else if (lowerDistance < 0)
+        return lowerDistance;
+    else
+        return upperDistance;
+}
+
+static void airspaceCalculateValuesToLine(double myLat, double myLon, float gnssAlt, float stdAlt, float aglH)
 {
     float nearestLat, nearestLon = 0;
     NearestPointOnLine(instanceAirspace.nearestAirspaceInfo.nearestLineStart.lat, instanceAirspace.nearestAirspaceInfo.nearestLineStart.lon, instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lat, instanceAirspace.nearestAirspaceInfo.nearestLineEnd.lon, myLat, myLon, &nearestLat, &nearestLon);
     float HorDist = GET_DISTANCEFAST(myLat, myLon, nearestLat, nearestLon);
-    float VertDist = 0;
-    if (myAlt < instanceAirspace.currentNearestAirspace->lowerLimit)
-    {
-        VertDist = instanceAirspace.currentNearestAirspace->lowerLimit - myAlt;
-    }
-    else if (myAlt > instanceAirspace.currentNearestAirspace->upperLimit)
-    {
-        VertDist = myAlt - instanceAirspace.currentNearestAirspace->upperLimit;
-    }
+    float VertDist = VertDistanceToAirspace(instanceAirspace.currentNearestAirspace->lowerLimit, instanceAirspace.currentNearestAirspace->heightTypeLower, instanceAirspace.currentNearestAirspace->upperLimit, instanceAirspace.currentNearestAirspace->heightTypeUpper, gnssAlt, stdAlt, aglH);
     if (instanceAirspace.nearestAirspaceInfo.distanceToAirspaceVert != VertDist || instanceAirspace.nearestAirspaceInfo.distanceToAirspaceHor != HorDist || strcmp(instanceAirspace.currentNearestAirspace->name, instanceAirspace.nearestAirspaceInfo.name) != 0)
     {
         strcpy(instanceAirspace.nearestAirspaceInfo.name, instanceAirspace.currentNearestAirspace->name);
@@ -45,7 +80,7 @@ void airspaceCalculateValuesToLine(float myLat, float myLon, float myAlt)
     printf("Found nearest: %s\n", instanceAirspace.nearestAirspaceInfo.name);
 }
 
-void nearestLineAirspace(double myLat, double myLon, float altitude)
+static void nearestLineAirspace(double myLat, double myLon, float gnssAlt, float stdAlt, float aglH)
 {
     uint32_t tempStartIndex = 0;
     uint32_t tempEndIndex = 0;
@@ -76,10 +111,10 @@ void nearestLineAirspace(double myLat, double myLon, float altitude)
     instanceAirspace.lastInNearestAirspaceUpdatePoint.lon = myLon;
 }
 
-void searchInNearestAirspace(double myLat, double myLon, float altitude)
+static void searchInNearestAirspace(double myLat, double myLon, float gnssAlt, float stdAlt, float aglH)
 {
     airspace *nearestAirspace = NULL;
-    float nearestDistanceToAirspace = MAXDISTANCETOSEARCH;
+    float nearestDistanceToAirspace = MAXDISTANCETOSEARCH * MAXDISTANCETOSEARCH;
     float secondNearestDistanceToAirspace = INFINITY;
     airspace *airspaces = instanceAirspace.nearestAirspaceList;
     if (airspaces == NULL)
@@ -98,19 +133,11 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude)
                 minDistance = dist;
             }
         }
-        minDistance = sqrtf(minDistance);
         bool hasUpdated = false;
         if (minDistance < nearestDistanceToAirspace)
         {
-            if (altitude < airspaces->lowerLimit)
-            {
-                minDistance += airspaces->lowerLimit - altitude;
-            }
-            else if (altitude > airspaces->upperLimit)
-            {
-                minDistance += (altitude - airspaces->upperLimit);
-            }
-
+            float VertDistance = VertDistanceToAirspace(airspaces->lowerLimit, airspaces->heightTypeLower, airspaces->upperLimit, airspaces->heightTypeUpper, gnssAlt, stdAlt, aglH);
+            minDistance = minDistance + VertDistance * VertDistance; // Pythagoras and shit
             if (minDistance < nearestDistanceToAirspace)
             {
                 hasUpdated = true;
@@ -126,6 +153,8 @@ void searchInNearestAirspace(double myLat, double myLon, float altitude)
         }
         airspaces = airspaces->next;
     }
+    nearestDistanceToAirspace = sqrtf(nearestDistanceToAirspace);
+    secondNearestDistanceToAirspace = sqrtf(secondNearestDistanceToAirspace);
     instanceAirspace.currentNearestAirspace = nearestAirspace;
     instanceAirspace.diffFirstToSecondAirspace = MAXDISTANCETOSEARCH;
     if (secondNearestDistanceToAirspace != INFINITY)
@@ -155,18 +184,7 @@ static airspace *createAirspaceOnHeapOrInArray(size_t polygonSize)
     return tempAirspace;
 }
 
-// static bool existsInLinkedList(char *name)
-// {
-//     airspace *tempAirspace = instanceAirspace.nearestAirspaceList;
-//     while (tempAirspace)
-//     {
-//         if (strcmp(name, tempAirspace->name))
-//             return true;
-//     }
-//     return false;
-// }
-
-airspace *readPolygonsFirst(bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace, FILE *cachedFile, long airspaceStartPos)
+static airspace *readPolygonsFromFile(bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, char *nameAirspace, FILE *cachedFile, long airspaceStartPos)
 {
     char nextChar = ',';
     int polygonSize = 0;
@@ -258,7 +276,7 @@ void deInitAirspaceList()
 {
 }
 
-airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, FILE *cachedFile, long airspaceStarPos)
+static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, FILE *cachedFile, long airspaceStarPos)
 {
     char nameBuffer[50];
     char heightBuffer[10];
@@ -354,7 +372,7 @@ airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, BoundingBox_Lat
     int lowerLimit;
     getIntTilCharacter(&instanceAirspace.layer, '}', &lowerLimit);
     readTilCharTimesFileLayer(&instanceAirspace.layer, '[', 2);
-    airspace *tempAirspace = readPolygonsFirst(hasNext, myBoundingBox, nameBuffer, cachedFile, airspaceStarPos);
+    airspace *tempAirspace = readPolygonsFromFile(hasNext, myBoundingBox, nameBuffer, cachedFile, airspaceStarPos);
     if (!tempAirspace)
     {
         *error = 0;
@@ -376,7 +394,7 @@ airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, BoundingBox_Lat
     return tempAirspace;
 }
 
-int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
+static int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
 {
     startFileLayer(&instanceAirspace.layer, 0, jsonFile);
     printf("Start parse with: %.2f, %.2f", myLat, myLon);
@@ -440,7 +458,7 @@ int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile
     return 0;
 }
 
-int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
+static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
 {
     if (cachedFile == NULL || jsonFile == NULL)
     {
@@ -570,14 +588,21 @@ void AirspaceTask()
     instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
     if (instanceAirspace.currentIndexAirspaces > 0)
     {
+        float pressure;
+        vario_state_get_member(&pressure, vario_state_pressure, false);
+        pressure = 87765;
+        float agl;
+        vario_state_get_member(&agl, vario_state_agl, false);
+        agl = 30;
+        float heightSTD = pressureToSTDHeight(pressure, 17);
         startTime = esp_timer_get_time();
-        searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         printf("In Airspace took: %i\n", (int)((esp_timer_get_time() - startTime) / 1000));
         startTime = esp_timer_get_time();
-        nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         printf("To all Lines took: %i\n", (int)(esp_timer_get_time() - startTime));
         startTime = esp_timer_get_time();
-        airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+        airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         printf("In Line took: %i\n", (int)(esp_timer_get_time() - startTime));
     }
     else
@@ -604,6 +629,13 @@ void AirspaceTask()
         vario_state_get_member(&gpsData, vario_state_gps_data, false);
         gpsData.latitude = 47.38407637662871,
         gpsData.longitude = 8.525115677931941f;
+        float pressure;
+        vario_state_get_member(&pressure, vario_state_pressure, false);
+        float temperature;
+        float agl;
+        vario_state_get_member(&agl, vario_state_agl, false);
+        float heightSTD = pressureToSTDHeight(pressure, 17);
+
         float distanceToNearest = instanceAirspace.nearestAirspaceInfo.distanceToAirspaceVert;
         float distToAllParse = GET_DISTANCEFASTSQ(gpsData.latitude, gpsData.longitude, instanceAirspace.lastAllAirspaceUpdatePoint.lat, instanceAirspace.lastAllAirspaceUpdatePoint.lon);
         float distToAllNearest = GET_DISTANCEFASTSQ(gpsData.latitude, gpsData.longitude, instanceAirspace.lastAllAirspaceUpdatePoint.lat, instanceAirspace.lastAllAirspaceUpdatePoint.lon);
@@ -616,27 +648,27 @@ void AirspaceTask()
             ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
             instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
             instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
-            searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+            searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
+            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
+            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         }
         // Search in all nearest Airspace for nearestAirspace, when distance to last calc is bigger than (diff1-2)/3)
         else if (distToAllNearest > ((instanceAirspace.diffFirstToSecondAirspace * instanceAirspace.diffFirstToSecondAirspace) / 3))
         {
-            searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+            searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
+            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
+            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         }
         // Search for Line in nearest Airspace when distance to nearestAirspace is < 1km -> all 50m, when farer away all 100m
         else if ((distanceToNearest < 1000 && distToNearestLine > 25) || distToNearestLine > 100)
         {
-            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude);
-            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+            nearestLineAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
+            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
         }
         // Sonst all 1s updaten
         else
         {
-            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude);
+            airspaceCalculateValuesToLine(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);
             // vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
     }

@@ -3,6 +3,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#define R_SPECIFIC 287.053
+#define GRAVITY_G 9.80665
+#define TEMPGRAD_L 0.0065
+#define Pressure_SeaLewel 101325
+
 static double TO_RADIAN(double deg)
 {
 	return deg / 180.0 * PI;
@@ -242,4 +247,10 @@ void list_insert(struct list_head *new, struct list_head *prev, struct list_head
 	new->next = next;
 	new->prev = prev;
 	prev->next = new;
+}
+
+float pressureToSTDHeight(float pressure, float startTemp)
+{
+
+	return ((startTemp + 273.15) / TEMPGRAD_L) * (pow(pressure / Pressure_SeaLewel, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
 }

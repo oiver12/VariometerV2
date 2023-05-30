@@ -43,7 +43,7 @@ esp_err_t init_sdcard(const char *Mount_Point)
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = true,
         .max_files = 8,
-        .allocation_unit_size = 16 * 1024};
+        .allocation_unit_size = 512}; // 512 bytes is standard can't be changed
     sdmmc_card_t *card;
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
 

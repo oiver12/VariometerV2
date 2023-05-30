@@ -9,6 +9,7 @@
 #include "Widget_Vario.h"
 #include <time.h>
 #include "esp_timer.h"
+#include "RenderSystem.h"
 
 void vario_display_PowerOffScreen()
 {
@@ -25,15 +26,15 @@ void vario_display_PowerOffScreen()
     Paint_DrawString_EN(Paint.Width / 2 - stringLength / 2, 240, nextString1, &Font12, WHITE, BLACK, FALSE);
 }
 
-void vario_display_FlightStatistics(char *fileName)
+void vario_display_FlightStatistics(void *params)
 {
+    char *fileName = (char *)params;
     char buffer[100];
-    strcpy(buffer, "IGCFlights/");
-    strcat(buffer, fileName);
-    FILE *igcFile = fopen(buffer, "r");
+    FILE *igcFile = openFile_sdcard("/IGCFlights", fileName, "r");
     if (igcFile == NULL)
     {
-        printf("Couldn't open IGC File\n");
+        printf("Couldn't open IGC File: %s\n", fileName);
+        vTaskDelete(NULL);
         return;
     }
     const int x = 5;
@@ -56,7 +57,9 @@ void vario_display_FlightStatistics(char *fileName)
         long time = esp_timer_get_time();
         ParseIGCWithCached(&track, width, igcFile, cachedFile, false, false, fileName);
         printf("Clock cached: %i\n", (int)(esp_timer_get_time() - time));
+        fclose(cachedFile);
     }
+    fclose(igcFile);
     Paint_Clear(WHITE);
     DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
     Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
@@ -119,4 +122,7 @@ void vario_display_FlightStatistics(char *fileName)
     strcat(buffer, track.flightStats.takeOffPosition.lat < 0 ? "W" : "E");
     DrawTextWithAlign(buffer, 465, 257, &Font12, true, ALIGN_RIGHT, ALIGN_TOP);
     FreeTrackFile(&track);
+    rendering_Push(true);
+    vTaskDelete(NULL);
+    return;
 }

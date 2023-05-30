@@ -1,9 +1,11 @@
-﻿#ifndef DEVICE_CONTEXT_H
-#define DEVICE_CONTEXT_H
+﻿#ifndef __DEVICE_CONTEXT_H
+#define __DEVICE_CONTEXT_H
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "Screen/FIFO.h"
 #include "nmea_parser.h"
+#include "AirspaceParcer/airspaceParcer.h"
 
 /*
  * Speicher für alle Device Information. Auf diese können alle zugreifen (z.B. wird vertVel gespeichert, welche vom Bildschirm gelesen wird und
@@ -34,26 +36,28 @@ typedef struct
     float agl;
     float longitude;
     float latitude;
+    Airspace_Info_t airspaceInfo;
 
     uint16_t stateChange;
 } vario_state_t;
 
 typedef enum
 {
-    vario_state_vertVel = 1 << 0,
-    vario_state_groundSpeed = 1 << 1,
-    vario_state_vertVelLazy = 1 << 2,
-    vario_state_vertAcc = 1 << 3,
-    vario_state_pressure = 1 << 4,
-    vario_state_temperature = 1 << 5,
-    vario_state_heading = 1 << 6,
-    vario_state_altitudeBaro = 1 << 7,
-    vario_state_altitudeGPS = 1 << 8,
-    vario_state_gps_data = 1 << 9,
-    vario_state_groundLevel = 1 << 10,
-    vario_state_agl = 1 << 11,
-    vario_state_longitude = 1 << 12,
-    vario_state_latitude = 1 << 13,
+    vario_state_vertVel = 1 << 0,       // float
+    vario_state_groundSpeed = 1 << 1,   // float
+    vario_state_vertVelLazy = 1 << 2,   // float
+    vario_state_vertAcc = 1 << 3,       // float
+    vario_state_pressure = 1 << 4,      // float
+    vario_state_temperature = 1 << 5,   // float
+    vario_state_heading = 1 << 6,       // int
+    vario_state_altitudeBaro = 1 << 7,  // float
+    vario_state_altitudeGPS = 1 << 8,   // float
+    vario_state_gps_data = 1 << 9,      // gsp_t
+    vario_state_groundLevel = 1 << 10,  // float
+    vario_state_agl = 1 << 11,          // float
+    vario_state_longitude = 1 << 12,    // float
+    vario_state_latitude = 1 << 13,     // float
+    vario_state_airspaceInfo = 1 << 14, // Airspace_Info_t
 } vario_state_member_t;
 
 typedef struct
@@ -68,10 +72,10 @@ typedef struct
 
 typedef enum
 {
-    vario_settings_soundVolume = 1 << 0,
-    vario_settings_takeOffSpeed = 1 << 1,
-    vario_settings_landingSpeed = 1 << 2,
-    vario_settings_landingTimout = 1 << 3,
+    vario_settings_soundVolume = 1 << 0,   // uint16_t
+    vario_settings_takeOffSpeed = 1 << 1,  // float
+    vario_settings_landingSpeed = 1 << 2,  // float
+    vario_settings_landingTimout = 1 << 3, // float
 } vario_settings_member_t;
 
 typedef struct
@@ -108,9 +112,9 @@ typedef struct
 
 typedef enum
 {
-    device_state_batteryPercentage = 1 << 0, // from 0 to 100
-    device_state_statusGPS = 1 << 1,
-    device_state_statusSDCard = 1 << 2,
+    device_state_batteryPercentage = 1 << 0, // float from 0 to 100
+    device_state_statusGPS = 1 << 1,         // gps_fix_mode_t
+    device_state_statusSDCard = 1 << 2,      // SD_CARD_STATE
 } device_state_member_t;
 
 typedef struct
@@ -153,16 +157,16 @@ typedef struct
 
 typedef enum
 {
-    flight_stats_altitudeMax = 1 << 0,
-    flight_stats_altitudeMin = 1 << 1,
-    flight_stats_maxVelX = 1 << 2,
-    flight_stats_minVelX = 1 << 3,
-    flight_stats_takeOffTime = 1 << 4,
-    flight_stats_flightTime = 1 << 5,
-    flight_stats_takeOffPosition = 1 << 6,
-    flight_stats_distTakeOff = 1 << 7,
-    flight_stats_distFlight = 1 << 8,
-    flight_stats_lastPosition = 1 << 9,
+    flight_stats_altitudeMax = 1 << 0,     // float
+    flight_stats_altitudeMin = 1 << 1,     // float
+    flight_stats_maxVelX = 1 << 2,         // float
+    flight_stats_minVelX = 1 << 3,         // float
+    flight_stats_takeOffTime = 1 << 4,     // uint32_t
+    flight_stats_flightTime = 1 << 5,      // uint32_t
+    flight_stats_takeOffPosition = 1 << 6, // Positon_t
+    flight_stats_distTakeOff = 1 << 7,     // float
+    flight_stats_distFlight = 1 << 8,      // float
+    flight_stats_lastPosition = 1 << 9,    // Position_t
     flight_stats_trackPoints = 1 << 10,
 } flight_stats_member_t;
 
@@ -189,4 +193,5 @@ bool device_state_get_member(void *value, device_state_member_t member, bool sta
  */
 void flight_stats_set_member(void *value, flight_stats_member_t member);
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange);
+
 #endif

@@ -50,6 +50,7 @@ typedef enum
     Widget_Chart,
     Widget_SdCardInfo,
     Widget_GPSInfo,
+    Widget_Airspace,
     /*Settings Widget*/
     Widget_Settings_PageButton,
     Widget_settings_BackButton,
@@ -86,6 +87,9 @@ typedef enum
 
     /* GPSInfo Widgets */
     WidgetContent_GPSInfo,
+
+    /* Airspace Widget */
+    WidgetContent_Airspace,
 
     /* Settings Widget */
     WidgetContent_Settings_PageButton,

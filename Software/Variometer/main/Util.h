@@ -6,6 +6,11 @@
 
 #define PI 3.1415926535897932384626433832795
 
+typedef struct
+{
+    float lon;
+    float lat;
+} Point2D_t;
 struct list_head
 {
     struct list_head *next, *prev;
@@ -76,5 +81,7 @@ void NearestPointOnLine(float startLat, float startLon, float endLat, float endL
 
 bool overlappBoundingBox(BoundingBox_LatLong_t *box1, BoundingBox_LatLong_t *box2);
 void boundingBoxFromPoint(BoundingBox_LatLong_t *box, float lat, float lon, float distanceMeters);
+
+float pressureToSTDHeight(float pressure, float startTemp);
 
 #endif

@@ -82,4 +82,6 @@ void NearestPointOnLine(float startLat, float startLon, float endLat, float endL
 bool overlappBoundingBox(BoundingBox_LatLong_t *box1, BoundingBox_LatLong_t *box2);
 void boundingBoxFromPoint(BoundingBox_LatLong_t *box, float lat, float lon, float distanceMeters);
 
+float pressureToSTDHeight(float pressure, float startTemp);
+
 #endif
