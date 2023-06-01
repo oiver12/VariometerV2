@@ -1004,7 +1004,7 @@
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
   )
-  (global_label "POWS_EN" (shape input) (at 154.94 73.66 0) (fields_autoplaced)
+  (global_label "POSW_EN" (shape input) (at 154.94 73.66 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 1f808216-1c02-44af-b4fb-40f58c6740e2)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 166.5543 73.66 0)

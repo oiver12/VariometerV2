@@ -71,7 +71,7 @@ void open_ReadFile()
     fclose(fileptr);
     FreeTrackFile(&track);
     size_t bufferSize;
-    fileptr = fopen("Vario10.txt", "rb"); // Open the file in binary mode
+    fileptr = fopen("Trackloggs/Vario46.txt", "rb"); // Open the file in binary mode
     if (fileptr == NULL)
     {
         int error = errno;
@@ -108,6 +108,15 @@ void open_ReadFile()
         currPosVarioSimulation++;
     }
     free(bufferRead);
+    FILE *pythonArrayF = fopen("pythonArray", "w");
+    fprintf(pythonArrayF, "y=[");
+    for (size_t i = 0; i < vario_state_Simulation_size; i++)
+    {
+        if (i != 0)
+            fprintf(pythonArrayF, ",");
+        fprintf(pythonArrayF, "%.2f", bufferSimulation[i].accX);
+    }
+    fclose(pythonArrayF);
 }
 
 void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_time_t *duration)
