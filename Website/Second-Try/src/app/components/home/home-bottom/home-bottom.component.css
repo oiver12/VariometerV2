@@ -1,0 +1,32 @@
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+    text-align: center;
+}
+h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: white;
+}
+.container {
+    position: relative;
+    width: 100vw;
+    height: 70vh;
+    overflow: hidden;
+}
+.container .phones {
+    position: absolute;
+    left: 33%;
+    transform: translate(-50%, 20%);
+    height: 60vh;
+}
+.right-text-container {
+    position: absolute;
+    left: 75%;
+    transform: translate(-50%, 0);
+    width: 40%;
+    margin-top: 1em;
+}

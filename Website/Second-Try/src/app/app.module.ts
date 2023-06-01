@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { MaterialModule } from 'src/app/material/material.module';
+import { MaterialModule } from './material/material.module';
 import { HomeComponent } from './views/home/home.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ThreeJsComponent } from './components/three-js/three-js.component';
@@ -12,6 +12,7 @@ import { HomeMiddleComponent } from './components/home/home-middle/home-middle.c
 import { HomeBottomComponent } from './components/home/home-bottom/home-bottom.component';
 import { CardComponent } from './components/card/card.component';
 import { ParallaxDirective } from './components/parallax/parallax.directive';
+import { BulletListComponent } from './components/bullet-list/bullet-list.component';
 
 @NgModule({
     declarations: [
@@ -23,6 +24,7 @@ import { ParallaxDirective } from './components/parallax/parallax.directive';
         HomeBottomComponent,
         CardComponent,
         ParallaxDirective,
+        BulletListComponent,
     ],
     imports: [
         BrowserModule,

@@ -1,5 +1,8 @@
-<div class="background-div">
-    <img src="assets/images/BlackTop.svg" class="background-img-top black-top" />
+<div class="background-div" id="background-div1">
+    <img
+        src="assets/images/BlackTop.svg"
+        class="background-img-top black-top"
+    />
     <img
         appParallax
         [ratio]="0.2"
@@ -12,21 +15,33 @@
         src="assets/images/GreyTop.svg"
         class="background-img-top grey-top"
     />
-    <img src="assets/images/whiteBackground.svg" class="background-img-top white" />
     <img
-        src="assets/images/GreyBottom.svg"
-        class="background-img-bottom black-grey"
+        src="assets/images/whiteBackground.svg"
+        class="white"
     />
+</div>
+<div class="background-div" id="background-div2">
     <img
+        appParallax
+        [ratio]="0.4"
+        [top] = "greyBottomPralax"
+        src="assets/images/GreyBottom.svg"
+        class="background-img-bottom"
+    />
+   <img
+        appParallax
+        [ratio]="0.2"
+        [top] = "blackGreyBottomPralax"
         src="assets/images/BlackGreyBottom.svg"
-        class="background-img-bottom grey"
+        class="background-img-bottom"
     />
     <img
         src="assets/images/BlackBottom.svg"
-        class="background-img-bottom black"
+        class="background-img-bottom not-moving"
     />
 </div>
 <div class="content">
     <app-home-top></app-home-top>
     <app-home-middle class="middle-page"></app-home-middle>
+    <app-home-bottom id="bottom-page"></app-home-bottom>
 </div>

@@ -3,20 +3,21 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 300vh;
+    height: 315vh;
     z-index: -1;
-    overflow-y: hidden;
-    overflow-x: scroll;
+    overflow: hidden;
 }
 .background-img-top {
     position: absolute;
     top: 0;
     left: 0;
+    height: 120vh;
 }
 .background-img-bottom {
     position: absolute;
-    top: 200vh!important;
+    bottom: 0;
     left: 0;
+    height: 120vh;
 }
 .black-top {
     z-index: 4;
@@ -45,7 +46,13 @@
 }
 .middle-page {
     position: absolute;
-    top: 125vh;
+    top: 130vh;
+    left: 0;
+    width: 100vw;
+}
+#bottom-page {
+    position: absolute;
+    top: 223vh;
     left: 0;
     width: 100vw;
 }
