@@ -529,6 +529,14 @@ static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jso
     return 0;
 }
 
+static void AirspaceParseError(char *error)
+{
+    instanceAirspace.nearestAirspaceInfo.error = true;
+    strncpy(instanceAirspace.nearestAirspaceInfo.name, error, AIRSPACE_NAMEBUFFERSIZE);
+    vario_state_set_member(&instanceAirspace.nearestAirspaceInfo, vario_state_airspaceInfo);
+    vTaskDelete(NULL);
+}
+
 void AirspaceTask()
 {
     gps_t gpsData;
@@ -546,12 +554,18 @@ void AirspaceTask()
     gpsData.date.day = 26;
     char nameBuffer[50];
     snprintf(nameBuffer, 50, "airspace%i_%i_%i.txt", gpsData.date.year, gpsData.date.month, gpsData.date.day);
+    if (!sdCard_Init())
+    {
+        AirspaceParseError("SDCard not found!");
+        return;
+    }
     FILE *cachedFile = openFile_sdcard("/cache", nameBuffer, "r");
     // FILE *cachedFile = NULL;
     FILE *jsonFile = openFile_sdcard("/airspace", "airspaces.json", "r");
     if (jsonFile == NULL)
     {
         printf("Cant open JSON File, please donwload it\n");
+        AirspaceParseError("JSON File not downloaded");
         return;
     }
     if (cachedFile == NULL)
@@ -561,7 +575,7 @@ void AirspaceTask()
         {
             printf("Cached File should always be able to open\n");
             fclose(jsonFile);
-            vTaskDelete(NULL);
+            AirspaceParseError("Can't open Cache File");
             return;
         }
         uint64_t timeStart = esp_timer_get_time();
@@ -570,7 +584,7 @@ void AirspaceTask()
             printf("Cant parse JSON File");
             fclose(jsonFile);
             fclose(cachedFile);
-            vTaskDelete(NULL);
+            AirspaceParseError("Can't parse JSON File");
             return;
         }
         printf("Took to parse JSON: %i\n", (int)((esp_timer_get_time() - timeStart) / 1000));
@@ -630,7 +644,6 @@ void AirspaceTask()
         gpsData.longitude = 8.525115677931941f;
         float pressure;
         vario_state_get_member(&pressure, vario_state_pressure, false);
-        float temperature;
         float agl;
         vario_state_get_member(&agl, vario_state_agl, false);
         float heightSTD = pressureToSTDHeight(pressure, 17);
@@ -675,6 +688,5 @@ void AirspaceTask()
 
 void StartAirspaceParse()
 {
-    // AirspaceTask();
     xTaskCreate(AirspaceTask, "Airspace Parcer", 1024 * 3, NULL, 0, NULL);
 }

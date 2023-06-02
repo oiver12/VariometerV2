@@ -5,8 +5,7 @@
 #include "SoundManager.h"
 #include "Screen/Widget_Vario.h"
 #include "Util.h"
-#include "esp_timer.h"
-#include <esp_log.h>
+#include <esp_timer.h>
 #include "Screen/ScreenManager.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
@@ -33,6 +32,8 @@ vario_settings_t vario_settings;
 paraglider_info_t paraglider_info;
 device_state_t device_state;
 flight_stats_t flight_stats;
+
+uint16_t currSizeFIFOVertVelBiep;
 
 SemaphoreHandle_t semaphore_vario_state;
 SemaphoreHandle_t semaphore_vario_settings;
@@ -145,6 +146,7 @@ void init_DeviceContext()
     semaphore_device_state = xSemaphoreCreateMutex();
     semaphore_flight_stats = xSemaphoreCreateMutex();
     vario_state.vertVel_Fifo = fifo_create(FIFO_VERTLAZY_SIZE, sizeof(float));
+    currSizeFIFOVertVelBiep = 0;
     flight_stats.fifo_trackPoints = fifo_create(FIFO_TRACKPOINT_SIZE, sizeof(TrackPoint_t));
 
     vario_settings.soundVolume = 10000;
@@ -154,6 +156,16 @@ void init_DeviceContext()
 void startGps_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
 {
     nmea_parser_add_handler(nmea_parser_handle, device_state_gps_handle, NULL, GPS_UPDATE);
+}
+
+static void vertVelBiepSetFIFOCount(uint16_t size)
+{
+    xSemaphoreTake(semaphore_vario_state, portMAX_DELAY);
+    currSizeFIFOVertVelBiep = size;
+    fifo_create_static(&vario_state.vertVelBiep_Fifo, vario_state.VertVelbuffer, size, sizeof(float));
+    vario_state.vertVelBiep_Sum = 0;
+    xSemaphoreGive(semaphore_vario_state);
+    printf("Size: %i", (int)size);
 }
 
 void vario_state_set_member(void *value, vario_state_member_t member)
@@ -172,6 +184,19 @@ void vario_state_set_member(void *value, vario_state_member_t member)
         vario_state.vertVel_Sum += vario_state.vertVelocity;
         fifo_add(vario_state.vertVel_Fifo, &vario_state.vertVelocity);
         vario_state.stateChange |= vario_state_vertVelLazy;
+
+        if (currSizeFIFOVertVelBiep == 0)
+            break;
+        if (fifo_is_full(&vario_state.vertVelBiep_Fifo))
+        {
+            fifo_get(&vario_state.vertVelBiep_Fifo, &temp);
+            printf("Delete\n");
+            vario_state.vertVelBiep_Sum -= temp;
+        }
+        vario_state.vertVelBiep_Sum += vario_state.vertVelocity;
+        fifo_add(&vario_state.vertVelBiep_Fifo, &vario_state.vertVelocity);
+        printf("ADD\n");
+        vario_state.stateChange |= vario_state_vertVelLazyBiep;
         break;
     case vario_state_groundSpeed:
         vario_state.groundSpeed = *((float *)value);
@@ -277,6 +302,14 @@ bool vario_state_get_member(void *value, vario_state_member_t member, bool state
     case vario_state_airspaceInfo:
         *(Airspace_Info_t *)value = vario_state.airspaceInfo;
         break;
+    case vario_state_vertVelLazyBiep:
+        if (currSizeFIFOVertVelBiep == 0)
+        {
+            *(float *)value = vario_state.vertVelocity;
+            break;
+        }
+        *(float *)value = vario_state.vertVelBiep_Sum / currSizeFIFOVertVelBiep;
+        break;
     default:
         printf("Member von Vario State konnte nicht gefunden werden!\n");
         break;
@@ -358,6 +391,16 @@ void vario_settings_set_member(void *value, vario_settings_member_t member)
     case vario_settings_landingTimout:
         vario_settings.landingTimout = *((float *)value);
         break;
+    case vario_settings_biepLazyTime:
+        if (*((uint16_t *)value) <= FIFO_MAX_BIEPVERTLAZY_SIZE)
+        {
+            vario_settings.biepLazyTime = *((uint16_t *)value);
+            vertVelBiepSetFIFOCount(*((uint16_t *)value));
+            currSizeFIFOVertVelBiep = *((uint16_t *)value);
+        }
+        else
+            printf("Mean Time Lazy to high\n");
+        break;
     default:
         printf("Member von Vario Settings konnte nicht gefunden werden!\n");
         break;
@@ -382,6 +425,9 @@ bool vario_settings_get_member(void *value, vario_settings_member_t member, bool
         break;
     case vario_settings_landingTimout:
         *(float *)value = vario_settings.landingTimout;
+        break;
+    case vario_settings_biepLazyTime:
+        *(uint16_t *)value = vario_settings.biepLazyTime;
         break;
     default:
         printf("Member von Vario Settings konnte nicht gefunden werden!\n");

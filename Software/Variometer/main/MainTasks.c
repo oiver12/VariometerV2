@@ -100,16 +100,18 @@ static void TaskMeasureHeight(void *parameters)
         if (DPS310_Data.Pressure == NAN || DPS310_Data.Pressure < 40000 || DPS310_Data.Pressure > 130000)
         {
             ESP_LOGI(TAG, "Invalid Pressure Result!");
-            continue;
         }
-        xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
+        else
         {
-            pressure = DPS310_Data.Pressure;
-            temperature = DPS310_Data.Temperature;
+            xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
+            {
+                pressure = DPS310_Data.Pressure;
+                temperature = DPS310_Data.Temperature;
+            }
+            xSemaphoreGive(pressure_temperature_Mutex);
+            float pressure = DPS310_Data.Pressure;
+            vario_state_set_member(&pressure, vario_state_pressure);
         }
-        xSemaphoreGive(pressure_temperature_Mutex);
-        float pressure = DPS310_Data.Pressure;
-        vario_state_set_member(&pressure, vario_state_pressure);
         // notify Kalman Filter of new Pressure Reading
         xTaskNotifyGive(TaskKalmanFilter_Handle);
         vTaskDelay(30 / portTICK_PERIOD_MS);
@@ -341,12 +343,12 @@ static void TaskKalmanFilter(void *parameters)
             .velocity = matrix_get(x, 1, 0),
             .rotation = {rotation[0], rotation[1], rotation[2], rotation[3]},
         };
-        // if (fabsf(matrix_get(x, 1, 0)) == NAN || fabsf(matrix_get(u, 0, 0)) == NAN)
-        // {
-        //     ESP_LOGI(TAG, "Had to reset Kalman Filter\n");
-        //     ResetKalman(&kf);
-        //     continue;
-        // }
+        if (fabsf(matrix_get(x, 1, 0)) == NAN || fabsf(matrix_get(u, 0, 0)) == NAN)
+        {
+            ESP_LOGI(TAG, "Had to reset Kalman Filter\n");
+            ResetKalman(&kf);
+            continue;
+        }
         float vertVel = matrix_get(x, 1, 0);
         vario_state_set_member(&vertVel, vario_state_vertVel);
         float accXCorr = acc - 9.81;
@@ -365,7 +367,7 @@ static void TaskKalmanFilter(void *parameters)
             vario_state_set_member(&heading, vario_state_heading);
         }
         logVarioData(flight_state);
-        SoundManager_calculateNewBiep(matrix_get(x, 1, 0));
+        SoundManager_calculateNewBiep();
         // SoundManager_calculateNewBiep(2.5f);
         // printf("%.2f\n", matrix_get(x, 1, 0));
         lastTime = esp_timer_get_time();

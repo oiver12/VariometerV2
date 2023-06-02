@@ -529,6 +529,13 @@ static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jso
     return 0;
 }
 
+static void AirspaceParseError(char *error)
+{
+    instanceAirspace.nearestAirspaceInfo.error = true;
+    strncpy(instanceAirspace.nearestAirspaceInfo.name, error, AIRSPACE_NAMEBUFFERSIZE);
+    vario_state_set_member(&instanceAirspace.nearestAirspaceInfo, vario_state_airspaceInfo);
+}
+
 void AirspaceTask()
 {
     gps_t gpsData;
@@ -552,6 +559,7 @@ void AirspaceTask()
     if (jsonFile == NULL)
     {
         printf("Cant open JSON File, please donwload it\n");
+        AirspaceParseError("JSON File not downloaded");
         return;
     }
     if (cachedFile == NULL)
@@ -561,6 +569,7 @@ void AirspaceTask()
         {
             printf("Cached File should always be able to open\n");
             fclose(jsonFile);
+            AirspaceParseError("Can't open Cache File");
             // vTaskDelete(NULL);
             return;
         }
@@ -570,6 +579,7 @@ void AirspaceTask()
             printf("Cant parse JSON File");
             fclose(jsonFile);
             fclose(cachedFile);
+            AirspaceParseError("Can't parse JSON File");
             // vTaskDelete(NULL);
             return;
         }
@@ -631,7 +641,6 @@ void AirspaceTask()
         gpsData.longitude = 8.525115677931941f;
         float pressure;
         vario_state_get_member(&pressure, vario_state_pressure, false);
-        float temperature;
         float agl;
         vario_state_get_member(&agl, vario_state_agl, false);
         float heightSTD = pressureToSTDHeight(pressure, 17);

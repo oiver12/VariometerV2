@@ -78,13 +78,13 @@ void startRendering(uint8_t *ScreenBuffer)
         {.extraStyle = WS_FONT_24_CONTENT, .h = 73, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Vario_Lazy, .x = 320, .y = 207},
     };
     ScreenManager_add_Screen_add_widgets(widgetDataScreen0, 8);
-    static WidgetData widgetDataScreen1[4] = {
+    static WidgetData widgetDataScreen1[5] = {
         {.extraStyle = WS_FONT_32_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Time_GPS, .x = 0, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Altitude_AGL, .x = 160, .y = 27},
         {.extraStyle = WS_FONT_24_CONTENT, .h = 60, .w = 160, .style = Widget_TextBox, .type = WidgetContent_Speed_Ground, .x = 320, .y = 27},
         {.extraStyle = WS_FONT_32_CONTENT, .h = 100, .w = 200, .style = Widget_SdCardInfo, .type = WidgetContent_SDCardInfo, .x = 280, .y = 87},
-    };
-    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 4);
+        {.extraStyle = WS_FONT_12_CONTENT, .h = 100, .w = 200, .style = Widget_Airspace, .type = WidgetContent_Airspace, .x = 0, .y = 87}};
+    ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 5);
     ScreenManager_show_Screen(0);
 
     renderQueue = xQueueCreate(1, sizeof(Display_RefreshMode));

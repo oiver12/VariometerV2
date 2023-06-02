@@ -381,6 +381,12 @@ static void add_Airspace_Widget(WidgetData *widget)
 {
     Airspace_Info_t airspaceInfo;
     vario_state_get_member(&airspaceInfo, vario_state_airspaceInfo, true);
+    if (airspaceInfo.error)
+    {
+        DrawWidgetBone(widget, "Airspace");
+        DrawTextWithAlignOffset(widget, airspaceInfo.name, widget->w / 2, widget->h / 2, &Font12, true, ALIGN_CENTER, ALIGN_MID);
+        return;
+    }
     if (airspaceInfo.name[0] == '\0')
     {
         DrawWidgetBone(widget, "No Airspace nearby found");
@@ -566,7 +572,7 @@ static void update_Chart_Widget(WidgetData *widget)
     }
 }
 
-void update_sdCardInfo_Widget(WidgetData *widget)
+static void update_sdCardInfo_Widget(WidgetData *widget)
 {
     sd_card_state_t sdcard_state;
     if (device_state_get_member(&sdcard_state, device_state_statusSDCard, true))
@@ -604,7 +610,7 @@ void update_sdCardInfo_Widget(WidgetData *widget)
     }
 }
 
-void update_gpsInfo_Widget(WidgetData *widget)
+static void update_gpsInfo_Widget(WidgetData *widget)
 {
     gps_t gps_data;
     vario_state_get_member(&gps_data, vario_state_gps_data, true);
@@ -725,6 +731,15 @@ void update_gpsInfo_Widget(WidgetData *widget)
     oldGpsObject = gps_data;
 }
 
+static void update_Airspace_Widget(WidgetData *widget)
+{
+    Airspace_Info_t airspaceInfo;
+    bool stateChange = vario_state_get_member(&airspaceInfo, vario_state_airspaceInfo, true);
+    if (!stateChange)
+        return;
+    add_Airspace_Widget(widget);
+}
+
 void vario_display_add_widget(WidgetData *widget)
 {
     switch (widget->style)
@@ -774,6 +789,9 @@ void vario_update_widget(WidgetData *widget)
         break;
     case Widget_GPSInfo:
         update_gpsInfo_Widget(widget);
+        break;
+    case Widget_Airspace:
+        update_Airspace_Widget(widget);
         break;
     default:
         break;

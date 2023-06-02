@@ -14,7 +14,8 @@
  */
 
 #define MAX_STRING_SIZE 16
-#define FIFO_VERTLAZY_SIZE 66 // ca. 2 Sekunde integriert
+#define FIFO_VERTLAZY_SIZE 66          // ca. 2 Sekunde integriert
+#define FIFO_MAX_BIEPVERTLAZY_SIZE 100 // max 3s integrated
 #define FIFO_TRACKPOINT_SIZE 30
 
 #define Volume_max_Size 20000 // eig. 2^16 / 2 = 32'768, aber wäre zu viel Leistung für den Lautsprecher (denke ich ausprobieren!)
@@ -37,27 +38,31 @@ typedef struct
     float longitude;
     float latitude;
     Airspace_Info_t airspaceInfo;
+    struct fifo_descriptor vertVelBiep_Fifo;
+    float VertVelbuffer[FIFO_MAX_BIEPVERTLAZY_SIZE];
+    float vertVelBiep_Sum;
 
     uint16_t stateChange;
 } vario_state_t;
 
 typedef enum
 {
-    vario_state_vertVel = 1 << 0,       // float
-    vario_state_groundSpeed = 1 << 1,   // float
-    vario_state_vertVelLazy = 1 << 2,   // float
-    vario_state_vertAcc = 1 << 3,       // float
-    vario_state_pressure = 1 << 4,      // float
-    vario_state_temperature = 1 << 5,   // float
-    vario_state_heading = 1 << 6,       // int
-    vario_state_altitudeBaro = 1 << 7,  // float
-    vario_state_altitudeGPS = 1 << 8,   // float
-    vario_state_gps_data = 1 << 9,      // gsp_t
-    vario_state_groundLevel = 1 << 10,  // float
-    vario_state_agl = 1 << 11,          // float
-    vario_state_longitude = 1 << 12,    // float
-    vario_state_latitude = 1 << 13,     // float
-    vario_state_airspaceInfo = 1 << 14, // Airspace_Info_t
+    vario_state_vertVel = 1 << 0,          // float
+    vario_state_groundSpeed = 1 << 1,      // float
+    vario_state_vertVelLazy = 1 << 2,      // float
+    vario_state_vertAcc = 1 << 3,          // float
+    vario_state_pressure = 1 << 4,         // float
+    vario_state_temperature = 1 << 5,      // float
+    vario_state_heading = 1 << 6,          // int
+    vario_state_altitudeBaro = 1 << 7,     // float
+    vario_state_altitudeGPS = 1 << 8,      // float
+    vario_state_gps_data = 1 << 9,         // gsp_t
+    vario_state_groundLevel = 1 << 10,     // float
+    vario_state_agl = 1 << 11,             // float
+    vario_state_longitude = 1 << 12,       // float
+    vario_state_latitude = 1 << 13,        // float
+    vario_state_airspaceInfo = 1 << 14,    // Airspace_Info_t
+    vario_state_vertVelLazyBiep = 1 << 15, // float
 } vario_state_member_t;
 
 typedef struct
@@ -66,6 +71,7 @@ typedef struct
     float takeOffSpeed;
     float landingSpeed;
     float landingTimout;
+    uint16_t biepLazyTime; // from 0 (instant) to FIFO_MAX_VERTLAZY_SIZE (3s). Can be set in Settings
 
     uint16_t stateChange;
 } vario_settings_t;
@@ -76,6 +82,7 @@ typedef enum
     vario_settings_takeOffSpeed = 1 << 1,  // float
     vario_settings_landingSpeed = 1 << 2,  // float
     vario_settings_landingTimout = 1 << 3, // float
+    vario_settings_biepLazyTime = 1 << 4,  // uint16_t
 } vario_settings_member_t;
 
 typedef struct

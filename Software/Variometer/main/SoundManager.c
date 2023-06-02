@@ -131,9 +131,12 @@ void SoundManager_Task(void *parameters)
     vTaskDelete(NULL);
 }
 
-void SoundManager_calculateNewBiep(float newVelocity)
+void SoundManager_calculateNewBiep()
 {
-    // in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
+    float newVelocity;
+    vario_state_get_member(&newVelocity, vario_state_vertVelLazyBiep, true);
+    // printf("VertVel: %.2f\n", vertVel);
+    //  in einer For schleife herausfinden, zwischen welchen Punkten die Geschwindigkeit ist
     for (size_t i = 0; i < soundManager_instance.sizeToneArray; i++)
     {
         if (newVelocity >= soundManager_instance.ToneArray[i].lowerVelocity && newVelocity <= soundManager_instance.ToneArray[i].upVelocity)

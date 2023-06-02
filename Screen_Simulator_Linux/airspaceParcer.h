@@ -43,6 +43,7 @@ typedef struct Airspace_Info_t
     float distanceToAirspaceHor;
     Point2D_t nearestLineStart;
     Point2D_t nearestLineEnd;
+    bool error;
 } Airspace_Info_t;
 
 typedef struct AirspaceParcer_State_t

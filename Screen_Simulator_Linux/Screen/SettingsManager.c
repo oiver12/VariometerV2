@@ -9,7 +9,8 @@ WidgetData widgetData_Audio_Settings[2] = {
     {.extraStyle = 0, .h = 100, .w = 459, .style = Widget_Settings_SoundThreshold, .type = WidgetContent_Settings_SoundLiftThreshold},
 };
 
-WidgetData widgetData_Config_Settings[1] = {
+WidgetData widgetData_Config_Settings[2] = {
+    {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VertVelLazySlider},
     {.extraStyle = 0, .h = 60, .w = 459, .style = Widget_Settings_CalibrationPageButton, .type = WidgetContent_Settings_MagnCalibrationPageButton},
 };
 

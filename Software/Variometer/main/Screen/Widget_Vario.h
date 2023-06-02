@@ -97,6 +97,7 @@ typedef enum
     WidgetContent_Settings_PageButton_Config,
     WidgetContent_Settings_PageButton_Flights,
     WidgetContent_Settings_VolumeSlider,
+    WidgetContent_Settings_VertVelLazySlider,
     WidgetContent_Settings_SoundLiftThreshold,
     WidgetContent_Settings_SoundSinkThreshold,
     WidgetContent_Settings_MagnCalibrationPageButton,
