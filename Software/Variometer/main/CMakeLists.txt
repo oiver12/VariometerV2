@@ -2,7 +2,7 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 set(COMPONENT_SRCS  
-                    "main.c" "IGCLogger.c" "SoundManager.c" "BatteryManager.c" "SDCard.c" "nmea_parser.c" "QuaternionFilter.c" "DeviceContext.c" "ButtonInput.c" "AGL.c" "Util.c" "compass.c" "flashMemory.c" "IGC_Parser.c" "MainTasks.c"
+                    "main.c" "SoundManager.c" "BatteryManager.c" "SDCard.c" "nmea_parser.c" "QuaternionFilter.c" "DeviceContext.c" "ButtonInput.c" "AGL.c" "Util.c" "compass.c" "flashMemory.c" "MainTasks.c"
                     "Sensor/QMC588L.c" "Sensor/BMI088.c" "Sensor/DPS310.c" "Sensor/MAXM10S.c"
                     "Screen/Display_Vario.c" "Screen/FIFO.c" "Screen/ScreenManager.c" "Screen/Widget_Vario.c" "Screen/Widget_Vario_Settings.c" "Screen/RenderSystem.c" "Screen/Widget_Vario_PopUp.c" "Screen/Widget_Vario_Common.c" "Screen/Widget_Vario_Screens.c" "Screen/SettingsManager.c"
                     "Screen/E_Ink/EPD_3in7.c" "Screen/E_Ink/GUI_Paint.c"
@@ -11,6 +11,8 @@ set(COMPONENT_SRCS
                     "TestTools/FlightLogger.c" "TestTools/Simulation.c" "TestTools/performance.c"
                     "Screen/assets/test_logo.c" "Screen/assets/icons.c"
                     "AirspaceParcer/airspaceParcer.c" "AirspaceParcer/file_layer.c"
+                    "IGC/IGC_Parser.c" "IGC/IGCLogger.c"
+                    "Bluetooth/bluetooth.c"
                     )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 register_component()

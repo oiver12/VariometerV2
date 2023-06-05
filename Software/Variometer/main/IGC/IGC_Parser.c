@@ -4,7 +4,6 @@
 #include <limits.h>
 #include <errno.h>
 #include <ctype.h>
-#include "Util.h"
 #include <math.h>
 #include "Screen/FIFO.h"
 #include "SDCard.h"
@@ -95,6 +94,11 @@ static int floatFROMDMD(const char *dmd, float *valueRad)
         ERROR_CHECK(str2int(&minutes, tempBuffer));
         sliceString(dmd, tempBuffer, 5, 3);
         ERROR_CHECK(str2int(&dminutes, tempBuffer));
+    }
+    else
+    {
+        printf("Cant parse Lat or Long\n");
+        return 1;
     }
     float r = (float)degress + (((float)minutes + ((float)dminutes / 1000.0f)) / 60.0f);
     if (dmd[0] == 'S' || dmd[0] == 'W' || dmd[sizeString - 1] == 'S' || dmd[sizeString - 1] == 'W')

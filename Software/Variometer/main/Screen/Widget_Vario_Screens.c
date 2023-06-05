@@ -3,9 +3,9 @@
 #include "assets/assets.h"
 #include "Widget_Vario_Common.h"
 #include <stdio.h>
-#include "IGC_Parser.h"
+#include "IGC/IGC_Parser.h"
 #include <math.h>
-#include "../SDCard.h"
+#include "SDCard.h"
 #include "Widget_Vario.h"
 #include <time.h>
 #include "esp_timer.h"

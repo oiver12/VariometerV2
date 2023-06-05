@@ -37,6 +37,11 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     for (size_t i = 0; i < sizeof(pageButtonSettingsWidget) / sizeof(WidgetData); i++)
     {
         listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        if (!listElement)
+        {
+            printf("Cant initialize Settings Button\n");
+            return;
+        }
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = pageButtonSettingsWidget[i];

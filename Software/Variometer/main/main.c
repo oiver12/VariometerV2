@@ -2,23 +2,17 @@
 #include "driver/i2c.h"
 #include <esp_log.h>
 #include "nmea_parser.h"
-#include <sys/unistd.h>
-#include <string.h>
 #include "SDCard.h"
 #include "main.h"
 #include "BatteryManager.h"
 #include "SoundManager.h"
-#include "IGCLogger.h"
+#include "IGC/IGCLogger.h"
 #include "TestTools/FlightLogger.h"
 #include "DeviceContext.h"
 #include "Screen/Display_Vario.h"
 #include "ButtonInput.h"
 #include "AGL.h"
-#include <compass.h>
 #include "flashMemory.h"
-#include "TestTools/performance.h"
-#include "esp_timer.h"
-#include "Sensor/MAXM10S.h"
 #include "AirspaceParcer/airspaceParcer.h"
 #include "MainTasks.h"
 
@@ -41,24 +35,24 @@
 
 static const char *TAG = "main";
 
-void sendAttitude(void *params)
-{
-    float rotation[4];
-    // float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
-    while (1)
-    {
-        // Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &tmep);
-        // fwrite(&roll, sizeof(float), 1, stdout);
-        // fwrite(&pitch, sizeof(float), 1, stdout);
-        // fwrite(&yaw, sizeof(float), 1, stdout);
-        fwrite(&rotation, sizeof(float), 4, stdout);
-        char ending = 0xff;
-        fwrite(&ending, sizeof(char), 1, stdout);
-        printf("\n");
-        vTaskDelay(200 / portTICK_PERIOD_MS);
-    }
-    vTaskDelete(NULL);
-}
+// void sendAttitude(void *params)
+// {
+//     float rotation[4];
+//     // float roll = 0.0f, pitch = 0.0f, yaw = 0.0f;
+//     while (1)
+//     {
+//         // Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &tmep);
+//         // fwrite(&roll, sizeof(float), 1, stdout);
+//         // fwrite(&pitch, sizeof(float), 1, stdout);
+//         // fwrite(&yaw, sizeof(float), 1, stdout);
+//         fwrite(&rotation, sizeof(float), 4, stdout);
+//         char ending = 0xff;
+//         fwrite(&ending, sizeof(char), 1, stdout);
+//         printf("\n");
+//         vTaskDelay(200 / portTICK_PERIOD_MS);
+//     }
+//     vTaskDelete(NULL);
+// }
 
 void app_main(void)
 {

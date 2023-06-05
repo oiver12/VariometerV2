@@ -5,19 +5,21 @@
 #include "SDCard.h"
 #include <time.h>
 #include "nmea_parser.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
-typedef struct {
+typedef struct
+{
     gps_time_t time;
     gps_date_t date;
-    float latitude;                                                /*Latitude (degrees) */
-    float longitude;                                               /*Longitude (degrees) */
-    float altitude;                                                /*Altitude (meters) */
+    float latitude;  /*Latitude (degrees) */
+    float longitude; /*Longitude (degrees) */
+    float altitude;  /*Altitude (meters) */
     bool fix3D;
 } igc_gps_data_t;
 
-typedef struct {
+typedef struct
+{
     const char nameBuffer[60];
     float pressureAltitude;
     volatile int64_t gpsLastTimeUpdate;
