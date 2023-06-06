@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-    int bluetooth_init_vario();
+    int startBluetooth();
 
 #ifdef __cplusplus
 }

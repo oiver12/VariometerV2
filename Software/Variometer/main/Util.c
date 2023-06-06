@@ -231,22 +231,22 @@ void INIT_LIST_HEAD(struct list_head *list)
 	list->prev = list;
 }
 
-void list_add_head(struct list_head *new, struct list_head *head)
+void list_add_head(struct list_head *new_tile, struct list_head *head)
 {
-	list_insert(new, head, head->next);
+	list_insert(new_tile, head, head->next);
 }
 
-void list_add_tail(struct list_head *new, struct list_head *head)
+void list_add_tail(struct list_head *new_tile, struct list_head *head)
 {
-	list_insert(new, head->prev, head);
+	list_insert(new_tile, head->prev, head);
 }
 
-void list_insert(struct list_head *new, struct list_head *prev, struct list_head *next)
+void list_insert(struct list_head *new_tile, struct list_head *prev, struct list_head *next)
 {
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
+	next->prev = new_tile;
+	new_tile->next = next;
+	new_tile->prev = prev;
+	prev->next = new_tile;
 }
 
 float pressureToSTDHeight(float pressure, float startTemp)

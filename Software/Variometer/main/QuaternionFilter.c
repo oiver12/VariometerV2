@@ -6,15 +6,14 @@
 #define QUATERNIONV1
 
 // für Madgwick
-float GyroMeasError = PI * (40.0f / 180.0f);     // gyroscope measurement error in rads/s (start at 40 deg/s)
-float GyroMeasDrift = PI * (0.0f / 180.0f);      // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
-float beta;  // compute beta
-float zeta;  // compute zeta, the other free parameter in the Madgwick scheme usually set to a small or zero value
+float GyroMeasError = PI * (40.0f / 180.0f); // gyroscope measurement error in rads/s (start at 40 deg/s)
+float GyroMeasDrift = PI * (0.0f / 180.0f);  // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
+float beta;                                  // compute beta
+float zeta;                                  // compute zeta, the other free parameter in the Madgwick scheme usually set to a small or zero value
 
-float twoKp = (2.0f * 5.0f);											// 2 * proportional gain (Kp)
-float twoKi = (2.0f * 0.0f);	
-float integralFBx = 0.0f,  integralFBy = 0.0f, integralFBz = 0.0f;	// integral error terms scaled by Ki
-
+float twoKp = (2.0f * 5.0f); // 2 * proportional gain (Kp)
+float twoKi = (2.0f * 0.0f);
+float integralFBx = 0.0f, integralFBy = 0.0f, integralFBz = 0.0f; // integral error terms scaled by Ki
 
 /* für mahony */
 float Kp = 30.0;
@@ -25,11 +24,16 @@ void QuaternionFilter_KalmanInit(KalmanRollPitch_t *klm, float Pinit, float *Q, 
     klm->phi_rad = 0.0f;
     klm->theta_rad = 0.0f;
 
-    klm->P[0] = Pinit; klm->P[1] = 0.0f;
-    klm->P[2] = 0.0f; klm->P[3] = Pinit;
+    klm->P[0] = Pinit;
+    klm->P[1] = 0.0f;
+    klm->P[2] = 0.0f;
+    klm->P[3] = Pinit;
 
-    klm->Q[0] = Q[0]; klm->Q[1] = Q[1];
-    klm->R[0] = R[0]; klm->R[1] = R[1]; klm->R[2] = R[2];
+    klm->Q[0] = Q[0];
+    klm->Q[1] = Q[1];
+    klm->R[0] = R[0];
+    klm->R[1] = R[1];
+    klm->R[2] = R[2];
 }
 
 void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *kal, float *gyr_rps, float T)
@@ -38,22 +42,28 @@ void QuaternionFiler_KalmanPredict(KalmanRollPitch_t *kal, float *gyr_rps, float
     float q = gyr_rps[1];
     float r = gyr_rps[2];
 
-    float sp = sin(kal->phi_rad); float cp = cos(kal->phi_rad);
+    float sp = sin(kal->phi_rad);
+    float cp = cos(kal->phi_rad);
     float tt = tan(kal->theta_rad);
 
     kal->phi_rad = kal->phi_rad + T * (p + tt * (q * sp + r * cp));
     kal->theta_rad = kal->theta_rad + T * (q * cp - r * sp);
 
-    sp = sin(kal->phi_rad); cp = cos(kal->phi_rad);
-    float st = sin(kal->theta_rad); float ct = cos(kal->theta_rad); tt = st / ct;
+    sp = sin(kal->phi_rad);
+    cp = cos(kal->phi_rad);
+    float st = sin(kal->theta_rad);
+    float ct = cos(kal->theta_rad);
+    tt = st / ct;
 
-    float A[4] = { tt * (q * cp - r * sp), (r * cp + q * sp) * (tt * tt + 1.0f),
-                   -(r * cp + q * sp),      0.0f };
-    float Ptmp[4] = { T*(kal->Q[0] + 2.0f*A[0]*kal->P[0] + A[1]*kal->P[1] + A[1]*kal->P[2]), T*(A[0] * kal->P[1] + A[2]*kal->P[0] + A[1]*kal->P[3] + A[3]*kal->P[1]),
-                      T*(A[0]*kal->P[2] + A[2]*kal->P[0] + A[1]*kal->P[3] + A[3]*kal->P[2]), T*(kal->Q[1] + A[2]*kal->P[1]+A[2]*kal->P[2] + 2.0f*A[3]*kal->P[3]) };
-    
-    kal->P[0] = kal->P[0] + Ptmp[0]; kal->P[1] = kal->P[1] + Ptmp[1];
-    kal->P[2] = kal->P[2] + Ptmp[2]; kal->P[3] = kal->P[3] + Ptmp[3];
+    float A[4] = {tt * (q * cp - r * sp), (r * cp + q * sp) * (tt * tt + 1.0f),
+                  -(r * cp + q * sp), 0.0f};
+    float Ptmp[4] = {T * (kal->Q[0] + 2.0f * A[0] * kal->P[0] + A[1] * kal->P[1] + A[1] * kal->P[2]), T * (A[0] * kal->P[1] + A[2] * kal->P[0] + A[1] * kal->P[3] + A[3] * kal->P[1]),
+                     T * (A[0] * kal->P[2] + A[2] * kal->P[0] + A[1] * kal->P[3] + A[3] * kal->P[2]), T * (kal->Q[1] + A[2] * kal->P[1] + A[2] * kal->P[2] + 2.0f * A[3] * kal->P[3])};
+
+    kal->P[0] = kal->P[0] + Ptmp[0];
+    kal->P[1] = kal->P[1] + Ptmp[1];
+    kal->P[2] = kal->P[2] + Ptmp[2];
+    kal->P[3] = kal->P[3] + Ptmp[3];
 }
 
 void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *kal, float *acc_mps2)
@@ -62,35 +72,41 @@ void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *kal, float *acc_mps2)
     float ay = acc_mps2[1];
     float az = acc_mps2[2];
 
-    float sp = sin(kal->phi_rad); float cp = cos(kal->phi_rad);
-    float st = sin(kal->theta_rad); float ct = cos(kal->theta_rad);
+    float sp = sin(kal->phi_rad);
+    float cp = cos(kal->phi_rad);
+    float st = sin(kal->theta_rad);
+    float ct = cos(kal->theta_rad);
 
-    float h[3] = { g * st,
-                   -g * ct * sp,
-                   -g * ct * cp };
-    float C[6] = { 0.0f, g * ct, 
-                   -g * cp * ct, g * sp * st,
-                   g * sp * ct, g * cp * st };
-    
-    float G[9] = { kal->P[3]*C[1]*C[1] + kal->R[0], C[1]*C[2]*kal->P[2] + C[1]*C[3]*kal->P[3], 0.0f,
-                   C[1]*(C[2]*kal->P[1] + C[3]*kal->P[3]), kal->R[1] + C[2]*(C[2]*kal->P[0] + C[3]*kal->P[2]) + C[3]*(C[2]*kal->P[1] + C[3]*kal->P[3]), C[4],
-                   C[1]*(C[4]*kal->P[1] + C[5]*kal->P[3]), C[2]*(C[4]*kal->P[0] + C[5]*kal->P[2]) + C[3]*(C[4]*kal->P[1] + C[5]*kal->P[3]),             kal->R[2]};
+    float h[3] = {g * st,
+                  -g * ct * sp,
+                  -g * ct * cp};
+    float C[6] = {0.0f, g * ct,
+                  -g * cp * ct, g * sp * st,
+                  g * sp * ct, g * cp * st};
 
-    float Gdetinv = 1.0f / (G[0]*G[4]*G[8] - G[0]*G[5]*G[7] - G[1]*G[3]*G[8] + G[1]*G[5]*G[6] + G[2]*G[3]*G[7] - G[2]*G[4]*G[6]);
+    float G[9] = {kal->P[3] * C[1] * C[1] + kal->R[0], C[1] * C[2] * kal->P[2] + C[1] * C[3] * kal->P[3], 0.0f,
+                  C[1] * (C[2] * kal->P[1] + C[3] * kal->P[3]), kal->R[1] + C[2] * (C[2] * kal->P[0] + C[3] * kal->P[2]) + C[3] * (C[2] * kal->P[1] + C[3] * kal->P[3]), C[4],
+                  C[1] * (C[4] * kal->P[1] + C[5] * kal->P[3]), C[2] * (C[4] * kal->P[0] + C[5] * kal->P[2]) + C[3] * (C[4] * kal->P[1] + C[5] * kal->P[3]), kal->R[2]};
 
-    float Ginv[9] = { Gdetinv * (G[4]*G[8] - G[5]*G[7]), -Gdetinv * (G[1]*G[8] - G[2]*G[7]), Gdetinv * (G[1]*G[5] - G[2]*G[4]),
-                     -Gdetinv * (G[3]*G[8] - G[5]*G[6]),  Gdetinv * (G[0]*G[8] - G[2]*G[6]),-Gdetinv * (G[0]*G[5] - G[2]*G[3]),
-                      Gdetinv * (G[3]*G[7] - G[4]*G[6]), -Gdetinv * (G[0]*G[7] - G[1]*G[6]), Gdetinv * (G[0]*G[4] - G[1]*G[3]) };
+    float Gdetinv = 1.0f / (G[0] * G[4] * G[8] - G[0] * G[5] * G[7] - G[1] * G[3] * G[8] + G[1] * G[5] * G[6] + G[2] * G[3] * G[7] - G[2] * G[4] * G[6]);
 
-    float K[6] = {G[0]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[3]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[6]*(C[4]*kal->P[0] + C[5]*kal->P[1]), G[1]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[4]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[7]*(C[4]*kal->P[0] + C[5]*kal->P[1]), G[2]*(C[0]*kal->P[0] + C[1]*kal->P[1]) + G[5]*(C[2]*kal->P[0] + C[3]*kal->P[1]) + G[8]*(C[4]*kal->P[0] + C[5]*kal->P[1]),
-                  G[0]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[3]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[6]*(C[4]*kal->P[2] + C[5]*kal->P[3]), G[1]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[4]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[7]*(C[4]*kal->P[2] + C[5]*kal->P[3]), G[2]*(C[0]*kal->P[2] + C[1]*kal->P[3]) + G[5]*(C[2]*kal->P[2] + C[3]*kal->P[3]) + G[8]*(C[4]*kal->P[2] + C[5]*kal->P[3])};
-    
+    // float Ginv[9] = { Gdetinv * (G[4]*G[8] - G[5]*G[7]), -Gdetinv * (G[1]*G[8] - G[2]*G[7]), Gdetinv * (G[1]*G[5] - G[2]*G[4]),
+    //                  -Gdetinv * (G[3]*G[8] - G[5]*G[6]),  Gdetinv * (G[0]*G[8] - G[2]*G[6]),-Gdetinv * (G[0]*G[5] - G[2]*G[3]),
+    //                   Gdetinv * (G[3]*G[7] - G[4]*G[6]), -Gdetinv * (G[0]*G[7] - G[1]*G[6]), Gdetinv * (G[0]*G[4] - G[1]*G[3]) };
+
+    float K[6] = {G[0] * (C[0] * kal->P[0] + C[1] * kal->P[1]) + G[3] * (C[2] * kal->P[0] + C[3] * kal->P[1]) + G[6] * (C[4] * kal->P[0] + C[5] * kal->P[1]), G[1] * (C[0] * kal->P[0] + C[1] * kal->P[1]) + G[4] * (C[2] * kal->P[0] + C[3] * kal->P[1]) + G[7] * (C[4] * kal->P[0] + C[5] * kal->P[1]), G[2] * (C[0] * kal->P[0] + C[1] * kal->P[1]) + G[5] * (C[2] * kal->P[0] + C[3] * kal->P[1]) + G[8] * (C[4] * kal->P[0] + C[5] * kal->P[1]),
+                  G[0] * (C[0] * kal->P[2] + C[1] * kal->P[3]) + G[3] * (C[2] * kal->P[2] + C[3] * kal->P[3]) + G[6] * (C[4] * kal->P[2] + C[5] * kal->P[3]), G[1] * (C[0] * kal->P[2] + C[1] * kal->P[3]) + G[4] * (C[2] * kal->P[2] + C[3] * kal->P[3]) + G[7] * (C[4] * kal->P[2] + C[5] * kal->P[3]), G[2] * (C[0] * kal->P[2] + C[1] * kal->P[3]) + G[5] * (C[2] * kal->P[2] + C[3] * kal->P[3]) + G[8] * (C[4] * kal->P[2] + C[5] * kal->P[3])};
+
     float Ptmp[4];
-    Ptmp[0] = -kal->P[0]*(C[0]*K[0] + C[2]*K[1] + C[4]*K[2] - 1.0f) - kal->P[2]*(C[1]*K[0] + C[3]*K[1] + C[5]*K[2]); Ptmp[1] = -kal->P[1]*(C[0]*K[0] + C[2]*K[1] + C[4]*K[2] - 1.0f) - kal->P[3]*(C[1]*K[0] + C[3]*K[1] + C[5]*K[2]);
-    Ptmp[2] = -kal->P[0]*(C[0]*K[3] + C[2]*K[4] + C[4]*K[5]) - kal->P[2]*(C[1]*K[3] + C[3]*K[4] + C[5]*K[5] - 1.0f); Ptmp[3] = -kal->P[1]*(C[0]*K[3] + C[2]*K[4] + C[4]*K[5]) - kal->P[3]*(C[1]*K[3] + C[3]*K[4] + C[5]*K[5] - 1.0f);
+    Ptmp[0] = -kal->P[0] * (C[0] * K[0] + C[2] * K[1] + C[4] * K[2] - 1.0f) - kal->P[2] * (C[1] * K[0] + C[3] * K[1] + C[5] * K[2]);
+    Ptmp[1] = -kal->P[1] * (C[0] * K[0] + C[2] * K[1] + C[4] * K[2] - 1.0f) - kal->P[3] * (C[1] * K[0] + C[3] * K[1] + C[5] * K[2]);
+    Ptmp[2] = -kal->P[0] * (C[0] * K[3] + C[2] * K[4] + C[4] * K[5]) - kal->P[2] * (C[1] * K[3] + C[3] * K[4] + C[5] * K[5] - 1.0f);
+    Ptmp[3] = -kal->P[1] * (C[0] * K[3] + C[2] * K[4] + C[4] * K[5]) - kal->P[3] * (C[1] * K[3] + C[3] * K[4] + C[5] * K[5] - 1.0f);
 
-    kal->P[0] = kal->P[0] + Ptmp[0]; kal->P[1] = kal->P[1] + Ptmp[1];
-    kal->P[2] = kal->P[2] + Ptmp[2]; kal->P[3] = kal->P[3] + Ptmp[3];
+    kal->P[0] = kal->P[0] + Ptmp[0];
+    kal->P[1] = kal->P[1] + Ptmp[1];
+    kal->P[2] = kal->P[2] + Ptmp[2];
+    kal->P[3] = kal->P[3] + Ptmp[3];
 
     kal->phi_rad = kal->phi_rad + K[0] * (ax - h[0]) + K[1] * (ay - h[1]) + K[2] * (az - h[2]);
     kal->theta_rad = kal->theta_rad + K[3] * (ax - h[0]) + K[4] * (ay - h[1]) + K[5] * (az - h[2]);
@@ -103,9 +119,10 @@ void QuaternionFilter_init()
 }
 
 // Madgwick Quaternion Update
-void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz, float deltaT, float* q) {
-    #ifdef QUATERNIONV1
-    double q0 = q[0], q1 = q[1], q2 = q[2], q3 = q[3];  // short name local variable for readability
+void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz, float deltaT, float *q)
+{
+#ifdef QUATERNIONV1
+    double q0 = q[0], q1 = q[1], q2 = q[2], q3 = q[3]; // short name local variable for readability
     double recipNorm;
     double s0, s1, s2, s3;
     double qDot1, qDot2, qDot3, qDot4;
@@ -120,7 +137,8 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
 
     // Normalise accelerometer measurement
     double a_norm = ax * ax + ay * ay + az * az;
-    if (a_norm == 0.) return;  // handle NaN
+    if (a_norm == 0.)
+        return; // handle NaN
     recipNorm = 1.0 / sqrt(a_norm);
     ax *= recipNorm;
     ay *= recipNorm;
@@ -128,7 +146,8 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
 
     // Normalise magnetometer measurement
     double m_norm = mx * mx + my * my + mz * mz;
-    if (m_norm == 0.) return;  // handle NaN
+    if (m_norm == 0.)
+        return; // handle NaN
     recipNorm = 1.0 / sqrt(m_norm);
     mx *= recipNorm;
     my *= recipNorm;
@@ -169,7 +188,7 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
     s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * q1 * (1 - 2.0f * q1q1 - 2.0f * q2q2 - az) + _2bz * q3 * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (_2bx * q2 + _2bz * q0) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + (_2bx * q3 - _4bz * q1) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
     s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * q2 * (1 - 2.0f * q1q1 - 2.0f * q2q2 - az) + (-_4bx * q2 - _2bz * q0) * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (_2bx * q1 + _2bz * q3) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + (_2bx * q0 - _4bz * q2) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
     s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * q3 + _2bz * q1) * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (-_2bx * q0 + _2bz * q2) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + _2bx * q1 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
-    recipNorm = 1.0 / sqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3);  // normalise step magnitude
+    recipNorm = 1.0 / sqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
     s0 *= recipNorm;
     s1 *= recipNorm;
     s2 *= recipNorm;
@@ -198,34 +217,35 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
     q[1] = q1;
     q[2] = q2;
     q[3] = q3;
-    #else
-	float q0 = q[0];
-	float q1 = q[1];
-	float q2 = q[2];
-	float q3 = q[3];
+#else
+    float q0 = q[0];
+    float q1 = q[1];
+    float q2 = q[2];
+    float q3 = q[3];
 
-	float invNorm;
-	float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
-	float hx, hy, bx, bz;
-	float halfvx, halfvy, halfvz, halfwx, halfwy, halfwz;
-	float halfex, halfey, halfez;
-	float qa, qb, qc;
+    float invNorm;
+    float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
+    float hx, hy, bx, bz;
+    float halfvx, halfvy, halfvz, halfwx, halfwy, halfwz;
+    float halfex, halfey, halfez;
+    float qa, qb, qc;
 
     float accTotal = sqrt(ax * ax + ay * ay + az * az);
-	int bUseAccel = accTotal > 0.75 && accTotal < 1.25;
+    int bUseAccel = accTotal > 0.75 && accTotal < 1.25;
 
-	if(bUseAccel) {
-		// Normalise accelerometer measurement
-		invNorm = 1.0f/accTotal;
-		ax *= invNorm;
-		ay *= invNorm;
-		az *= invNorm;
+    if (bUseAccel)
+    {
+        // Normalise accelerometer measurement
+        invNorm = 1.0f / accTotal;
+        ax *= invNorm;
+        ay *= invNorm;
+        az *= invNorm;
 
-		// Normalise magnetometer measurement
-		invNorm = 1.0f/sqrt(mx * mx + my * my + mz * mz);
-		mx *= invNorm;
-		my *= invNorm;
-		mz *= invNorm;
+        // Normalise magnetometer measurement
+        invNorm = 1.0f / sqrt(mx * mx + my * my + mz * mz);
+        mx *= invNorm;
+        my *= invNorm;
+        mz *= invNorm;
 
         // Auxiliary variables to avoid repeated arithmetic
         q0q0 = q0 * q0;
@@ -245,79 +265,81 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
         bx = sqrt(hx * hx + hy * hy);
         bz = 2.0f * (mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5f - q1q1 - q2q2));
 
-		// Estimated direction of gravity and magnetic field
-		halfvx = q1q3 - q0q2;
-		halfvy = q0q1 + q2q3;
-		halfvz = q0q0 - 0.5f + q3q3;
+        // Estimated direction of gravity and magnetic field
+        halfvx = q1q3 - q0q2;
+        halfvy = q0q1 + q2q3;
+        halfvz = q0q0 - 0.5f + q3q3;
         halfwx = bx * (0.5f - q2q2 - q3q3) + bz * (q1q3 - q0q2);
         halfwy = bx * (q1q2 - q0q3) + bz * (q0q1 + q2q3);
         halfwz = bx * (q0q2 + q1q3) + bz * (0.5f - q1q1 - q2q2);
 
-		// Error is sum of cross product between estimated direction and measured direction of field vectors
-		halfex = (ay * halfvz - az * halfvy) + (my * halfwz - mz * halfwy);
-		halfey = (az * halfvx - ax * halfvz) + (mz * halfwx - mx * halfwz);
-		halfez = (ax * halfvy - ay * halfvx) + (mx * halfwy - my * halfwx);
+        // Error is sum of cross product between estimated direction and measured direction of field vectors
+        halfex = (ay * halfvz - az * halfvy) + (my * halfwz - mz * halfwy);
+        halfey = (az * halfvx - ax * halfvz) + (mz * halfwx - mx * halfwz);
+        halfez = (ax * halfvy - ay * halfvx) + (mx * halfwy - my * halfwx);
 
-		// Compute and apply integral feedback if enabled
-		if(twoKi > 0.0f) {
-			integralFBx += twoKi * halfex * deltaT;	// integral error scaled by Ki
-			integralFBy += twoKi * halfey * deltaT;
-			integralFBz += twoKi * halfez * deltaT;
-			gx += integralFBx;	// apply integral feedback
-			gy += integralFBy;
-			gz += integralFBz;
-		}
-		else {
-			integralFBx = 0.0f;	// prevent integral windup
-			integralFBy = 0.0f;
-			integralFBz = 0.0f;
-		}
+        // Compute and apply integral feedback if enabled
+        if (twoKi > 0.0f)
+        {
+            integralFBx += twoKi * halfex * deltaT; // integral error scaled by Ki
+            integralFBy += twoKi * halfey * deltaT;
+            integralFBz += twoKi * halfez * deltaT;
+            gx += integralFBx; // apply integral feedback
+            gy += integralFBy;
+            gz += integralFBz;
+        }
+        else
+        {
+            integralFBx = 0.0f; // prevent integral windup
+            integralFBy = 0.0f;
+            integralFBz = 0.0f;
+        }
 
-		// Apply proportional feedback
-		gx += twoKp * halfex;
-		gy += twoKp * halfey;
-		gz += twoKp * halfez;
-	}
+        // Apply proportional feedback
+        gx += twoKp * halfex;
+        gy += twoKp * halfey;
+        gz += twoKp * halfez;
+    }
 
-	// Integrate rate of change of quaternion
-	gx *= (0.5f * deltaT);		// pre-multiply common factors
-	gy *= (0.5f * deltaT);
-	gz *= (0.5f * deltaT);
-	qa = q0;
-	qb = q1;
-	qc = q2;
-	q0 += (-qb * gx - qc * gy - q3 * gz);
-	q1 += (qa * gx + qc * gz - q3 * gy);
-	q2 += (qa * gy - qb * gz + q3 * gx);
-	q3 += (qa * gz + qb * gy - qc * gx);
+    // Integrate rate of change of quaternion
+    gx *= (0.5f * deltaT); // pre-multiply common factors
+    gy *= (0.5f * deltaT);
+    gz *= (0.5f * deltaT);
+    qa = q0;
+    qb = q1;
+    qc = q2;
+    q0 += (-qb * gx - qc * gy - q3 * gz);
+    q1 += (qa * gx + qc * gz - q3 * gy);
+    q2 += (qa * gy - qb * gz + q3 * gx);
+    q3 += (qa * gz + qb * gy - qc * gx);
 
-	// Normalise quaternion
-	invNorm = 1.0f/sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-	q0 *= invNorm;
-	q1 *= invNorm;
-	q2 *= invNorm;
-	q3 *= invNorm;
-
+    // Normalise quaternion
+    invNorm = 1.0f / sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+    q0 *= invNorm;
+    q1 *= invNorm;
+    q2 *= invNorm;
+    q3 *= invNorm;
 
     q[0] = q0;
     q[1] = q1;
     q[2] = q2;
     q[3] = q3;
-    #endif
+#endif
 }
 
-
-void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, float gz, float deltaT, float* q) {
+void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, float gz, float deltaT, float *q)
+{
     float recipNorm;
     float vx, vy, vz;
-    float ex, ey, ez;  //error terms
+    float ex, ey, ez; // error terms
     float qa, qb, qc;
-    static float ix = 0.0, iy = 0.0, iz = 0.0;  //integral feedback terms
+    static float ix = 0.0, iy = 0.0, iz = 0.0; // integral feedback terms
     float tmp;
 
     // Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
     tmp = ax * ax + ay * ay + az * az;
-    if (tmp > 0.0) {
+    if (tmp > 0.0)
+    {
         // Normalise accelerometer (assumed to measure the direction of gravity in body frame)
         recipNorm = 1.0 / sqrt(tmp);
         ax *= recipNorm;
@@ -336,11 +358,12 @@ void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, f
         ez = (ax * vy - ay * vx);
 
         // Compute and apply to gyro term the integral feedback, if enabled
-        if (Ki > 0.0f) {
-            ix += Ki * ex * deltaT;  // integral error scaled by Ki
+        if (Ki > 0.0f)
+        {
+            ix += Ki * ex * deltaT; // integral error scaled by Ki
             iy += Ki * ey * deltaT;
             iz += Ki * ez * deltaT;
-            gx += ix;  // apply integral feedback
+            gx += ix; // apply integral feedback
             gy += iy;
             gz += iz;
         }
@@ -353,7 +376,7 @@ void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, f
 
     // Integrate rate of change of quaternion, q cross gyro term
     deltaT = 0.5 * deltaT;
-    gx *= deltaT;  // pre-multiply common factors
+    gx *= deltaT; // pre-multiply common factors
     gy *= deltaT;
     gz *= deltaT;
     qa = q[0];
@@ -370,12 +393,12 @@ void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, f
     q[1] = q[1] * recipNorm;
     q[2] = q[2] * recipNorm;
     q[3] = q[3] * recipNorm;
-} 
+}
 
-void Quaternion_get_RPY(float qw, float qx, float qy, float qz, float* roll, float* pitch, float* yaw)
+void Quaternion_get_RPY(float qw, float qx, float qy, float qz, float *roll, float *pitch, float *yaw)
 {
     float magnetic_declination = 3;
-    float a12, a22, a31, a32, a33;  // rotation matrix coefficients for Euler angles and gravity components
+    float a12, a22, a31, a32, a33; // rotation matrix coefficients for Euler angles and gravity components
     a12 = 2.0f * (qx * qy + qw * qz);
     a22 = qw * qw + qx * qx - qy * qy - qz * qz;
     a31 = 2.0f * (qw * qx + qy * qz);

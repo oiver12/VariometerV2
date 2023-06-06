@@ -54,12 +54,12 @@ void INIT_LIST_HEAD(struct list_head *list);
  * @head: list head to add it after
  *
  */
-void list_add_head(struct list_head *new, struct list_head *head);
+void list_add_head(struct list_head *new_tile, struct list_head *head);
 
 /**
  * Insert a new entry at the end
  */
-void list_add_tail(struct list_head *new, struct list_head *head);
+void list_add_tail(struct list_head *new_tile, struct list_head *head);
 
 /*
  * Insert a new entry between two known consecutive entries.
@@ -67,7 +67,7 @@ void list_add_tail(struct list_head *new, struct list_head *head);
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-void list_insert(struct list_head *new, struct list_head *prev, struct list_head *next);
+void list_insert(struct list_head *new_tile, struct list_head *prev, struct list_head *next);
 
 int16_t GET_BEARING(double lat1, double lon1, double lat2, double lon2);
 double GET_DISTANCE(double lat1, double lon1, double lat2, double lon2);

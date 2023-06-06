@@ -124,8 +124,7 @@ int getFloatSize(FileLayer_t *layer, uint8_t size, float *value)
     if (checkAndMakeBuffer(layer) != 0)
         return 1;
     char tempBuffer[size + 1];
-    uint8_t currPos = 0;
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 1; i < size; i++)
     {
         tempBuffer[i] = fgetCFileLayer(layer);
     }

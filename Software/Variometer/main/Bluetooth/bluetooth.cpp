@@ -39,6 +39,7 @@ class CallbackHandlerSettingsService : public BLECharacteristicCallbacks
         ESP_LOGD(LOG_TAG, "Service Characteristic was written");
     }
 };
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -46,7 +47,7 @@ extern "C"
 
     // https://github.com/nkolban/esp32-snippets/blob/master/Documentation/BLE%20C%2B%2B%20Guide.pdf
 
-    int bluetooth_init_vario()
+    int startBluetooth()
     {
         ESP_LOGD(LOG_TAG, "Starting BLE Server");
 

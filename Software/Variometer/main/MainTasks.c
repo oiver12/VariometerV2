@@ -1,13 +1,13 @@
 #include "MainTasks.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
 #include "Sensor/BMI088.h"
 #include "Sensor/DPS310.h"
 #include "QuaternionFilter.h"
 #include "Kalman/kalman.h"
 #include "Sensor/QMC588L.h"
-#include "math.h"
+#include <math.h>
 #include "DeviceContext.h"
 #include "SoundManager.h"
 #include "TestTools/FlightLogger.h"
@@ -42,15 +42,15 @@ volatile bool hasMeasuredStartPressure = false;
 float headingCalc = 0.0f;
 static const char *TAG = "MainTasks";
 
-static void IRAM_ATTR dps310ISR(void *arg)
-{
-    TaskHandle_t taskHandle = *(TaskHandle_t *)arg;
-    configASSERT(taskHandle != NULL);
-    BaseType_t HPTaskWoken = pdFALSE;
-    // unblock TaskMeasureAcc
-    vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-    portYIELD_FROM_ISR(HPTaskWoken);
-}
+// static void IRAM_ATTR dps310ISR(void *arg)
+// {
+//     TaskHandle_t taskHandle = *(TaskHandle_t *)arg;
+//     configASSERT(taskHandle != NULL);
+//     BaseType_t HPTaskWoken = pdFALSE;
+//     // unblock TaskMeasureAcc
+//     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
+//     portYIELD_FROM_ISR(HPTaskWoken);
+// }
 
 static void TaskMeasureHeight(void *parameters)
 {
@@ -71,12 +71,12 @@ static void TaskMeasureHeight(void *parameters)
     startTemperature /= 10;
     hasMeasuredStartPressure = true;
     // Setup Interrupt
-    gpio_config_t gpio_config_INT_DPS310 = {
-        .pin_bit_mask = 1ULL << PresSens_INT,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE};
+    // gpio_config_t gpio_config_INT_DPS310 = {
+    //     .pin_bit_mask = 1ULL << PresSens_INT,
+    //     .mode = GPIO_MODE_INPUT,
+    //     .pull_up_en = GPIO_PULLUP_DISABLE,
+    //     .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    //     .intr_type = GPIO_INTR_DISABLE};
     // set PresSens Pin as Interrupt
     // gpio_config(&gpio_config_INT_DPS310);
     // Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
@@ -310,8 +310,8 @@ static void TaskKalmanFilter(void *parameters)
             memcpy(rotation, rotationVario, sizeof(rotationVario));
         }
         xSemaphoreGive(acc_Mutex);
-        // deltaT = (esp_timer_get_time() - lastTime) / 1000000;
-        deltaT = 0.029; // TODO: hacky to not give strange Kalman Filter results when not called once. Perhaps use esp_timer and call in fixed timing
+        deltaT = (esp_timer_get_time() - lastTime) / 1000000;
+        // deltaT = 0.029; // TODO: hacky to not give strange Kalman Filter results when not called once. Perhaps use esp_timer and call in fixed timing
         /* Set Q with new deltaT */
         matrix_set(Q, 0, 0, ((deltaT * deltaT * deltaT * deltaT) / 4) * bmi088_stnd_acc * bmi088_stnd_acc);
         matrix_set(Q, 0, 1, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);

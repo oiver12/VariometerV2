@@ -15,6 +15,7 @@
 #include "flashMemory.h"
 #include "AirspaceParcer/airspaceParcer.h"
 #include "MainTasks.h"
+#include "Bluetooth/bluetooth.h"
 
 #define POWSW_ENABLE 13
 
@@ -121,6 +122,8 @@ void app_main(void)
     // AGL_startAGL(sdcard, gps_nmea_hdl);
 
     StartAirspaceParse();
+
+    startBluetooth();
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
 

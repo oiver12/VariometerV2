@@ -20,7 +20,7 @@ typedef struct
 
 typedef struct
 {
-    const char nameBuffer[60];
+    char nameBuffer[60];
     float pressureAltitude;
     volatile int64_t gpsLastTimeUpdate;
     FILE *file;
