@@ -310,7 +310,8 @@ static void TaskKalmanFilter(void *parameters)
             memcpy(rotation, rotationVario, sizeof(rotationVario));
         }
         xSemaphoreGive(acc_Mutex);
-        deltaT = (esp_timer_get_time() - lastTime) / 1000000;
+        // deltaT = (esp_timer_get_time() - lastTime) / 1000000;
+        deltaT = 0.029; // TODO: hacky to not give strange Kalman Filter results when not called once. Perhaps use esp_timer and call in fixed timing
         /* Set Q with new deltaT */
         matrix_set(Q, 0, 0, ((deltaT * deltaT * deltaT * deltaT) / 4) * bmi088_stnd_acc * bmi088_stnd_acc);
         matrix_set(Q, 0, 1, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);

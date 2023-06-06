@@ -12,7 +12,12 @@ set(COMPONENT_SRCS
                     "Screen/assets/test_logo.c" "Screen/assets/icons.c"
                     "AirspaceParcer/airspaceParcer.c" "AirspaceParcer/file_layer.c"
                     "IGC/IGC_Parser.c" "IGC/IGCLogger.c"
-                    "Bluetooth/bluetooth.c"
+                    "Bluetooth/bluetooth.cpp"
                     )
+file(GLOB NKOLBAN_BLUETOOTH
+    "Bluetooth/nkolban/*.c"
+    "Bluetooth/nkolban/*.cpp"    
+)
+list(APPEND COMPONENT_SRCS ${NKOLBAN_BLUETOOTH})
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 register_component()
