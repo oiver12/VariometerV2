@@ -15,8 +15,8 @@ set(COMPONENT_SRCS
                     "Bluetooth/bluetooth.cpp"
                     )
 file(GLOB NKOLBAN_BLUETOOTH
-    "Bluetooth/nkolban/*.c"
-    "Bluetooth/nkolban/*.cpp"    
+    "nkolban/*.c"
+    "nkolban/*.cpp"    
 )
 list(APPEND COMPONENT_SRCS ${NKOLBAN_BLUETOOTH})
 set(COMPONENT_ADD_INCLUDEDIRS ".")
