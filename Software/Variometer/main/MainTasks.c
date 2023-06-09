@@ -2,6 +2,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
+#include <freertos/timers.h>
 #include "Sensor/BMI088.h"
 #include "Sensor/DPS310.h"
 #include "QuaternionFilter.h"
@@ -37,20 +38,20 @@ float pressure;
 float temperature;
 SemaphoreHandle_t pressure_temperature_Mutex = NULL; // Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
 
+static kalman_t kf;
+
 volatile bool hasMeasuredStartPressure = false;
 
-float headingCalc = 0.0f;
 static const char *TAG = "MainTasks";
 
-// static void IRAM_ATTR dps310ISR(void *arg)
-// {
-//     TaskHandle_t taskHandle = *(TaskHandle_t *)arg;
-//     configASSERT(taskHandle != NULL);
-//     BaseType_t HPTaskWoken = pdFALSE;
-//     // unblock TaskMeasureAcc
-//     vTaskNotifyGiveFromISR(taskHandle, &HPTaskWoken);
-//     portYIELD_FROM_ISR(HPTaskWoken);
-// }
+static void IRAM_ATTR dps310ISR(void *arg)
+{
+    BaseType_t HPTaskWoken = pdFALSE;
+    // unblock TaskMeasureAcc
+    vTaskNotifyGiveFromISR((TaskHandle_t)arg, &HPTaskWoken);
+    if (HPTaskWoken == pdTRUE)
+        portYIELD_FROM_ISR();
+}
 
 static void TaskMeasureHeight(void *parameters)
 {
@@ -71,25 +72,26 @@ static void TaskMeasureHeight(void *parameters)
     startTemperature /= 10;
     hasMeasuredStartPressure = true;
     // Setup Interrupt
-    // gpio_config_t gpio_config_INT_DPS310 = {
-    //     .pin_bit_mask = 1ULL << PresSens_INT,
-    //     .mode = GPIO_MODE_INPUT,
-    //     .pull_up_en = GPIO_PULLUP_DISABLE,
-    //     .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    //     .intr_type = GPIO_INTR_DISABLE};
+    gpio_config_t gpio_config_INT_DPS310 = {
+        .pin_bit_mask = 1ULL << PresSens_INT,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_POSEDGE};
     // set PresSens Pin as Interrupt
-    // gpio_config(&gpio_config_INT_DPS310);
+    gpio_config(&gpio_config_INT_DPS310);
     // Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    // gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+    gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     while (1)
     {
         // wait till unblocked from Interrupt
-        // uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
-        // if (notificationValue == 0) {
-        // ESP_LOGW(TAG, "Interrupt didn't fire");
-        //}
+        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 500 / portTICK_PERIOD_MS);
+        if (notificationValue == 0)
+        {
+            ESP_LOGW(TAG, "Interrupt didn't fire");
+        }
         dsp310_get_Pressure(&DPS310_Data);
         if (count % 34 == 0)
         {
@@ -234,7 +236,6 @@ static void ResetKalman(kalman_t *kf)
     matrix_set(H, 0, 0, 1);
     matrix_set(H, 0, 1, 0);
     /* Set Measurement covariance matrix */
-    /* R = dps310_stnd_height^2 */
     matrix_t *R = &kf->R;
     matrix_set(R, 0, 0, dps310_stnd_height * dps310_stnd_height);
     /* Set Estimate Uncertainty Matrix*/
@@ -376,11 +377,108 @@ static void TaskKalmanFilter(void *parameters)
     vTaskDelete(NULL);
 }
 
+static void KalmanFilter_Timer(TimerHandle_t timer)
+{
+    matrix_t *u = &kf.u;
+    matrix_t *x = &kf.x;
+    matrix_t *z = &kf.z;
+    float heightDifferenz;
+    xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
+    {
+        heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L) * (pow(pressure / startPressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
+    }
+    xSemaphoreGive(pressure_temperature_Mutex);
+    float acc = 0;
+    // TODO: ist Mean am besten?
+    // read Acc Queue till its empty and compute mean from Acc
+    float rotation[4];
+    xSemaphoreTake(acc_Mutex, portMAX_DELAY);
+    {
+        if (accCount == 0)
+        {
+            // ESP_LOGI(TAG, "Had no Acc Readings");
+            acc = 9.81f;
+        }
+        else
+        {
+            acc = accSum / accCount;
+        }
+        accSum = 0;
+        accCount = 0;
+        memcpy(rotation, rotationVario, sizeof(rotationVario));
+    }
+    xSemaphoreGive(acc_Mutex);
+    /* Set z measurement */
+    matrix_set(z, 0, 0, heightDifferenz);
+    /* Set Input */
+    matrix_set(u, 0, 0, acc - 9.81);
+    kalman_update(&kf);
+    kalman_predict(&kf);
+
+    FlightLogger_t flight_state = {
+        .height = heightDifferenz,
+        .accX = acc,
+        .velocity = matrix_get(x, 1, 0),
+        .rotation = {rotation[0], rotation[1], rotation[2], rotation[3]},
+    };
+    if (fabsf(matrix_get(x, 1, 0)) == NAN || fabsf(matrix_get(u, 0, 0)) == NAN)
+    {
+        ESP_LOGI(TAG, "Had to reset Kalman Filter\n");
+        ResetKalman(&kf);
+        return;
+    }
+    float vertVel = matrix_get(x, 1, 0);
+    vario_state_set_member(&vertVel, vario_state_vertVel);
+    float accXCorr = acc - 9.81;
+    vario_state_set_member(&accXCorr, vario_state_vertAcc);
+    vario_state_set_member(&heightDifferenz, vario_state_altitudeBaro);
+    // if (countHeading % 10 == 0)
+    // {
+    //     float roll, pitch, yaw;
+    //     Quaternion_get_RPY(rotation[0], rotation[1], rotation[2], rotation[3], &roll, &pitch, &yaw);
+    //     int heading = (int)yaw;
+    //     while (heading > 360.0)
+    //         heading -= 360.0;
+    //     while (heading < 0.0)
+    //         heading += 360.0;
+    //     // printf("Yaw: %.2f\n", yaw);
+    //     vario_state_set_member(&heading, vario_state_heading);
+    // }
+    logVarioData(flight_state);
+    SoundManager_calculateNewBiep();
+}
+
+static void startKalmanFilter()
+{
+    matrix_t *F = &kf.F;
+    matrix_t *G = &kf.G;
+    matrix_t *Q = &kf.Q;
+    kalman_filter_init(&kf);
+    ResetKalman(&kf);
+    float deltaT = 30 / 1000; // 30ms from Timer
+    /* Set Q with new deltaT */
+    matrix_set(Q, 0, 0, ((deltaT * deltaT * deltaT * deltaT) / 4) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 0, 1, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 1, 0, ((deltaT * deltaT * deltaT) / 2) * bmi088_stnd_acc * bmi088_stnd_acc);
+    matrix_set(Q, 1, 1, (deltaT * deltaT) * bmi088_stnd_acc * bmi088_stnd_acc);
+    /* Set G with new deltaT */
+    matrix_set(G, 0, 0, 0.5 * deltaT * deltaT);
+    matrix_set(G, 1, 0, deltaT);
+    /* Set F with new deltaT */
+    matrix_set(F, 0, 0, 1);
+    matrix_set(F, 0, 1, deltaT);
+    matrix_set(F, 1, 0, 0);
+    matrix_set(F, 1, 1, 1);
+    kalman_predict(&kf);
+    xTimerCreate("Kalman Filter", 30 / portTICK_PERIOD_MS, pdTRUE, (void *)0, KalmanFilter_Timer);
+}
+
 void startMainTasks()
 {
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     acc_Mutex = xSemaphoreCreateMutex();
-    xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
+    startKalmanFilter();
+    // xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);
 }

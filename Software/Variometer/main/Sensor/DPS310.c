@@ -3,23 +3,23 @@
 #include <esp_log.h>
 #include <esp_timer.h>
 
-#define I2C_MASTER_TIMEOUT_MS       100
+#define I2C_MASTER_TIMEOUT_MS 100
 
-#define DPS310__BUSYTIME_FAILSAFE   10U
-#define DPS__BUSYTIME_SCALING       10U
-#define DPS310__MAX_BUSYTIME        ((1000U - DPS310__BUSYTIME_FAILSAFE) * DPS__BUSYTIME_SCALING)
+#define DPS310__BUSYTIME_FAILSAFE 10U
+#define DPS__BUSYTIME_SCALING 10U
+#define DPS310__MAX_BUSYTIME ((1000U - DPS310__BUSYTIME_FAILSAFE) * DPS__BUSYTIME_SCALING)
 
 const int32_t scaling_facts[8] = {524288, 1572864, 3670016, 7864320, 253952, 516096, 1040384, 2088960};
 
 static const char *TAG = "DPS310";
 
-static inline esp_err_t write_Bytes(dps310_t *dev, uint8_t addr, size_t length, const uint8_t* data)
+static inline esp_err_t write_Bytes(dps310_t *dev, uint8_t addr, size_t length, const uint8_t *data)
 {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (dev->dps310_t_i2c_addr << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, addr, true);
-    i2c_master_write(cmd, (uint8_t*) data, length, true);
+    i2c_master_write(cmd, (uint8_t *)data, length, true);
     i2c_master_stop(cmd);
     esp_err_t err = i2c_master_cmd_begin(dev->I2C_Master_Num, cmd, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
@@ -33,7 +33,7 @@ static inline esp_err_t read_Bytes(dps310_t *dev, const uint8_t addr, size_t siz
     return err;
 }
 
-static esp_err_t writeBitByteField(dps310_t *dev, uint8_t addr, uint8_t data, uint8_t mask,uint8_t shift)
+static esp_err_t writeBitByteField(dps310_t *dev, uint8_t addr, uint8_t data, uint8_t mask, uint8_t shift)
 {
     uint8_t oldValue = 0;
     ESP_ERROR_CHECK(read_Bytes(dev, addr, 1, &oldValue));
@@ -44,15 +44,15 @@ static esp_err_t writeBitByteField(dps310_t *dev, uint8_t addr, uint8_t data, ui
 static void getTwosComplement(int32_t *raw, uint8_t length)
 {
     if (*raw & ((uint32_t)1 << (length - 1)))
-	{
-		*raw -= (uint32_t)1 << length;
-	}
+    {
+        *raw -= (uint32_t)1 << length;
+    }
 }
 
 static uint16_t calcBusyTime(dps310_mr_t mr, dps310_osr_t osr)
 {
-	//formula from datasheet (optimized)
-	return ((uint32_t)20U << (uint16_t)mr) + ((uint32_t)16U << ((uint16_t)osr + (uint16_t)mr));
+    // formula from datasheet (optimized)
+    return ((uint32_t)20U << (uint16_t)mr) + ((uint32_t)16U << ((uint16_t)osr + (uint16_t)mr));
 }
 
 esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
@@ -64,39 +64,39 @@ esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
     uint8_t buffer[18];
     int count = 0;
     esp_err_t err;
-    do{
+    do
+    {
         err = read_Bytes(dev, 0x10, 18, buffer);
         count++;
-    }while(err != ESP_OK || count < 5);
+    } while (err != ESP_OK || count < 5);
     ESP_ERROR_CHECK(err);
-    //compose coefficients from buffer content
-	dev->config_data.m_c0Half = ((uint32_t)buffer[0] << 4) | (((uint32_t)buffer[1] >> 4) & 0x0F);
-	getTwosComplement(&dev->config_data.m_c0Half, 12);
-	//c0 is only used as c0*0.5, so c0_half is calculated immediately
-	dev->config_data.m_c0Half = dev->config_data.m_c0Half / 2U;
+    // compose coefficients from buffer content
+    dev->config_data.m_c0Half = ((uint32_t)buffer[0] << 4) | (((uint32_t)buffer[1] >> 4) & 0x0F);
+    getTwosComplement(&dev->config_data.m_c0Half, 12);
+    // c0 is only used as c0*0.5, so c0_half is calculated immediately
+    dev->config_data.m_c0Half = dev->config_data.m_c0Half / 2U;
 
-	//now do the same thing for all other coefficients
-	dev->config_data.m_c1 = (((uint32_t)buffer[1] & 0x0F) << 8) | (uint32_t)buffer[2];
-	getTwosComplement(&dev->config_data.m_c1, 12);
-	dev->config_data.m_c00 = ((uint32_t)buffer[3] << 12) | ((uint32_t)buffer[4] << 4) | (((uint32_t)buffer[5] >> 4) & 0x0F);
-	getTwosComplement(&dev->config_data.m_c00, 20);
-	dev->config_data.m_c10 = (((uint32_t)buffer[5] & 0x0F) << 16) | ((uint32_t)buffer[6] << 8) | (uint32_t)buffer[7];
-	getTwosComplement(&dev->config_data.m_c10, 20);
+    // now do the same thing for all other coefficients
+    dev->config_data.m_c1 = (((uint32_t)buffer[1] & 0x0F) << 8) | (uint32_t)buffer[2];
+    getTwosComplement(&dev->config_data.m_c1, 12);
+    dev->config_data.m_c00 = ((uint32_t)buffer[3] << 12) | ((uint32_t)buffer[4] << 4) | (((uint32_t)buffer[5] >> 4) & 0x0F);
+    getTwosComplement(&dev->config_data.m_c00, 20);
+    dev->config_data.m_c10 = (((uint32_t)buffer[5] & 0x0F) << 16) | ((uint32_t)buffer[6] << 8) | (uint32_t)buffer[7];
+    getTwosComplement(&dev->config_data.m_c10, 20);
 
-	dev->config_data.m_c01 = ((uint32_t)buffer[8] << 8) | (uint32_t)buffer[9];
-	getTwosComplement(&dev->config_data.m_c01, 16);
+    dev->config_data.m_c01 = ((uint32_t)buffer[8] << 8) | (uint32_t)buffer[9];
+    getTwosComplement(&dev->config_data.m_c01, 16);
 
-	dev->config_data.m_c11 = ((uint32_t)buffer[10] << 8) | (uint32_t)buffer[11];
-	getTwosComplement(&dev->config_data.m_c11, 16);
-	dev->config_data.m_c20 = ((uint32_t)buffer[12] << 8) | (uint32_t)buffer[13];
-	getTwosComplement(&dev->config_data.m_c20, 16);
-	dev->config_data.m_c21 = ((uint32_t)buffer[14] << 8) | (uint32_t)buffer[15];
-	getTwosComplement(&dev->config_data.m_c21, 16);
-	dev->config_data.m_c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
-	getTwosComplement(&dev->config_data.m_c30, 16);
+    dev->config_data.m_c11 = ((uint32_t)buffer[10] << 8) | (uint32_t)buffer[11];
+    getTwosComplement(&dev->config_data.m_c11, 16);
+    dev->config_data.m_c20 = ((uint32_t)buffer[12] << 8) | (uint32_t)buffer[13];
+    getTwosComplement(&dev->config_data.m_c20, 16);
+    dev->config_data.m_c21 = ((uint32_t)buffer[14] << 8) | (uint32_t)buffer[15];
+    getTwosComplement(&dev->config_data.m_c21, 16);
+    dev->config_data.m_c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
+    getTwosComplement(&dev->config_data.m_c30, 16);
     /* Configure DPS310 Background Measure Rate / OSR */
     dps310_config_Temp_Pressure(dev, DPS310_MR_1, DPS310_OSR_64, DPS310_MR_16, DPS310_OSR_32);
-    printf("Here3\n");
     /* Enable Background Measure */
     ESP_ERROR_CHECK(writeBitByteField(dev, 0x08, 0x07, 0x07, 0));
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -129,7 +129,7 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
     ESP_ERROR_CHECK(write_Bytes(dev, 0x07, 1, &temp_cfg));
     uint8_t prs_cfg = (prs_mr << 4) | prs_osr;
     ESP_ERROR_CHECK(write_Bytes(dev, 0x06, 1, &prs_cfg));
-    if(prs_osr > DPS310_OSR_8)
+    if (prs_osr > DPS310_OSR_8)
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x04, 2));
     }
@@ -137,7 +137,7 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0UL, 0x04, 2));
     }
-    if(temp_osr > DPS310_OSR_8)
+    if (temp_osr > DPS310_OSR_8)
     {
         ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x08, 3));
     }
@@ -154,25 +154,18 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
 
 esp_err_t dsp310_get_Pressure(dps310_t *dev)
 {
-    // volatile int test1 = gpio_get_level(38);
-    // uint8_t bufferBackground = 0;
-    // read_Bytes(dev, 0x0A, 1, &bufferBackground);
     uint8_t buffer[3] = {0};
-    esp_err_t err =  read_Bytes(dev, 0x00, 3, buffer);
-    //Clear old Interrupt (Important!!!)
+    esp_err_t err = read_Bytes(dev, 0x00, 3, buffer);
+    // Clear old Interrupt (Important!!!) (this important shows my pain in debugging this)
     uint8_t bufferInterrupt = 0;
     read_Bytes(dev, 0x0A, 1, &bufferInterrupt);
-    //volatile int test2 = gpio_get_level(38);
-    static int64_t lastTime;
-    if(err != ESP_OK)
-    {   
-        //ESP_ERROR_CHECK(err);
-        ESP_LOGI(TAG, "Pressure Reading falied %lli", (esp_timer_get_time() - lastTime) / 1000);
-        lastTime = esp_timer_get_time();
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Pressure Reading falied %s", esp_err_to_name(err));
         return ESP_FAIL;
     }
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
-	getTwosComplement(&raw, 24);
+    getTwosComplement(&raw, 24);
     float prs = raw;
     prs /= scaling_facts[dev->prs_oversampling];
     prs = dev->config_data.m_c00 + prs * (dev->config_data.m_c10 + prs * (dev->config_data.m_c20 + prs * dev->config_data.m_c30)) + dev->m_lastTempScal * (dev->config_data.m_c01 + prs * (dev->config_data.m_c11 + prs * dev->config_data.m_c21));
@@ -184,13 +177,13 @@ esp_err_t dps310_get_Temperature(dps310_t *dev)
 {
     uint8_t buffer[3] = {0};
     esp_err_t err = read_Bytes(dev, 0x03, 3, buffer);
-    if(err != ESP_OK)
+    if (err != ESP_OK)
     {
         ESP_LOGI(TAG, "Temp Reading falied");
         return ESP_FAIL;
     }
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
-	getTwosComplement(&raw, 24);
+    getTwosComplement(&raw, 24);
     float temp = raw;
     temp /= scaling_facts[dev->temp_oversampling];
     dev->m_lastTempScal = temp;
