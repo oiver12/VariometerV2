@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "MainLibrary")(type "KiCad")(uri "/home/oliver/VariometerV2/Hardware/Library/MainLibrary.pretty")(options "")(descr ""))
+  (lib (name "SamacSys_Parts")(type "KiCad")(uri "/home/oliver/VariometerV2/Hardware/Library/SamacSys_Parts.pretty")(options "")(descr ""))
+)
