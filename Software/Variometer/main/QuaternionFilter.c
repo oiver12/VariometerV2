@@ -3,7 +3,7 @@
 #include "QuaternionFilter.h"
 #define PI 3.14159265358979323846
 
-#define QUATERNIONV1
+// #define QUATERNIONV1
 
 // für Madgwick
 float GyroMeasError = PI * (40.0f / 180.0f); // gyroscope measurement error in rads/s (start at 40 deg/s)

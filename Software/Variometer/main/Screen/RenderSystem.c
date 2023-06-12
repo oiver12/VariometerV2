@@ -7,6 +7,7 @@
 #include "freertos/semphr.h"
 #include "esp_log.h"
 #include "SoundManager.h"
+#include "Watchdog/Watchdog.h"
 
 RenderModes_t currentRenderMode = RenderMode_Update;
 bool isSending = false;
@@ -19,10 +20,12 @@ static const char *TAG = "RENDER";
 
 void rendering_Task(void *pvParameters)
 {
+    watchdog_add(NULL);
     uint32_t counter = 0;
     Display_RefreshMode refreshMode = PART_G_T_BW;
     while (1)
     {
+        watchdog_reset();
         if (currentRenderMode == RenderMode_Update)
         {
             if (counter % 10 == 0)

@@ -110,12 +110,39 @@ void open_ReadFile()
     free(bufferRead);
     FILE *pythonArrayF = fopen("pythonArray", "w");
     fprintf(pythonArrayF, "y=[");
+    double sum;
+    double lastAcc;
+    double maxAccD = 0;
+    float l = 0;
+    float n = 0;
+    for (size_t i = 0; i < vario_state_Simulation_size; i++)
+    {
+        float val = bufferSimulation[i].height;
+        if (i != 0)
+            fprintf(pythonArrayF, ",");
+        fprintf(pythonArrayF, "%.2f", val);
+        if (i > 0)
+        {
+            sum += fabs(lastAcc - val);
+            if (fabsf(lastAcc - val) > maxAccD)
+            {
+                maxAccD = fabsf(lastAcc - val);
+                l = lastAcc;
+                n = val;
+            }
+        }
+        lastAcc = bufferSimulation[i].accX;
+    }
+    double value = sum / (vario_state_Simulation_size - 1);
+    fprintf(pythonArrayF, "]\n\n\n");
+    fprintf(pythonArrayF, "x=[");
     for (size_t i = 0; i < vario_state_Simulation_size; i++)
     {
         if (i != 0)
             fprintf(pythonArrayF, ",");
-        fprintf(pythonArrayF, "%.2f", bufferSimulation[i].accX);
+        fprintf(pythonArrayF, "%i", (int)i);
     }
+    fprintf(pythonArrayF, "]");
     fclose(pythonArrayF);
 }
 
@@ -283,6 +310,12 @@ void fastForwardSimulation(float percentage)
 
 int main(void)
 {
+    float startTemperature = 15;
+    float pressure = 102423.5;
+    float R_SPECIFIC = 287.053f;
+    float GRAVITY_G = 9.80665f;
+    float TEMPGRAD_L = 0.0065f;
+    float heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L) * (pow((pressure + 200) / pressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
     // AnalyzeGPS();
     SDL_Renderer *renderer;
     SDL_Window *window;

@@ -12,14 +12,14 @@
 #include "Screen/Display_Vario.h"
 #include "ButtonInput.h"
 #include "AGL.h"
-#include "flashMemory.h"
+#include "Flash/flashMemory.h"
 #include "AirspaceParcer/airspaceParcer.h"
 #include "MainTasks.h"
 #include "Bluetooth/bluetooth.h"
 
 #define POWSW_ENABLE 13
 
-#define I2C_MASTER_FREQ_HZ 100000
+#define I2C_MASTER_FREQ_HZ 80000
 #define I2C_SDA 37
 #define I2C_SCL 36
 #define i2c_master_port 0

@@ -43,7 +43,7 @@ SRN6045TA-680M SRN6045TA Series - Semi-shielded Power Inductors,L3,SRN6045TA,0
 "1k Resistor, small symbol","R6,R45,R47,R49",R_0402_1005Metric,C11702
 "1k Resistor, small symbol","R9,R13",R_0603_1608Metric,C21190
 "10R Resistor, small symbol",R10,R_0603_1608Metric,C22859
-"360R Resistor, small symbol",R16,R_0603_1608Metric,C25194
+"270R Resistor, small symbol",R16,R_0603_1608Metric,C22966
 "15k Resistor, small symbol",R18,R_0603_1608Metric,C22809
 "1M Resistor, small symbol",R19,R_0402_1005Metric,C26083
 "47k Resistor, small symbol",R21,R_0603_1608Metric,C25819

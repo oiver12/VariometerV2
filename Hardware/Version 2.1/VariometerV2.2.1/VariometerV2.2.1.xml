@@ -2,7 +2,7 @@
 <export version="E">
   <design>
     <source>/home/oliver/VariometerV2/Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1.kicad_sch</source>
-    <date>Thu 08 Jun 2023 05:56:56 PM CEST</date>
+    <date>Fri 09 Jun 2023 05:23:53 PM CEST</date>
     <tool>Eeschema 7.0.2</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -1519,13 +1519,13 @@
       <tstamps>26f6d43f-0960-4e35-8ce6-3ffca20aaa05</tstamps>
     </comp>
     <comp ref="R16">
-      <value>360R</value>
+      <value>270R</value>
       <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
       <fields>
-        <field name="LCSC Part">C25194</field>
+        <field name="LCSC Part">C22966</field>
       </fields>
       <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
-      <property name="LCSC Part" value="C25194"/>
+      <property name="LCSC Part" value="C22966"/>
       <property name="Sheetname" value="Power"/>
       <property name="Sheetfile" value="Power.kicad_sch"/>
       <property name="ki_description" value="Resistor, small symbol"/>

@@ -96,7 +96,7 @@ esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
     dev->config_data.m_c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
     getTwosComplement(&dev->config_data.m_c30, 16);
     /* Configure DPS310 Background Measure Rate / OSR */
-    dps310_config_Temp_Pressure(dev, DPS310_MR_1, DPS310_OSR_64, DPS310_MR_16, DPS310_OSR_32);
+    dps310_config_Temp_Pressure(dev, DPS310_MR_1, DPS310_OSR_64, DPS310_MR_32, DPS310_OSR_16);
     /* Enable Background Measure */
     ESP_ERROR_CHECK(writeBitByteField(dev, 0x08, 0x07, 0x07, 0));
     vTaskDelay(1000 / portTICK_PERIOD_MS);

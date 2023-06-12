@@ -5,6 +5,7 @@
 #include <driver/gpio.h>
 #include "DeviceContext.h"
 #include <esp_log.h>
+#include "Watchdog/Watchdog.h"
 
 #define BUFF_SIZE 2048
 #define PDM_TX_FREQ_HZ 44100 // I2S PDM TX frequency
@@ -52,6 +53,7 @@ static void SoundManager_NoSound(float duration)
 
 void SoundManager_Task(void *parameters)
 {
+    watchdog_add(NULL);
     // TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
     float lastFreqeuncy = soundManager_instance.frequencyNow - 1;
     biepState_t lastBiepState = no_Sound;
@@ -60,6 +62,7 @@ void SoundManager_Task(void *parameters)
     // SoundManager_playToneArray(startSeqeunce, 3);
     while (true)
     {
+        watchdog_reset();
         // Spielen von anderen Tönen. Gegeben über SoundManager_playToneArray
         if (uxQueueMessagesWaiting(soundQueue) != 0)
         {
