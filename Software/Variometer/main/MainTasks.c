@@ -217,6 +217,9 @@ static void TaskMeasureAcc(void *parameters)
     last_Gyr[0] = BMI088_Data.gyr_rps[0];
     last_Gyr[1] = BMI088_Data.gyr_rps[1];
     last_Gyr[2] = BMI088_Data.gyr_rps[2];
+    // TODO: check why sometimes acc after filter is wrong?
+    float lastAccX = 9.81f;
+    int counterAccX = 0;
     while (1)
     {
         watchdog_reset();
@@ -247,11 +250,19 @@ static void TaskMeasureAcc(void *parameters)
         // if(count % 10 == 0)
         // printf("Raw:%i,%i,%i,%i,%i,%i,%i,%i,%i\n", (int)(BMI088_Data.acc_mps2[0] * 1000), (int)(BMI088_Data.acc_mps2[1] * 1000), (int)(BMI088_Data.acc_mps2[2] * 1000), (int)BMI088_Data.gyr_rps[0], (int)BMI088_Data.gyr_rps[1], (int)BMI088_Data.gyr_rps[2], (int)QMC588L_Data->CorrectedMagnValuemG[0], (int)QMC588L_Data->CorrectedMagnValuemG[1], (int)QMC588L_Data->CorrectedMagnValuemG[2]);
         /* Calculate global Acc in X Direction */
-        printf("R: %.2f, %.2f, %.2f, %.2f\n", rotation[0], rotation[1], rotation[2], rotation[3]);
         float accX = (2 * (rotation[1] * rotation[3] - rotation[0] * rotation[2])) * an + (2 * (rotation[2] * rotation[3] + rotation[0] * rotation[1])) * ae + (2 * (rotation[0] * rotation[0] + rotation[3] * rotation[3]) - 1) * ad;
         accX *= 9.81f;
-        ESP_LOGI(TAG, "A: %.2f, R: %.2f", accX, rotation[0]);
-        xQueueSend(accQueue, &accX, (TickType_t)0);
+        if (fabsf(accX - lastAccX) > 10 && counterAccX < 3)
+        {
+            counterAccX++;
+            ESP_LOGE(TAG, "Can't accept this Acc");
+        }
+        else
+        {
+            counterAccX = 0;
+            lastAccX = accX;
+            xQueueSend(accQueue, &accX, (TickType_t)0);
+        }
         xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 1);
         // wait for 1 tick
         vTaskDelay(1);
@@ -424,7 +435,8 @@ static void TaskKalmanFilter(void *parameters)
             wasGreater = true;
         if (wasGreater)
             ESP_LOGE(TAG, "Was greater");
-        printf("T: %i, pressure: %.1f, ACC: %.2f, S: %i, V: %.2f\n", (int)(deltaT * 1000), pressure, acc, accSize, vertVel);
+        printf("%.2f\n", vertVel);
+        // printf("T: %i, pressure: %.1f, ACC: %.2f, S: %i, V: %.2f\n", (int)(deltaT * 1000), pressure, acc, accSize, vertVel);
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
