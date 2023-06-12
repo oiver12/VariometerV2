@@ -36,7 +36,6 @@ float startTemperature;
 float pressure;
 float temperature;
 SemaphoreHandle_t pressure_temperature_Mutex = NULL; // Gemessen von TaskMeasureHeight und gebraucht in Kalman Filter
-SemaphoreHandle_t acc_kalman_Mutex = NULL;
 
 volatile bool hasMeasuredStartPressure = false;
 
@@ -121,7 +120,7 @@ static void TaskMeasureHeight(void *parameters)
             vario_state_set_member(&pressure, vario_state_pressure);
         }
         // notify Kalman Filter of new Pressure Reading
-        xTaskNotifyGive(TaskKalmanFilter_Handle);
+        xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 0);
         // vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
@@ -221,14 +220,14 @@ static void TaskMeasureAcc(void *parameters)
     while (1)
     {
         watchdog_reset();
+        // Clear Notification from Kalman Filter to 1 at index 1, so klaman Filter waits, till we are finished
+        ulTaskNotifyValueClearIndexed(TaskKalmanFilter_Handle, 1, 0xffffffff);
         qmc588l_readMag();
         bmi088_ReadAccelerometer(&BMI088_Data);
         bmi088_ReadGyroskop(&BMI088_Data);
-        // I dont know why, but a context switch to
-        xSemaphoreTake(acc_kalman_Mutex, portMAX_DELAY);
         if (!checkBMI088MsValidity(BMI088_Data.acc_mps2, last_Acc, counterAcc, BMI088_Data.gyr_rps, last_Gyr, counterGyr))
         {
-            xSemaphoreGive(acc_kalman_Mutex);
+            xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 1);
             continue;
         }
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
@@ -253,7 +252,7 @@ static void TaskMeasureAcc(void *parameters)
         accX *= 9.81f;
         ESP_LOGI(TAG, "A: %.2f, R: %.2f", accX, rotation[0]);
         xQueueSend(accQueue, &accX, (TickType_t)0);
-        xSemaphoreGive(acc_kalman_Mutex);
+        xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 1);
         // wait for 1 tick
         vTaskDelay(1);
     }
@@ -335,13 +334,14 @@ static void TaskKalmanFilter(void *parameters)
     while (1)
     {
         // wait for new Result from Pressure Sensor
-        uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        uint32_t notificationValue = ulTaskNotifyTakeIndexed(0, pdTRUE, portMAX_DELAY);
         if (notificationValue > 1)
         {
             ESP_LOGW(TAG, "Task Notification higher than 1, value: %lu", (unsigned long)notificationValue);
             continue;
         }
-        xSemaphoreTake(acc_kalman_Mutex, portMAX_DELAY);
+        // wait, till acc Reading has finished
+        ulTaskNotifyTakeIndexed(1, pdTRUE, portMAX_DELAY);
         float heightDifferenz;
         xSemaphoreTake(pressure_temperature_Mutex, portMAX_DELAY);
         {
@@ -426,7 +426,6 @@ static void TaskKalmanFilter(void *parameters)
             ESP_LOGE(TAG, "Was greater");
         printf("T: %i, pressure: %.1f, ACC: %.2f, S: %i, V: %.2f\n", (int)(deltaT * 1000), pressure, acc, accSize, vertVel);
         lastTime = esp_timer_get_time();
-        xSemaphoreGive(acc_kalman_Mutex);
     }
     vTaskDelete(NULL);
 }
@@ -434,7 +433,6 @@ static void TaskKalmanFilter(void *parameters)
 void startMainTasks()
 {
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
-    acc_kalman_Mutex = xSemaphoreCreateMutex();
     accQueue = xQueueCreate(10, sizeof(float));
     // startKalmanFilter();
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
