@@ -22,11 +22,11 @@ TPS73701DCQR ,IC5,SOT127P706X180-6N,C56848
 USB_C_Receptacle_USB2.0 USB 2.0-only Type-C Receptacle connector,J1,USB_C_Receptacle_HRO_TYPE-C-31-M-12,C165948
 "Conn_01x02 Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)",J2,PinHeader_1x02_P2.54mm_Vertical,0
 ~ ,J3,TFP09212B,0
-FFC24/0.5MM ,J4,FH12-24S-0.5SH_55_,C519265
 U.FL-R-SMT(01) ,J5,HRS_U.FL-R-SMT(01),0
 SW ,"J6,J9",PTS636SM25FSMTRLFS,0
 "Conn_01x02 Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)",J7,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,0
 "LED_CHRG Generic connector, double row, 02x01, this symbol is compatible with counter-clockwise, top-bottom and odd-even numbering schemes., script generated (kicad-library-utils/schlib/autogen/connector/)",J8,PinHeader_2x01_P2.54mm_Vertical,0
+"Conn_01x24_MountingPin Generic connectable mounting pin connector, single row, 01x24, script generated (kicad-library-utils/schlib/autogen/connector/)",J10,Hirose_FH12-24S-0.5SH_1x24-1MP_P0.50mm_Horizontal,C519265
 "SolderJumper_3_Open Solder Jumper, 3-pole, open",JP1,SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm_NumberLabels,0
 "JMP Solder Jumper, 2-pole, open","JP2,JP4",SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm,0
 "~ Solder Jumper, 3-pole, open","JP5,JP7",SolderJumper-3_P1.3mm_Open_Pad1.0x1.5mm,0
