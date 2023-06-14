@@ -2,14 +2,15 @@
 #include "E_Ink/GUI_Paint.h"
 #include "assets/assets.h"
 #include "Widget_Vario_Common.h"
-#include <stdio.h>
 #include "IGC/IGC_Parser.h"
-#include <math.h>
 #include "SDCard.h"
 #include "Widget_Vario.h"
-#include <time.h>
 #include "esp_timer.h"
 #include "RenderSystem.h"
+#include "ErrorHandling.h"
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
 
 void vario_display_PowerOffScreen()
 {
@@ -33,7 +34,7 @@ void vario_display_FlightStatistics(void *params)
     FILE *igcFile = openFile_sdcard("/IGCFlights", fileName, "r");
     if (igcFile == NULL)
     {
-        printf("Couldn't open IGC File: %s\n", fileName);
+        error_handle(ESP_ERR_NOT_FOUND, ERR_SCREEN, "Can't find IGC File");
         vTaskDelete(NULL);
         return;
     }
@@ -49,17 +50,32 @@ void vario_display_FlightStatistics(void *params)
         // doesn't exist
         // maybe deleted so parse full and write cache
         long time = esp_timer_get_time();
-        ParseIGCFile(&track, width, igcFile, false, false, fileName);
+        esp_err_t err = ParseIGCFile(&track, width, igcFile, false, false, fileName);
         printf("Clock: %i\n", (int)(esp_timer_get_time() - time));
+        if (err != ESP_OK)
+        {
+            error_handle(err, ERR_IGC, "Can't parse IGC File without cache");
+            fclose(igcFile);
+            // TODO: display error message
+            vTaskDelete(NULL);
+            return;
+        }
     }
     else
     {
         long time = esp_timer_get_time();
-        ParseIGCWithCached(&track, width, igcFile, cachedFile, false, false, fileName);
+        esp_err_t err = ParseIGCWithCached(&track, width, igcFile, cachedFile, false, false, fileName);
         printf("Clock cached: %i\n", (int)(esp_timer_get_time() - time));
         fclose(cachedFile);
+        if (err != ESP_OK)
+        {
+            error_handle(err, ERR_IGC, "Can't parse cached IGC File");
+            fclose(igcFile);
+            // TODO: display error message
+            vTaskDelete(NULL);
+            return;
+        }
     }
-    fclose(igcFile);
     Paint_Clear(WHITE);
     DrawTextWithAlign(fileName, 480 / 2, 10, &Font16, true, ALIGN_CENTER, ALIGN_TOP);
     Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);

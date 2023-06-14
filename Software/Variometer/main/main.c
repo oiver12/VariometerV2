@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "driver/i2c.h"
 #include <esp_log.h>
+#include <driver/gpio.h>
 #include "nmea_parser.h"
 #include "SDCard.h"
 #include "main.h"
@@ -16,6 +16,7 @@
 #include "AirspaceParcer/airspaceParcer.h"
 #include "MainTasks.h"
 #include "Bluetooth/bluetooth.h"
+#include "ErrorHandling.h"
 
 #define POWSW_ENABLE 13
 
@@ -26,9 +27,6 @@
 
 #define USART2_TX 17
 #define USART2_RX 18
-
-#define USART2_EX_RX 44
-#define OUT_EX_GPIO 35
 
 /* GPS */
 #define TIME_ZONE (+1)   // Schweiz
@@ -57,6 +55,7 @@ static const char *TAG = "main";
 
 void app_main(void)
 {
+    esp_err_t err;
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -64,43 +63,40 @@ void app_main(void)
         .pull_down_en = 0,
         .pull_up_en = 0};
 
-    gpio_config(&enableGPIOOutput);
-    gpio_set_level(POWSW_ENABLE, 1);
+    err = gpio_config(&enableGPIOOutput);
+    err |= gpio_set_level(POWSW_ENABLE, 1);
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_MAIN, "Can't initialize Power EN GPIO");
+        return;
+    }
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1);
+    err = gpio_install_isr_service(ESP_INTR_FLAG_LEVEL1); // gpio interrupts are generally not that important
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_MAIN, "Can't initialize ISR Service");
+    }
 
-    i2c_config_t conf_I2C = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_SDA,
-        .scl_io_num = I2C_SCL,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-    i2c_param_config(i2c_master_port, &conf_I2C);
-    ESP_ERROR_CHECK(i2c_driver_install(i2c_master_port, conf_I2C.mode, 0, 0, 0));
-
-    gpio_config_t gpio_gps_ex = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << OUT_EX_GPIO,
-        .pull_down_en = 0,
-        .pull_up_en = 0};
-
-    gpio_config(&gpio_gps_ex);
-    gpio_set_level(OUT_EX_GPIO, 1);
     // // /* Configure GPS Reader Library */
     nmea_parser_config_t gps_config = NMEA_PARSER_CONFIG_DEFAULT();
-    gps_config.uart.rx_pin = USART2_EX_RX;
+    gps_config.uart.rx_pin = USART2_RX;
     nmea_parser_handle_t gps_nmea_hdl = nmea_parser_init(&gps_config, 5 * 1024);
     ESP_LOGI(TAG, "GPS started");
 
     // sdcard_t *sdcard = calloc(sizeof(sdcard_t), 1);
     init_DeviceContext();
 
-    init_sdcard("/sdcard");
+    err = init_sdcard("/sdcard");
+    if (err == ESP_FAIL)
+    {
+        error_handle(err, ERR_SDCARD, "Can't mount File System");
+    }
+    else if (err != ESP_OK)
+    {
+        error_handle(err, ERR_SDCARD, "Can't initialite SD Card");
+    }
     init_IGCLogger(gps_nmea_hdl);
     initLogging(gps_nmea_hdl);
 
@@ -109,16 +105,23 @@ void app_main(void)
     // schon gestartet sein
     startGps_DeviceContext(gps_nmea_hdl);
 
-    init_SoundManager();
-    init_Display();
+    err = init_SoundManager();
+    ERROR_HANDLEBYERROR(err, ERR_SOUNDMANAGER, "Can't start Sound Manager");
 
-    flashMemoryInit();
+    err = init_Display();
+    ERROR_HANDLEBYERROR(err, ERR_SCREEN, "Can't start display");
 
-    init_Battery_Manager(4);
+    err = flashMemoryInit();
+    ERROR_HANDLEBYERROR(err, ERR_FLASH, "Can't start Flash");
 
-    ButtonInput_Init();
+    err = init_Battery_Manager(4);
+    ERROR_HANDLEBYERROR(err, ERR_BATTERY, "Can't start Battery Manager");
 
-    startLogging();
+    err = ButtonInput_Init();
+    ERROR_HANDLEBYERROR(err, ERR_BUTTONS, "Can't start Button Manager");
+
+    err = startLogging();
+    ERROR_HANDLEBYERROR(err, ERR_LOGGING, "Can't start Testlogging");
     // AGL_startAGL(sdcard, gps_nmea_hdl);
 
     StartAirspaceParse();

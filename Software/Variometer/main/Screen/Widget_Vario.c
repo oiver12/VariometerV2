@@ -36,10 +36,6 @@ sFONT *__FontStack[] =
         &Font24  // 32px
 };
 
-void init_WidgetHandler()
-{
-}
-
 static uint16_t getTextWidth(const char *pString, sFONT *font)
 {
     return font->Width * strlen(pString);

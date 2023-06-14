@@ -2,12 +2,14 @@
 #include "E_Ink/EPD_3in7.h"
 #include "E_Ink/GUI_Paint.h"
 #include "ScreenManager.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "esp_log.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
+#include <esp_log.h>
 #include "SoundManager.h"
 #include "Watchdog/Watchdog.h"
+#include "ErrorHandling.h"
+#include "vario_config.h"
 
 RenderModes_t currentRenderMode = RenderMode_Update;
 bool isSending = false;
@@ -51,22 +53,24 @@ void displayRefreshTask(void *pvParameters)
 {
     uint8_t *ScreenBuffer = (uint8_t *)pvParameters;
     Display_RefreshMode refreshMode;
+    esp_err_t err = ESP_OK;
     while (1)
     {
         xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
-        EDP_3IN7_1Gray_Start(ScreenBuffer, refreshMode);
+        ERROR_RETRYTIMES(EDP_3IN7_1Gray_Start(ScreenBuffer, refreshMode), VARIO_SPI_RETRYS, err);
         xSemaphoreGive(buffer_Mutex);
+        if (err != ESP_OK)
+        {
+            // TODO: do something intelligent here e.g. reset Screen and check again
+            error_handle(err, ERR_SCREEN, "Can't draw to screen");
+        }
         EPD_3IN7_1Gray_WaitBusy();
     }
 }
 
-void startRendering(uint8_t *ScreenBuffer)
+esp_err_t startRendering(uint8_t *ScreenBuffer)
 {
-    DEV_Module_Init();
-    EPD_3IN7_1Gray_Init(); // init 1 Gray mode
-    EPD_3IN7_1Gray_Clear();
-
     buffer_Mutex = xSemaphoreCreateMutex();
     ScreenManager_init(buffer_Mutex);
 
@@ -95,6 +99,7 @@ void startRendering(uint8_t *ScreenBuffer)
     xTaskCreate(rendering_Task, "rendering_Task", 4096, NULL, 10, NULL);
     xTaskCreate(displayRefreshTask, "displayRefreshTask", 4096, ScreenBuffer, 10, NULL);
     displayInit = true;
+    return ESP_OK;
 }
 void stopRendering_disableScreen()
 {

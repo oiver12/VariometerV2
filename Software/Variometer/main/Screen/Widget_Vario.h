@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "FIFO.h"
 #include <stdio.h>
+#include <esp_err.h>
 
 #define ChartNumDataPoints 20
 
@@ -177,7 +178,6 @@ typedef struct
     WidgetData *widget;
 } ReturnFunctionData_t;
 
-void init_WidgetHandler();
 void vario_display_add_widget(WidgetData *widget);
 void vario_update_widget(WidgetData *widget);
 
@@ -187,7 +187,7 @@ void vario_display_select_settings_widget(WidgetData *widget, Settings_Page_t cu
 void vario_display_settings_widget_handle_input(WidgetData *widget, Button_Direction direction);
 
 /*** PopUps Implemented in "Widget_Vario_PopUp.c" ***/
-void vario_display_showPopUp(PopUpConfig_t configData);
+esp_err_t vario_display_showPopUp(PopUpConfig_t configData);
 
 /*** Screens Implemented in "Widget_Vario_Screens.c" ***/
 void vario_display_PowerOffScreen();

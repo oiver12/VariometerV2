@@ -45,7 +45,7 @@ esp_err_t init_SoundManager();
 esp_err_t deinit_SoundManager();
 void SoundManager_calculateNewBiep();
 esp_err_t SoundManager_playSinWave(int frequency, int duration);
-void SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray);
+esp_err_t SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray);
 
 void SoundManager_setVolume(uint16_t volume);
 

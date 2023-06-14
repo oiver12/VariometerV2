@@ -3,6 +3,7 @@
 #include "ScreenManager.h"
 #include "RenderSystem.h"
 #include "../SDCard.h"
+#include "ErrorHandling.h"
 
 WidgetData widgetData_Audio_Settings[2] = {
     {.extraStyle = 0, .h = 40, .w = 459, .style = Widget_Settings_Slider, .type = WidgetContent_Settings_VolumeSlider},
@@ -17,8 +18,10 @@ WidgetData widgetData_Config_Settings[2] = {
 static VarioScreen_Settings_t screenSettingsInstance;
 static SemaphoreHandle_t buffer_Mutex = NULL;
 
-void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
+esp_err_t Init_SettingsWidgets(SemaphoreHandle_t semaphore)
 {
+    if (semaphore == NULL)
+        return ESP_ERR_INVALID_ARG;
     buffer_Mutex = semaphore;
     WidgetData pageButtonSettingsWidget[3] = {
         {.x = 10, .y = 27, .w = 459, .h = 40, .style = Widget_Settings_PageButton, .type = WidgetContent_Settings_PageButton_Audio, .extraStyle = 0},
@@ -40,7 +43,7 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
         if (!listElement)
         {
             printf("Cant initialize Settings Button\n");
-            return;
+            return ESP_ERR_NO_MEM;
         }
         listElement->prev = prev;
         prev->next = listElement;
@@ -54,6 +57,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
 
     /* Init Audio Setting Widgets */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    if (!backButtonItem)
+        return ESP_ERR_NO_MEM;
     backButtonWidget.type = WidgetContent_Settings_PageButton_Audio;
     backButtonItem->data = backButtonWidget;
     screenSettingsInstance.headListAudio = backButtonItem;
@@ -62,6 +67,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     for (size_t i = 0; i < sizeof(widgetData_Audio_Settings) / sizeof(WidgetData); i++)
     {
         listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        if (!listElement)
+            return ESP_ERR_NO_MEM;
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetData_Audio_Settings[i];
@@ -73,6 +80,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
 
     /* Init Config Setting Widget */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    if (!backButtonItem)
+        return ESP_ERR_NO_MEM;
     backButtonWidget.type = WidgetContent_Settings_PageButton_Config;
     backButtonItem->data = backButtonWidget;
     screenSettingsInstance.headListConfig = backButtonItem;
@@ -81,6 +90,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     for (size_t i = 0; i < sizeof(widgetData_Config_Settings) / sizeof(WidgetData); i++)
     {
         listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        if (!listElement)
+            return ESP_ERR_NO_MEM;
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetData_Config_Settings[i];
@@ -92,6 +103,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
 
     /* Init Flight Setting Widget */
     backButtonItem = calloc(1, sizeof(widget_Settings_linkedList));
+    if (!backButtonItem)
+        return ESP_ERR_NO_MEM;
     backButtonWidget.type = WidgetContent_Settings_PageButton_Flights;
     backButtonItem->data = backButtonWidget;
     screenSettingsInstance.headListFlightList = backButtonItem;
@@ -102,6 +115,8 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     for (size_t i = 0; i < SIZE_FLIGHTS; i++)
     {
         listElement = calloc(1, sizeof(widget_Settings_linkedList));
+        if (!listElement)
+            return ESP_ERR_NO_MEM;
         listElement->prev = prev;
         prev->next = listElement;
         listElement->data = widgetFlight;
@@ -112,6 +127,7 @@ void Init_SettingsWidgets(SemaphoreHandle_t semaphore)
     }
     listElement->next = backButtonItem;
     backButtonItem->prev = listElement;
+    return ESP_OK;
 }
 
 static void draw_Settings_Scrollbar()
@@ -180,7 +196,13 @@ void SettingsManager__enter_press()
         case WidgetContent_Settings_PageButton_Flights:
             screenSettingsInstance.currPage = Settings_Page_Flights;
             screenSettingsInstance.hoveredField = screenSettingsInstance.topFieldFlightList;
-            GetFlights(0, screenSettingsInstance.topFieldFlightList->next);
+            esp_err_t err = GetFlights(0, screenSettingsInstance.topFieldFlightList->next);
+            if (err != ESP_OK)
+            {
+                error_handle(err, ERR_SCREEN, "Can't find Flights in Folder");
+                widget_Settings_linkedList *firstFlight = (widget_Settings_linkedList *)screenSettingsInstance.topFieldFlightList->next;
+                ((FlightList_Widget_Data *)firstFlight->data.extr_data)->FlightName[0] = '\0';
+            }
             break;
         default:
             printf("Page Button not found\n");
@@ -224,9 +246,7 @@ void SettingsManager__enter_press()
             else if (screenSettingsInstance.currPage == Settings_Page_Flights)
             {
                 screenSettingsInstance.currPage = Settings_Page_FlightStatistics;
-                // xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
                 xTaskCreate(vario_display_FlightStatistics, "IGC Show", 1024 * 3, (void *)((FlightList_Widget_Data *)screenSettingsInstance.hoveredField->data.extr_data)->FlightName, 3, NULL);
-                // xSemaphoreGive(buffer_Mutex);
                 return;
             }
             // select field

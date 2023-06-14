@@ -66,17 +66,6 @@ esp_err_t init_sdcard(const char *Mount_Point)
 
     if (ret != ESP_OK)
     {
-        if (ret == ESP_FAIL)
-        {
-            ESP_LOGE(TAG, "Failed to mount filesystem. "
-                          "If you want the card to be formatted, set the EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                          "Make sure SD card lines have pull-up resistors in place.",
-                     esp_err_to_name(ret));
-        }
         sdcard_state_vario.status |= SD_CARD_STATE_ERROR_INIT;
         device_state_set_member(&sdcard_state_vario, device_state_statusSDCard);
         return ret;
@@ -106,9 +95,6 @@ esp_err_t init_sdcard(const char *Mount_Point)
 
     uint64_t tmp_total_bytes = (uint64_t)tot_sect * FF_SS_SDCARD;
     uint64_t tmp_free_bytes = (uint64_t)fre_sect * FF_SS_SDCARD;
-
-    /* Print the free space in bytes */
-    printf("%llu total bytes. %llu free bytes. sector_size=%u", tmp_total_bytes, tmp_free_bytes, FF_SS_SDCARD);
 
     sdcard_state_vario.status |= SD_CARD_STATE_INIT;
     sdcard_state_vario.maxSpace = tmp_total_bytes;
@@ -141,31 +127,18 @@ FILE *openFile_sdcard(const char *directory, const char *fileName, const char *o
         if (directory[0] != '/')
             strcat(buffer, "/");
         strcat(buffer, directory);
-        // ESP_LOGI(TAG, "Directory: %s", buffer);
         if (stat(buffer, &st) == -1)
         {
-            printf("Buffer: %s\n", buffer);
-            printf("Directory: %s\n", directory);
             if (mkdir(buffer, 0700) != 0)
             {
-                volatile char *testValue = strerror(errno);
-                ESP_LOGE(TAG, "Could not create Directory: %s", testValue);
+                ESP_LOGE(TAG, "Could not create Directory: %s", strerror(errno));
             }
             else
                 ESP_LOGI(TAG, "Createt Directory");
         }
-        // else
-        // {
-        //     ESP_LOGI(TAG, "Direactory already exists");
-        // }
     }
     strcat(buffer, "/");
     strcat(buffer, fileName);
-    // ESP_LOGI(TAG, "File Destination: %s", buffer);
-    //  if(stat(buffer, &st) != -1 && createNew)
-    //  {
-    //      ESP_LOGE(TAG, "File already exists");
-    //  }
     return fopen(buffer, openMethod);
 }
 
@@ -217,7 +190,7 @@ uint64_t sdcard_remainingSpace_update()
     return tmp_free_bytes;
 }
 
-void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
+esp_err_t GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
 {
     DIR *dir;
     struct dirent *ent;
@@ -238,8 +211,9 @@ void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
                     continue;
                 if (flightListHead == NULL)
                 {
+                    closedir(dir);
                     printf("Couldn't find next Flight\n");
-                    return;
+                    return ESP_ERR_INVALID_ARG;
                 }
                 printf("FlighName: %s\n", fileName);
                 strcpy(((FlightList_Widget_Data *)flightListHead->data.extr_data)->FlightName, fileName);
@@ -258,5 +232,7 @@ void GetFlights(int startIndex, widget_Settings_linkedList *flightListHead)
     else
     {
         printf("Cant open directory\n");
+        return ESP_ERR_NOT_FOUND;
     }
+    return ESP_OK;
 }

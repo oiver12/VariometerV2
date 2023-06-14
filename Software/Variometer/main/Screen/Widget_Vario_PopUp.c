@@ -2,14 +2,17 @@
 #include "E_Ink/GUI_Paint.h"
 #include "DeviceContext.h"
 #include <stdio.h>
-#include "esp_timer.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/timers.h>
 #include "ScreenManager.h"
+#include "ErrorHandling.h"
 
 extern unsigned char gImage_gps_an[78];
+TimerHandle_t popUpTimer = NULL;
 
-static void popUp_Disable_TimerCallback(void* arg)
+static void popUp_Disable_TimerCallback(TimerHandle_t xTimer)
 {
-    ScreenManager_closePopUp();
+	ScreenManager_closePopUp();
 }
 
 static void popUpGPS_draw(PopUpConfig_t configData)
@@ -27,12 +30,10 @@ static void popUpGPS_draw(PopUpConfig_t configData)
 
 static void popUpBattery_draw(PopUpConfig_t configData)
 {
-	
 }
 
 static void popUpSettings_draw(PopUpConfig_t configData)
 {
-
 }
 
 static void popUpTakeOff_draw(PopUpConfig_t configData)
@@ -47,11 +48,15 @@ static void popUpTakeOff_draw(PopUpConfig_t configData)
 
 static void popUpLanding_draw(PopUpConfig_t configData)
 {
-	
 }
 
-void vario_display_showPopUp(PopUpConfig_t configData)
+esp_err_t vario_display_showPopUp(PopUpConfig_t configData)
 {
+	// Allready displaying a other PopUp. This should never happen, catched before this
+	if (popUpTimer && xTimerIsTimerActive(popUpTimer) != pdFALSE)
+	{
+		return ESP_ERR_INVALID_STATE;
+	}
 	Paint_DrawRectangle(configData.x, configData.y, configData.x + configData.w, configData.y + configData.h, WHITE, DOT_PIXEL_2X2, DRAW_FILL_FULL);
 	Paint_DrawRectangle(configData.x, configData.y, configData.x + configData.w, configData.y + configData.h, BLACK, DOT_PIXEL_2X2, DRAW_FILL_EMPTY);
 	switch (configData.type)
@@ -65,7 +70,7 @@ void vario_display_showPopUp(PopUpConfig_t configData)
 	case PopUpType_WidgetSettings:
 		popUpSettings_draw(configData);
 		break;
-    case PopUpType_TakeOff:
+	case PopUpType_TakeOff:
 		popUpTakeOff_draw(configData);
 		break;
 	case PopUpType_Landing:
@@ -76,13 +81,22 @@ void vario_display_showPopUp(PopUpConfig_t configData)
 	}
 	if (configData.timeToDisplay > 0)
 	{
-    	const esp_timer_create_args_t oneshot_timer_args = {
-    	    .callback = &popUp_Disable_TimerCallback,
-    	    /* argument specified here will be passed to timer callback function */
-    	    .name = "popUp Disable"
-    	};
-    	esp_timer_handle_t oneshot_timer;
-    	ESP_ERROR_CHECK(esp_timer_create(&oneshot_timer_args, &oneshot_timer));
-    	ESP_ERROR_CHECK(esp_timer_start_once(oneshot_timer, configData.timeToDisplay * 1000));
+		if (!popUpTimer)
+		{
+			popUpTimer = xTimerCreate("PopUp Disable", configData.timeToDisplay / portTICK_PERIOD_MS, pdFALSE, (void *)0, popUp_Disable_TimerCallback);
+		}
+		BaseType_t err = xTimerChangePeriod(popUpTimer, configData.timeToDisplay / portTICK_PERIOD_MS, 500 / portTICK_PERIOD_MS);
+		if (err != pdPASS)
+		{
+			ScreenManager_closePopUp();
+			return ESP_ERR_NO_MEM;
+		}
+		err = xTimerStart(popUpTimer, 500 / portTICK_PERIOD_MS);
+		if (err != pdPASS)
+		{
+			ScreenManager_closePopUp();
+			return ESP_ERR_NO_MEM;
+		}
 	}
+	return ESP_OK;
 }

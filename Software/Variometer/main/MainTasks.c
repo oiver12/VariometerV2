@@ -15,6 +15,8 @@
 #include <esp_log.h>
 #include <esp_timer.h>
 #include "Watchdog/Watchdog.h"
+#include "ErrorHandling.h"
+#include "vario_config.h"
 
 #define i2c_master_port 0
 #define PresSens_INT 38
@@ -56,18 +58,30 @@ static void TaskMeasureHeight(void *parameters)
     startPressure = 0;
     startTemperature = 0;
     dps310_t DPS310_Data;
-    dps310_init(&DPS310_Data, i2c_master_port, 0x76);
+    esp_err_t err;
+    ERROR_RETRYTIMES(dps310_init(&DPS310_Data, i2c_master_port, 0x76), VARIO_I2C_RETRYS_INIT, err);
+    if (err != ESP_OK)
+    {
+        // TODO: display these kinds of error messages
+        error_handle(err, ERR_DPS310, "Can't initialize DPS310");
+        vTaskDelete(NULL);
+        return;
+    }
     for (size_t i = 0; i < 10; i++)
     {
-        dsp310_get_Pressure(&DPS310_Data);
-        dps310_get_Temperature(&DPS310_Data);
+        err = dsp310_get_Pressure(&DPS310_Data);
+        if (err != ESP_OK)
+            error_handle(err, ERR_DPS310, "Pressure reading failed");
+        err = dps310_get_Temperature(&DPS310_Data);
+        if (err != ESP_OK)
+            error_handle(err, ERR_DPS310, "Temperature reading failed");
         startPressure += DPS310_Data.Pressure;
         startTemperature += DPS310_Data.Temperature;
-        ESP_LOGI(TAG, "StartPressure: %.2f, StartTemp: %.2f", startPressure, startTemperature);
         vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     startPressure /= 10;
     startTemperature /= 10;
+    ESP_LOGI(TAG, "StartPressure: %.2f, StartTemp: %.2f", startPressure, startTemperature);
     hasMeasuredStartPressure = true;
     // Setup Interrupt
     gpio_config_t gpio_config_INT_DPS310 = {
@@ -78,8 +92,16 @@ static void TaskMeasureHeight(void *parameters)
         .intr_type = GPIO_INTR_POSEDGE};
     // set PresSens Pin as Interrupt
     gpio_config(&gpio_config_INT_DPS310);
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_DPS310, "Can't configure DPS310 INT GPIO");
+    }
     // Funktion bmiISR als Interrupt Funktion handle von dieser Funktion als Parameter, damit diese Funktion von der Interrupt aufgeweckt werden kann
-    gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+    err = gpio_isr_handler_add((gpio_num_t)PresSens_INT, dps310ISR, xTaskGetCurrentTaskHandle());
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_DPS310, "Can't start INT on DPS310 GPIO");
+    }
     vTaskDelay(50 / portTICK_PERIOD_MS);
     int count = 0;
     float lastPressure = startPressure;
@@ -91,15 +113,22 @@ static void TaskMeasureHeight(void *parameters)
         {
             ESP_LOGW(TAG, "Interrupt didn't fire");
         }
-        else if (notificationValue > 1)
-        {
-            ESP_LOGW(TAG, "Interrupt did fire multiple times");
-        }
         // watchdog_reset();
-        dsp310_get_Pressure(&DPS310_Data);
+        err = dsp310_get_Pressure(&DPS310_Data);
+        if (err != ESP_OK)
+        {
+            error_handle(err, ERR_DPS310, "Can't measure Pressure");
+            continue;
+        }
         if (count % 34 == 0)
         {
-            dps310_get_Temperature(&DPS310_Data);
+            err = dps310_get_Temperature(&DPS310_Data);
+            if (err != ESP_OK)
+            {
+                error_handle(err, ERR_DPS310, "Can't measure Temperature");
+                // TODO: check if that happens often
+                count--;
+            }
         }
         count++;
         // Filter invalid pressure Results (200Pa = 19m -> change of 600 m in one second)
@@ -187,14 +216,27 @@ static void TaskMeasureAcc(void *parameters)
         vTaskDelay(2);
     }
     watchdog_add(NULL);
+    esp_err_t err;
     float rotation[4];
     /* Init BMI088 */
     bmi088_t BMI088_Data;
-    bmi088_init(&BMI088_Data, i2c_master_port, 0x18, 0x68);
+    ERROR_RETRYTIMES(bmi088_init(&BMI088_Data, i2c_master_port, 0x18, 0x68), VARIO_I2C_RETRYS_INIT, err);
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_BMI088, "Can't initialize BMI088");
+        vTaskDelete(NULL);
+        return;
+    }
 
     /* Init QMC588L */
-    qmc588l_t *QMC588L_Data;
-    QMC588L_Data = qmc588l_init(i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_2G);
+    qmc588l_t *QMC588L_Data = qmc588l_getInstance();
+    ERROR_RETRYTIMES(qmc588l_init(i2c_master_port, 0xD, QMC588L_MR_200HZ, QMC588L_OSR_512, QMC588L_SCALE_2G), VARIO_I2C_RETRYS_INIT, err);
+    if (err != ESP_OK)
+    {
+        error_handle(err, ERR_QMC588L, "Cant initialize QMC588L");
+        vTaskDelete(NULL);
+        return;
+    }
 
     QuaternionFilter_init();
     // reset Rotation
@@ -209,15 +251,18 @@ static void TaskMeasureAcc(void *parameters)
     uint8_t counterAcc[3] = {0, 0, 0};
     float last_Gyr[3];
     uint8_t counterGyr[3] = {0, 0, 0};
-    bmi088_ReadAccelerometer(&BMI088_Data);
-    bmi088_ReadGyroskop(&BMI088_Data);
+    ERROR_RETRYTIMES(bmi088_ReadAccelerometer(&BMI088_Data), VARIO_I2C_RETRYS, err);
+    ERROR_HANDLEBYERROR(err, ERR_BMI088, "Can't measure start Acc");
+
+    ERROR_RETRYTIMES(bmi088_ReadGyroskop(&BMI088_Data), VARIO_I2C_RETRYS, err);
+    ERROR_HANDLEBYERROR(err, ERR_BMI088, "Can't measure start Gyro");
+
     last_Acc[0] = BMI088_Data.acc_mps2[0];
     last_Acc[1] = BMI088_Data.acc_mps2[1];
     last_Acc[2] = BMI088_Data.acc_mps2[2];
     last_Gyr[0] = BMI088_Data.gyr_rps[0];
     last_Gyr[1] = BMI088_Data.gyr_rps[1];
     last_Gyr[2] = BMI088_Data.gyr_rps[2];
-    // TODO: check why sometimes acc after filter is wrong?
     float lastAccX = 9.81f;
     int counterAccX = 0;
     while (1)
@@ -225,9 +270,14 @@ static void TaskMeasureAcc(void *parameters)
         watchdog_reset();
         // Clear Notification from Kalman Filter to 1 at index 1, so klaman Filter waits, till we are finished
         ulTaskNotifyValueClearIndexed(TaskKalmanFilter_Handle, 1, 0xffffffff);
-        qmc588l_readMag();
-        bmi088_ReadAccelerometer(&BMI088_Data);
-        bmi088_ReadGyroskop(&BMI088_Data);
+        err = qmc588l_readMag();
+        ERROR_HANDLEBYERROR(err, ERR_QMC588L, "QMC588L reading failed");
+
+        err = bmi088_ReadAccelerometer(&BMI088_Data);
+        ERROR_HANDLEBYERROR(err, ERR_BMI088, "Acc reading failed");
+        err = bmi088_ReadGyroskop(&BMI088_Data);
+        ERROR_HANDLEBYERROR(err, ERR_BMI088, "Gyro reading failed");
+
         if (!checkBMI088MsValidity(BMI088_Data.acc_mps2, last_Acc, counterAcc, BMI088_Data.gyr_rps, last_Gyr, counterGyr))
         {
             xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 1);

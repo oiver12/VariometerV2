@@ -66,10 +66,10 @@ void FlightLogger_NMEASentenceLogger(void *event_handler_arg, esp_event_base_t e
     count++;
 }
 
-void startLogging()
+esp_err_t startLogging()
 {
     if (init_sdcard("/sdcard") != ESP_OK)
-        return;
+        return ESP_ERR_INVALID_STATE;
     int count = 0;
     do
     {
@@ -81,7 +81,7 @@ void startLogging()
     if (fileVario == NULL)
     {
         ESP_LOGE(TAG, "Could not create Vario File\n");
-        return;
+        return ESP_ERR_NOT_FOUND;
     }
 
     count = 0;
@@ -95,7 +95,7 @@ void startLogging()
     if (fileGPSUpdate == NULL)
     {
         ESP_LOGE(TAG, "Could not create GPS Update File\n");
-        return;
+        return ESP_ERR_NOT_FOUND;
     }
     sd_card_state_t sdstate;
     device_state_get_member(&sdstate, device_state_statusSDCard, false);
@@ -106,6 +106,7 @@ void startLogging()
     nmea_parser_add_handler(nmea_parser_hndl, FlightLogger_NMEASentenceLogger, NULL, GPS_NMEA_SENTECE);
 #endif
     nmea_parser_add_handler(nmea_parser_hndl, FlightLogger_NMEASentenceLogger, NULL, GPS_UPDATE);
+    return ESP_OK;
 }
 
 void initLogging(nmea_parser_handle_t nmea_parser_handle)
@@ -117,10 +118,10 @@ void endLogging()
 {
 }
 
-void logVarioData(FlightLogger_t state)
+esp_err_t logVarioData(FlightLogger_t state)
 {
     if (!sdCard_init)
-        return;
+        return ESP_ERR_INVALID_STATE;
     fwrite(&state, sizeof(FlightLogger_t), 1, fileVario); // write vario_state to file
     int64_t time = esp_timer_get_time();
     fwrite(&time, sizeof(int64_t), 1, fileVario); // write Time since startup to file
@@ -133,4 +134,5 @@ void logVarioData(FlightLogger_t state)
         // fileVario = openFile_sdcard(sdcard, directoryLogs, fileNameVario, true);
     }
     countVarioFile++;
+    return ESP_OK;
 }

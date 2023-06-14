@@ -4,11 +4,12 @@
 #include "SDCard.h"
 #include "../main.h"
 #include "nmea_parser.h"
+#include <esp_err.h>
 
 void initLogging(nmea_parser_handle_t nmea_parser_handle);
-void startLogging();
+esp_err_t startLogging();
 void endLogging();
 
-void logVarioData(FlightLogger_t state);
+esp_err_t logVarioData(FlightLogger_t state);
 
 #endif

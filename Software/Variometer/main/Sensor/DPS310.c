@@ -1,5 +1,8 @@
 #include "DPS310.h"
-#include "driver/i2c.h"
+#include "I2C_Manager.h"
+#include "ErrorHandling.h"
+#include "vario_config.h"
+#include <driver/i2c.h>
 #include <esp_log.h>
 #include <esp_timer.h>
 
@@ -13,32 +16,24 @@ const int32_t scaling_facts[8] = {524288, 1572864, 3670016, 7864320, 253952, 516
 
 static const char *TAG = "DPS310";
 
-static inline esp_err_t write_Bytes(dps310_t *dev, uint8_t addr, size_t length, const uint8_t *data)
+static inline esp_err_t write_Bytes(dps310_t *dev, uint8_t addr, size_t length, uint8_t *data)
 {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (dev->dps310_t_i2c_addr << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, addr, true);
-    i2c_master_write(cmd, (uint8_t *)data, length, true);
-    i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->I2C_Master_Num, cmd, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-    return err;
+    return i2c_manager_writeBytes(dev->I2C_Master_Num, dev->dps310_t_i2c_addr, addr, data, length);
 }
 
-static inline esp_err_t read_Bytes(dps310_t *dev, const uint8_t addr, size_t size, uint8_t *data)
+static inline esp_err_t write_Byte(dps310_t *dev, uint8_t addr, const uint8_t data)
 {
-    esp_err_t err = ESP_ERR_TIMEOUT;
-    err = i2c_master_write_read_device(dev->I2C_Master_Num, dev->dps310_t_i2c_addr, &addr, 1, data, size, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    return err;
+    return i2c_manager_writeByte(dev->I2C_Master_Num, dev->dps310_t_i2c_addr, addr, data);
+}
+
+static inline esp_err_t read_Bytes(dps310_t *dev, uint8_t addr, size_t size, uint8_t *data)
+{
+    return i2c_manager_readBytes(dev->I2C_Master_Num, dev->dps310_t_i2c_addr, addr, data, size);
 }
 
 static esp_err_t writeBitByteField(dps310_t *dev, uint8_t addr, uint8_t data, uint8_t mask, uint8_t shift)
 {
-    uint8_t oldValue = 0;
-    ESP_ERROR_CHECK(read_Bytes(dev, addr, 1, &oldValue));
-    uint8_t newData = ((uint8_t)oldValue & ~mask) | ((data << shift) & mask);
-    return write_Bytes(dev, addr, 1, &newData);
+    return i2c_manager_writeBitByteField(dev->I2C_Master_Num, dev->dps310_t_i2c_addr, addr, data, mask, shift);
 }
 
 static void getTwosComplement(int32_t *raw, uint8_t length)
@@ -55,21 +50,8 @@ static uint16_t calcBusyTime(dps310_mr_t mr, dps310_osr_t osr)
     return ((uint32_t)20U << (uint16_t)mr) + ((uint32_t)16U << ((uint16_t)osr + (uint16_t)mr));
 }
 
-esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
+static void calcCoefficents(dps310_t *dev, uint8_t buffer[])
 {
-    dev->I2C_Master_Num = I2C_Master_Num;
-    dev->dps310_t_i2c_addr = i2c_addr;
-    vTaskDelay(50 / portTICK_PERIOD_MS);
-    /* Read Coeffs */
-    uint8_t buffer[18];
-    int count = 0;
-    esp_err_t err;
-    do
-    {
-        err = read_Bytes(dev, 0x10, 18, buffer);
-        count++;
-    } while (err != ESP_OK || count < 5);
-    ESP_ERROR_CHECK(err);
     // compose coefficients from buffer content
     dev->config_data.m_c0Half = ((uint32_t)buffer[0] << 4) | (((uint32_t)buffer[1] >> 4) & 0x0F);
     getTwosComplement(&dev->config_data.m_c0Half, 12);
@@ -95,27 +77,37 @@ esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
     getTwosComplement(&dev->config_data.m_c21, 16);
     dev->config_data.m_c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
     getTwosComplement(&dev->config_data.m_c30, 16);
-    /* Configure DPS310 Background Measure Rate / OSR */
-    dps310_config_Temp_Pressure(dev, DPS310_MR_1, DPS310_OSR_64, DPS310_MR_32, DPS310_OSR_16);
-    /* Enable Background Measure */
-    ESP_ERROR_CHECK(writeBitByteField(dev, 0x08, 0x07, 0x07, 0));
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    dps310_get_Temperature(dev);
-    /*  Enable Interrupt on Pressure Reading (active high) */
-    ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0x90, 0x90, 0));
+}
 
-    uint8_t temp = 0xA5;
-    write_Bytes(dev, 0x0E, 1, &temp);
-    temp = 0x96;
-    write_Bytes(dev, 0x0F, 1, &temp);
-    temp = 0x02;
-    write_Bytes(dev, 0x62, 1, &temp);
-    temp = 0x00;
-    write_Bytes(dev, 0x0E, 1, &temp);
-    temp = 0x00;
-    write_Bytes(dev, 0x0F, 1, &temp);
+esp_err_t dps310_init(dps310_t *dev, int I2C_Master_Num, uint8_t i2c_addr)
+{
+    dev->I2C_Master_Num = I2C_Master_Num;
+    dev->dps310_t_i2c_addr = i2c_addr;
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+    /* Read Coeffs */
+    uint8_t buffer[18];
+    esp_err_t err;
+    ERROR_RETRYTIMES(read_Bytes(dev, 0x10, 18, buffer), VARIO_I2C_RETRYS_INIT, err);
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+    calcCoefficents(dev, buffer);
+    /* Configure DPS310 Background Measure Rate / OSR */
+    ERROR_CHECKRETURN(dps310_config_Temp_Pressure(dev, DPS310_MR_1, DPS310_OSR_64, DPS310_MR_32, DPS310_OSR_16));
+    /* Enable Background Measure */
+    ERROR_CHECKRETURN(writeBitByteField(dev, 0x08, 0x07, 0x07, 0));
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    dps310_get_Temperature(dev);
+    /*  Enable Interrupt on Pressure Reading (active high) */
+    ERROR_CHECKRETURN(writeBitByteField(dev, 0x09, 0x90, 0x90, 0));
+
+    // tried to fix Temp reading
+    //  ERROR_CHECKRETURN(write_Byte(dev, 0x0E, 0xA5));
+    //  ERROR_CHECKRETURN(write_Byte(dev, 0x0F, 0x96));
+    //  ERROR_CHECKRETURN(write_Bytes(dev, 0x62, 0x02));
+    //  ERROR_CHECKRETURN(write_Bytes(dev, 0x0E, 0x00));
+    //  ERROR_CHECKRETURN(write_Bytes(dev, 0x0F, 0x00));
+    vTaskDelay(10 / portTICK_PERIOD_MS);
     return ESP_OK;
 }
 
@@ -126,24 +118,24 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
         return ESP_ERR_INVALID_ARG;
     }
     uint8_t temp_cfg = (temp_mr << 4) | temp_osr;
-    ESP_ERROR_CHECK(write_Bytes(dev, 0x07, 1, &temp_cfg));
+    ERROR_CHECKRETURN(write_Bytes(dev, 0x07, 1, &temp_cfg));
     uint8_t prs_cfg = (prs_mr << 4) | prs_osr;
-    ESP_ERROR_CHECK(write_Bytes(dev, 0x06, 1, &prs_cfg));
+    ERROR_CHECKRETURN(write_Bytes(dev, 0x06, 1, &prs_cfg));
     if (prs_osr > DPS310_OSR_8)
     {
-        ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x04, 2));
+        ERROR_CHECKRETURN(writeBitByteField(dev, 0x09, 1UL, 0x04, 2));
     }
     else
     {
-        ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0UL, 0x04, 2));
+        ERROR_CHECKRETURN(writeBitByteField(dev, 0x09, 0UL, 0x04, 2));
     }
     if (temp_osr > DPS310_OSR_8)
     {
-        ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 1UL, 0x08, 3));
+        ERROR_CHECKRETURN(writeBitByteField(dev, 0x09, 1UL, 0x08, 3));
     }
     else
     {
-        ESP_ERROR_CHECK(writeBitByteField(dev, 0x09, 0UL, 0x08, 3));
+        ERROR_CHECKRETURN(writeBitByteField(dev, 0x09, 0UL, 0x08, 3));
     }
     dev->temp_measurement_rate = temp_mr;
     dev->temp_oversampling = temp_osr;
@@ -154,16 +146,12 @@ esp_err_t dps310_config_Temp_Pressure(dps310_t *dev, dps310_mr_t temp_mr, dps310
 
 esp_err_t dsp310_get_Pressure(dps310_t *dev)
 {
+    // read raw pressure
     uint8_t buffer[3] = {0};
-    esp_err_t err = read_Bytes(dev, 0x00, 3, buffer);
-    // Clear old Interrupt (Important!!!) (this important shows my pain in debugging this)
+    ERROR_CHECKRETURN(read_Bytes(dev, 0x00, 3, buffer));
+    // clear interrupt register
     uint8_t bufferInterrupt = 0;
-    read_Bytes(dev, 0x0A, 1, &bufferInterrupt);
-    if (err != ESP_OK)
-    {
-        ESP_LOGI(TAG, "Pressure Reading falied %s", esp_err_to_name(err));
-        return ESP_FAIL;
-    }
+    ERROR_CHECKRETURN(read_Bytes(dev, 0x0A, 1, &bufferInterrupt));
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
     getTwosComplement(&raw, 24);
     float prs = raw;
@@ -179,8 +167,7 @@ esp_err_t dps310_get_Temperature(dps310_t *dev)
     esp_err_t err = read_Bytes(dev, 0x03, 3, buffer);
     if (err != ESP_OK)
     {
-        ESP_LOGI(TAG, "Temp Reading falied");
-        return ESP_FAIL;
+        return err;
     }
     int32_t raw = (uint32_t)buffer[0] << 16 | (uint32_t)buffer[1] << 8 | (uint32_t)buffer[2];
     getTwosComplement(&raw, 24);

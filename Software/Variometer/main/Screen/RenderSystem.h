@@ -3,13 +3,15 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <esp_err.h>
 
-typedef enum {
+typedef enum
+{
     RenderMode_Update,
     RenderMode_Push,
 } RenderModes_t;
 
-void startRendering(uint8_t* screenBuffer);
+esp_err_t startRendering(uint8_t *screenBuffer);
 void stopRendering_disableScreen();
 void rendering_Push(bool varfullRedraw);
 void rendering_Update(bool varfullRedraw);

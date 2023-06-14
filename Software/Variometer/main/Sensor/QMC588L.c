@@ -1,11 +1,13 @@
 #include "QMC588L.h"
-#include "driver/i2c.h"
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include "Screen/ScreenManager.h"
 #include "Flash/flashMemory.h"
-#include "esp_timer.h"
+#include <esp_timer.h>
+#include "ErrorHandling.h"
+#include "vario_config.h"
+#include "I2C_Manager.h"
 
 #define I2C_MASTER_TIMEOUT_MS 1000
 
@@ -20,29 +22,34 @@ static const char *TAG = "QMC588L";
 
 static inline esp_err_t writeByte(uint8_t regAddr, const uint8_t data)
 {
-    esp_err_t err = ESP_ERR_TIMEOUT;
-    uint8_t write_buf[2] = {regAddr, data};
-    err = i2c_master_write_to_device(qmc588l_data.I2C_Master_Num, qmc588l_data.qmc588l_i2c_addr, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    return err;
+    return i2c_manager_writeByte(qmc588l_data.I2C_Master_Num, qmc588l_data.qmc588l_i2c_addr, regAddr, data);
 }
 
-static inline esp_err_t read_Bytes(const uint8_t addr, size_t size, uint8_t *data)
+static inline esp_err_t read_Bytes(uint8_t addr, size_t size, uint8_t *data)
 {
-    esp_err_t err = ESP_ERR_TIMEOUT;
-    err = i2c_master_write_read_device(qmc588l_data.I2C_Master_Num, qmc588l_data.qmc588l_i2c_addr, &addr, 1, data, size, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    return err;
+    return i2c_manager_readBytes(qmc588l_data.I2C_Master_Num, qmc588l_data.qmc588l_i2c_addr, addr, data, size);
 }
 
-qmc588l_t *qmc588l_init(int I2C_Master_Num, uint8_t i2c_addr, qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale)
+qmc588l_t *qmc588l_getInstance()
+{
+    return &qmc588l_data;
+}
+
+esp_err_t qmc588l_init(i2c_port_t I2C_Master_Num, uint8_t i2c_addr, qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale)
 {
     qmc588l_data.I2C_Master_Num = I2C_Master_Num;
     qmc588l_data.qmc588l_i2c_addr = i2c_addr;
-    ESP_ERROR_CHECK(writeByte(0x0B, 0x01));           /* Set Reset Period*/
-    ESP_ERROR_CHECK(qmc588l_setMode(mr, osr, scale)); /* Set Mode to continous */
-    ESP_ERROR_CHECK(writeByte(0x0A, 0x41));           /* Enable Pointer Roll Over and disable Interrupt */
+    esp_err_t err;
+    ERROR_RETRYTIMES(writeByte(0x0B, 0x01), VARIO_I2C_RETRYS_INIT, err); /* Set Reset Period*/
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+    ERROR_CHECKRETURN(qmc588l_setMode(mr, osr, scale)); /* Set Mode to continous */
+    ERROR_CHECKRETURN(writeByte(0x0A, 0x41));           /* Enable Pointer Roll Over and disable Interrupt */
     qmc588l_data.useCalibration = false;
     qmc588l_data.isCalibrating = false;
-    return &qmc588l_data;
+    return ESP_OK;
 }
 
 esp_err_t qmc588l_setMode(qmc588l_mr_t mr, qmc588l_osr_t osr, qmc588l_scale_t scale)
@@ -153,7 +160,7 @@ esp_err_t qmc588l_readMag()
         return ESP_OK;
     }
     uint8_t buffer[6] = {0};
-    ESP_ERROR_CHECK(read_Bytes(0x00, 6, buffer));
+    ERROR_CHECKRETURN(read_Bytes(0x00, 6, buffer));
     qmc588l_data.rawMagnValue[0] = (int16_t)(buffer[1] << 8 | buffer[0]);
     qmc588l_data.rawMagnValue[1] = (int16_t)(buffer[3] << 8 | buffer[2]);
     qmc588l_data.rawMagnValue[2] = (int16_t)(buffer[5] << 8 | buffer[4]);
@@ -163,32 +170,5 @@ esp_err_t qmc588l_readMag()
     qmc588l_data.CorrectedMagnValuemG[0] = x * magneticMapping[0] + y * magneticMapping[1] + z * magneticMapping[2];
     qmc588l_data.CorrectedMagnValuemG[1] = x * magneticMapping[3] + y * magneticMapping[4] + z * magneticMapping[5];
     qmc588l_data.CorrectedMagnValuemG[2] = x * magneticMapping[6] + y * magneticMapping[7] + z * magneticMapping[8];
-    // Was used with old calibration
-    //  if(qmc588l_data.useCalibration)
-    //  {
-    //      int x_offset = (qmc588l_data._vCalibration[0][0] + qmc588l_data._vCalibration[0][1])/2;
-    //      int y_offset = (qmc588l_data._vCalibration[1][0] + qmc588l_data._vCalibration[1][1])/2;
-    //      int z_offset = (qmc588l_data._vCalibration[2][0] + qmc588l_data._vCalibration[2][1])/2;
-
-    //     int x_avg_delta = (qmc588l_data._vCalibration[0][1] - qmc588l_data._vCalibration[0][0])/2;
-    //     int y_avg_delta = (qmc588l_data._vCalibration[1][1] - qmc588l_data._vCalibration[1][0])/2;
-    //     int z_avg_delta = (qmc588l_data._vCalibration[2][1] - qmc588l_data._vCalibration[2][0])/2;
-
-    //     float avg_delta = (x_avg_delta + y_avg_delta + z_avg_delta) / 3.0f;
-
-    //     float x_scale = avg_delta / (float)x_avg_delta;
-    //     float y_scale = avg_delta / (float)y_avg_delta;
-    //     float z_scale = avg_delta / (float)z_avg_delta;
-
-    //     qmc588l_data.rawMagnValue[0] = (qmc588l_data.rawMagnValue[0] - x_offset) * x_scale;
-    //     qmc588l_data.rawMagnValue[1] = (qmc588l_data.rawMagnValue[1] - y_offset) * y_scale;
-    //     qmc588l_data.rawMagnValue[2] = (qmc588l_data.rawMagnValue[2] - z_offset) * z_scale;
-    //     float x = convertTomG(qmc588l_data.rawMagnValue[0]) - offsetVector[0];
-    //     float y = convertTomG(qmc588l_data.rawMagnValue[1]) - offsetVector[1];
-    //     float z = convertTomG(qmc588l_data.rawMagnValue[2]) - offsetVector[2];
-    //     // qmc588l_data.CorrectedMagnValuemG[0] = x * magneticMapping[0] + y * magneticMapping[1] + z * magneticMapping[2];
-    //     // qmc588l_data.CorrectedMagnValuemG[1] = x * magneticMapping[3] + y * magneticMapping[4] + z * magneticMapping[5];
-    //     // qmc588l_data.CorrectedMagnValuemG[2] = x * magneticMapping[6] + y * magneticMapping[7] + z * magneticMapping[8];
-    // }
     return ESP_OK;
 }

@@ -16,13 +16,10 @@ void matrix_init(matrix_t *mat, uint_fast8_t rows, uint_fast8_t cols, matrix_dat
     mat->cols = cols;
     mat->rows = rows;
     mat->data = buffer;
-    printf("-------------------\n");
-    print_matrix(mat);
 }
 
 void matrix_setZero(matrix_t *const mat)
 {
-    printf("-------------------\n");
     for (size_t i = 0; i < mat->rows; i++)
     {
         for (size_t y = 0; y < mat->cols; y++)
@@ -30,7 +27,6 @@ void matrix_setZero(matrix_t *const mat)
             matrix_set(mat, i, y, 0);
         }
     }
-    print_matrix(mat);
 }
 
 /**

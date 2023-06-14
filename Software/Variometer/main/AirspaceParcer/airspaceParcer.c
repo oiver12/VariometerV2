@@ -10,6 +10,7 @@
 #include "../SDCard.h"
 #include "esp_timer.h"
 #include "../DeviceContext.h"
+#include "ErrorHandling.h"
 
 #define BOUNDINGBOX_OPTIMIZATION
 
@@ -276,7 +277,7 @@ void deInitAirspaceList()
 {
 }
 
-static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, FILE *cachedFile, long airspaceStarPos)
+static airspace *readSingleAirspaceFromLayer(esp_err_t *error, bool *hasNext, BoundingBox_LatLong_t *myBoundingBox, FILE *cachedFile, long airspaceStarPos)
 {
     char nameBuffer[50];
     char heightBuffer[10];
@@ -285,7 +286,7 @@ static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, Bounding
     if (strcmp(nameBuffer, "\"Name\"") != 0)
     {
         printf("Not in the right position\n");
-        *error = 1;
+        *error = ESP_ERR_INVALID_STATE;
         return NULL;
     }
     skipNextFileLayer(&instanceAirspace.layer);
@@ -329,7 +330,7 @@ static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, Bounding
     else
     {
         printf("Unknown height type %s\n", heightBuffer);
-        *error = 1;
+        *error = ESP_ERR_INVALID_STATE;
         return NULL;
     }
     readTilCharFileLayer(&instanceAirspace.layer, ':');
@@ -365,7 +366,7 @@ static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, Bounding
     else
     {
         printf("Unknown height type %s\n", heightBuffer);
-        *error = 1;
+        *error = ESP_ERR_INVALID_STATE;
         return NULL;
     }
     readTilCharFileLayer(&instanceAirspace.layer, ':');
@@ -375,7 +376,7 @@ static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, Bounding
     airspace *tempAirspace = readPolygonsFromFile(hasNext, myBoundingBox, nameBuffer, cachedFile, airspaceStarPos);
     if (!tempAirspace)
     {
-        *error = 0;
+        *error = ESP_OK;
         return NULL;
     }
 
@@ -386,18 +387,17 @@ static airspace *readSingleAirspaceFromLayer(int *error, bool *hasNext, Bounding
     if (strlen(nameBuffer) > AIRSPACE_NAMEBUFFERSIZE)
     {
         printf("Can not save NameBuffer: To Large for buffer\n");
-        *error = 1;
+        *error = ESP_ERR_NO_MEM;
         return NULL;
     }
     strcpy(tempAirspace->name, nameBuffer);
-    *error = 0;
+    *error = ESP_OK;
     return tempAirspace;
 }
 
-static int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
+static esp_err_t ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
 {
     startFileLayer(&instanceAirspace.layer, 0, jsonFile);
-    printf("Start parse with: %.2f, %.2f", myLat, myLon);
     airspace *listNearest = instanceAirspace.nearestAirspaceList;
     while (listNearest)
     {
@@ -409,7 +409,7 @@ static int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *j
     if (!jsonFile)
     {
         printf("Error opening file\n");
-        return 1;
+        return ESP_ERR_NOT_FOUND;
     }
     readTilCharFileLayer(&instanceAirspace.layer, '{');
     readTilCharFileLayer(&instanceAirspace.layer, '{');
@@ -423,10 +423,10 @@ static int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *j
     {
         airspacesCounted++;
         long airspaceStartPos = ftellFileLayer(&instanceAirspace.layer);
-        int errorValue;
+        esp_err_t errorValue;
         airspace *tempAirspace = readSingleAirspaceFromLayer(&errorValue, &hasNext, &myBoundingBox, cachedFile, airspaceStartPos);
-        if (errorValue != 0)
-            return 1;
+        if (errorValue != ESP_OK)
+            return errorValue;
         if (!tempAirspace)
             continue;
         airspacesCount++;
@@ -455,15 +455,15 @@ static int ParseAirspaceJSON(float myLat, float myLon, FILE *cachedFile, FILE *j
         prev = listNearest;
         listNearest = listNearest->next;
     }
-    return 0;
+    return ESP_OK;
 }
 
-static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
+static esp_err_t ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jsonFile)
 {
     if (cachedFile == NULL || jsonFile == NULL)
     {
         printf("Cached File or json File was not opend\n");
-        return 1;
+        return ESP_ERR_NOT_FOUND;
     }
     airspace *listNearest = instanceAirspace.nearestAirspaceList;
     while (listNearest)
@@ -477,7 +477,7 @@ static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jso
     if (pos % (sizeof(BoundingBox_LatLong_t) + sizeof(long)) != 0)
     {
         printf("This file is not valid\n");
-        return 1;
+        return ESP_FAIL;
     }
     uint32_t allAirspacesLength = pos / (sizeof(BoundingBox_LatLong_t) + sizeof(long));
     BoundingBox_LatLong_t myBoundingBox;
@@ -496,10 +496,10 @@ static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jso
             continue;
         startFileLayer(&instanceAirspace.layer, airspacePos, jsonFile);
         bool hasNext;
-        int errorValue;
+        esp_err_t errorValue;
         airspace *tempAirspace = readSingleAirspaceFromLayer(&errorValue, &hasNext, &myBoundingBox, NULL, airspacePos);
-        if (errorValue != 0)
-            return 1;
+        if (errorValue != ESP_OK)
+            return errorValue;
         if (!tempAirspace)
         {
             printf("This sould definitly not happen!!\n");
@@ -526,7 +526,7 @@ static int ParseFromCached(float myLat, float myLon, FILE *cachedFile, FILE *jso
         prev = listNearest;
         listNearest = listNearest->next;
     }
-    return 0;
+    return ESP_OK;
 }
 
 static void AirspaceParseError(char *error)
@@ -557,6 +557,7 @@ void AirspaceTask()
     if (!sdCard_Init())
     {
         AirspaceParseError("SDCard not found!");
+        vTaskDelete(NULL);
         return;
     }
     FILE *cachedFile = openFile_sdcard("/cache", nameBuffer, "r");
@@ -566,6 +567,8 @@ void AirspaceTask()
     {
         printf("Cant open JSON File, please donwload it\n");
         AirspaceParseError("JSON File not downloaded");
+        error_handle(ESP_ERR_NOT_FOUND, ERR_AIRSPACEPARCER, "Can't find Airspace JSON File");
+        vTaskDelete(NULL);
         return;
     }
     if (cachedFile == NULL)
@@ -576,26 +579,43 @@ void AirspaceTask()
             printf("Cached File should always be able to open\n");
             fclose(jsonFile);
             AirspaceParseError("Can't open Cache File");
+            error_handle(ESP_ERR_NO_MEM, ERR_AIRSPACEPARCER, "Cant create cache file");
+            vTaskDelete(NULL);
             return;
         }
         uint64_t timeStart = esp_timer_get_time();
-        if (ParseAirspaceJSON(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile) != 0)
+        esp_err_t err = ParseAirspaceJSON(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+        if (err != ESP_OK)
         {
             printf("Cant parse JSON File");
             fclose(jsonFile);
             fclose(cachedFile);
             AirspaceParseError("Can't parse JSON File");
+            error_handle(err, ERR_AIRSPACEPARCER, "Can't parse JSON");
+            vTaskDelete(NULL);
             return;
         }
         printf("Took to parse JSON: %i\n", (int)((esp_timer_get_time() - timeStart) / 1000));
         fclose(cachedFile);
         cachedFile = openFile_sdcard("/cache", nameBuffer, "r");
+        if (cachedFile == NULL)
+        {
+            error_handle(ESP_ERR_NOT_FOUND, ERR_AIRSPACEPARCER, "Can't open created Cachefile");
+            vTaskDelete(NULL);
+            return;
+        }
     }
     uint64_t startTime = esp_timer_get_time();
-    ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+    esp_err_t err = ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
     printf("Took to parse with Cached: %i\n", (int)((esp_timer_get_time() - startTime) / 1000));
     fclose(cachedFile);
     fclose(jsonFile);
+    if (err != ESP_OK)
+    {
+        error_handle(ESP_ERR_NOT_FOUND, ERR_AIRSPACEPARCER, "Can't Parse JSON with cached");
+        vTaskDelete(NULL);
+        return;
+    }
     //   TODO: handle this case
     instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
     instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
@@ -636,7 +656,13 @@ void AirspaceTask()
             vario_state_get_member(&gpsData, vario_state_gps_data, false);
             jsonFile = openFile_sdcard("/airspace", "airspaces.json", "r");
             cachedFile = openFile_sdcard("/cache", nameBuffer, "r");
-            ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+            err = ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+            if (err != ESP_OK)
+            {
+                error_handle(ESP_ERR_NOT_FOUND, ERR_AIRSPACEPARCER, "Can't Parse JSON with cached");
+                vTaskDelete(NULL);
+                return;
+            }
             continue;
         }
         vario_state_get_member(&gpsData, vario_state_gps_data, false);
@@ -657,7 +683,13 @@ void AirspaceTask()
         {
             jsonFile = openFile_sdcard("/airspace", "airspaces.json", "r");
             cachedFile = openFile_sdcard("/cache", nameBuffer, "r");
-            ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+            err = ParseFromCached(gpsData.latitude, gpsData.longitude, cachedFile, jsonFile);
+            if (err != ESP_OK)
+            {
+                error_handle(ESP_ERR_NOT_FOUND, ERR_AIRSPACEPARCER, "Can't Parse JSON with cached");
+                vTaskDelete(NULL);
+                return;
+            }
             instanceAirspace.lastAllAirspaceUpdatePoint.lat = gpsData.latitude;
             instanceAirspace.lastAllAirspaceUpdatePoint.lon = gpsData.longitude;
             searchInNearestAirspace(gpsData.latitude, gpsData.longitude, gpsData.altitude, heightSTD, agl);

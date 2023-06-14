@@ -32,6 +32,7 @@
 #include "driver/spi_master.h"
 #include <esp_log.h>
 #include <esp_timer.h>
+#include "ErrorHandling.h"
 
 #define SPIBUS_READ (0x80)  /*!< addr | SPIBUS_READ  */
 #define SPIBUS_WRITE (0x7F) /*!< addr & SPIBUS_WRITE */
@@ -94,22 +95,8 @@ static const UBYTE lut_1Gray_A2[] =
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10
         0x22, 0x22, 0x22, 0x22, 0x22};
 
-void EPD_3IN7_SPI_Init()
+esp_err_t EPD_3IN7_SPI_Init()
 {
-    // spi_device_interface_config_t dev_config;
-    // dev_config.command_bits = 0;
-    // dev_config.address_bits = 0;
-    // dev_config.dummy_bits = 0;
-    // dev_config.mode = 0;
-    // dev_config.duty_cycle_pos = 128;  // default 128 = 50%/50% duty
-    // dev_config.cs_ena_pretrans = 0;  // 0 not used
-    // dev_config.cs_ena_posttrans = 0;  // 0 not used
-    // dev_config.clock_speed_hz = 20 * 1000 * 1000;
-    // dev_config.spics_io_num = EPD_CS_PIN;
-    // dev_config.flags = 0;  // 0 not used
-    // dev_config.queue_size = 1;
-    // dev_config.pre_cb = NULL;
-    // dev_config.post_cb = NULL;
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = 20 * 1000 * 1000, // Clock out at 10 MHz
         .mode = 0,                          // SPI mode 0
@@ -125,10 +112,12 @@ void EPD_3IN7_SPI_Init()
     if (err != ESP_OK)
     {
         printf("Could not add Screen to spi bus: %s\n", esp_err_to_name(err));
+        return err;
     }
+    return ESP_OK;
 }
 
-void DEV_SPI_WriteByte(UBYTE value)
+esp_err_t DEV_SPI_WriteByte(UBYTE value)
 {
     spi_transaction_t transaction;
     transaction.flags = 0;
@@ -138,10 +127,10 @@ void DEV_SPI_WriteByte(UBYTE value)
     transaction.user = NULL;
     transaction.tx_buffer = &value;
     transaction.rx_buffer = NULL;
-    ESP_ERROR_CHECK(spi_device_transmit(screen_spi_handle, &transaction));
+    return spi_device_transmit(screen_spi_handle, &transaction);
 }
 
-void DEV_SPI_WriteBytes(const UBYTE *value, size_t length)
+esp_err_t DEV_SPI_WriteBytes(const UBYTE *value, size_t length)
 {
     spi_transaction_t transaction;
     transaction.flags = 0;
@@ -151,10 +140,10 @@ void DEV_SPI_WriteBytes(const UBYTE *value, size_t length)
     transaction.user = NULL;
     transaction.tx_buffer = value;
     transaction.rx_buffer = NULL;
-    ESP_ERROR_CHECK(spi_device_transmit(screen_spi_handle, &transaction));
+    return spi_device_transmit(screen_spi_handle, &transaction);
 }
 
-int DEV_Module_Init(void)
+esp_err_t DEV_Module_Init(void)
 {
     gpio_config_t io_conf_output = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -173,15 +162,13 @@ int DEV_Module_Init(void)
     DEV_Digital_Write(EPD_DC_PIN, 0);
     // DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_Digital_Write(EPD_RST_PIN, 1);
-    EPD_3IN7_SPI_Init();
-    return 0;
+    return EPD_3IN7_SPI_Init();
 }
 
 void DEV_Module_Exit(void)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
     // DEV_Digital_Write(EPD_CS_PIN, 0);
-    // close 5V
     DEV_Digital_Write(EPD_RST_PIN, 0);
 }
 
@@ -204,12 +191,10 @@ function :	send command
 parameter:
      Reg : Command register
 ******************************************************************************/
-static void EPD_3IN7_SendCommand(UBYTE Reg)
+static esp_err_t EPD_3IN7_SendCommand(UBYTE Reg)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
-    // DEV_Digital_Write(EPD_CS_PIN, 0);
-    DEV_SPI_WriteByte(Reg);
-    // DEV_Digital_Write(EPD_CS_PIN, 1);
+    return DEV_SPI_WriteByte(Reg);
 }
 
 /******************************************************************************
@@ -217,15 +202,13 @@ function :	send data
 parameter:
     Data : Write data
 ******************************************************************************/
-static void EPD_3IN7_SendData(UBYTE Data)
+static esp_err_t EPD_3IN7_SendData(UBYTE Data)
 {
     DEV_Digital_Write(EPD_DC_PIN, 1);
-    // DEV_Digital_Write(EPD_CS_PIN, 0);
-    DEV_SPI_WriteByte(Data);
-    // DEV_Digital_Write(EPD_CS_PIN, 1);
+    return DEV_SPI_WriteByte(Data);
 }
 
-static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
+static esp_err_t EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
 {
     DEV_Digital_Write(EPD_DC_PIN, 1);
     int blockSize = 4090;
@@ -233,15 +216,14 @@ static void EPD_3IN7_SendDataStream(const UBYTE *Data, size_t size)
     {
         if (i + blockSize > size)
         {
-            // printf("Send Data lastd: %i, %i \n", i, size);
-            DEV_SPI_WriteBytes(&Data[i], size - i);
+            ERROR_CHECKRETURN(DEV_SPI_WriteBytes(&Data[i], size - i));
         }
         else
         {
-            // printf("Send Data: %i \n", i);
-            DEV_SPI_WriteBytes(&Data[i], blockSize);
+            ERROR_CHECKRETURN(DEV_SPI_WriteBytes(&Data[i], blockSize));
         }
     }
+    return ESP_OK;
 }
 
 static void IRAM_ATTR gpio_busy_isr_handler(void *arg)
@@ -256,23 +238,13 @@ static void IRAM_ATTR gpio_busy_isr_handler(void *arg)
 
 static void EPD_3IN7_ReadBusy_HIGH(void)
 {
-    // printf("e-Paper busy\r\n");
-    //  UBYTE busy;
-    //  do {
-    //      busy = DEV_Digital_Read(EPD_BUSY_PIN);
-    //      DEV_Delay_ms(10);
-    //  } while(busy);
-    // uint64_t startTime = esp_timer_get_time();
     gpio_isr_handler_add((gpio_num_t)EPD_BUSY_PIN, gpio_busy_isr_handler, xTaskGetCurrentTaskHandle());
     uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, 5000 / portTICK_PERIOD_MS);
     if (notificationValue == 0)
     {
         ESP_LOGW("EPD", "Interrupt didn't fire");
     }
-    // printf("Busy high after: %i ms\n", (int)((esp_timer_get_time() - startTime) / 1000));
     gpio_isr_handler_remove(EPD_BUSY_PIN);
-    // DEV_Delay_ms(100);
-    // printf("e-Paper busy release\r\n");
 }
 
 /******************************************************************************
@@ -283,295 +255,308 @@ LUT1 (1Gray_GC): Full Screen 1 Gray Scale Refresh (=0.997s)
 LUT2 (1Gray_DU): Part Dispaly Update from GS to B/W (=0.797s)
 LUT3 (1Gray_A2): Part Display Update from B/W to B/W (=0.397s)
 ******************************************************************************/
-void EPD_3IN7_Load_LUT(UBYTE lut)
+esp_err_t EPD_3IN7_Load_LUT(UBYTE lut)
 {
-    EPD_3IN7_SendCommand(0x32);
+    ERROR_CHECKRETURN(EPD_3IN7_SendCommand(0x32));
     if (lut == 0)
-        EPD_3IN7_SendDataStream(lut_4Gray_GC, 105);
+        ERROR_CHECKRETURN(EPD_3IN7_SendDataStream(lut_4Gray_GC, 105));
     else if (lut == 1)
-        EPD_3IN7_SendDataStream(lut_1Gray_GC, 105);
+        ERROR_CHECKRETURN(EPD_3IN7_SendDataStream(lut_1Gray_GC, 105));
     else if (lut == 2)
-        EPD_3IN7_SendDataStream(lut_1Gray_DU, 105);
+        ERROR_CHECKRETURN(EPD_3IN7_SendDataStream(lut_1Gray_DU, 105));
     else if (lut == 3)
-        EPD_3IN7_SendDataStream(lut_1Gray_A2, 105);
+        ERROR_CHECKRETURN(EPD_3IN7_SendDataStream(lut_1Gray_A2, 105));
     else
-        printf("There is no such lut \r\n");
-    //  UWORD i;
-    //   for (i = 0; i < 105; i++)
-    //   {
-    //     if(lut == 0)
-    //         EPD_3IN7_SendData(lut_4Gray_GC[i]);
-    //     else if(lut == 1)
-    //         EPD_3IN7_SendData(lut_1Gray_GC[i]);
-    //     else if(lut == 2)
-    //         EPD_3IN7_SendData(lut_1Gray_DU[i]);
-    //     else if(lut == 3)
-    //         EPD_3IN7_SendData(lut_1Gray_A2[i]);
-    //     else
-    //         printf("There is no such lut \r\n");
-    //   }
+        return ESP_ERR_INVALID_ARG;
+    return ESP_OK;
 }
 
 /******************************************************************************
 function :	Initialize the e-Paper register
 parameter:
 ******************************************************************************/
-void EPD_3IN7_4Gray_Init(void)
+esp_err_t EPD_3IN7_4Gray_Init(void)
 {
     EPD_3IN7_Reset();
-
-    EPD_3IN7_SendCommand(0x12);
+    esp_err_t err = ESP_OK;
+    err |= EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
 
-    EPD_3IN7_SendCommand(0x46);
-    EPD_3IN7_SendData(0xF7);
+    err |= EPD_3IN7_SendCommand(0x46);
+    err |= EPD_3IN7_SendData(0xF7);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
-    EPD_3IN7_SendCommand(0x47);
-    EPD_3IN7_SendData(0xF7);
+    err |= EPD_3IN7_SendCommand(0x47);
+    err |= EPD_3IN7_SendData(0xF7);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
 
-    EPD_3IN7_SendCommand(0x01); // setting gaet number
-    EPD_3IN7_SendData(0xDF);
-    EPD_3IN7_SendData(0x01);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x01); // setting gaet number
+    err |= EPD_3IN7_SendData(0xDF);
+    err |= EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x03); // set gate voltage
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x03); // set gate voltage
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x04); // set source voltage
-    EPD_3IN7_SendData(0x41);
-    EPD_3IN7_SendData(0xA8);
-    EPD_3IN7_SendData(0x32);
+    err |= EPD_3IN7_SendCommand(0x04); // set source voltage
+    err |= EPD_3IN7_SendData(0x41);
+    err |= EPD_3IN7_SendData(0xA8);
+    err |= EPD_3IN7_SendData(0x32);
 
-    EPD_3IN7_SendCommand(0x11); // set data entry sequence
-    EPD_3IN7_SendData(0x03);
+    err |= EPD_3IN7_SendCommand(0x11); // set data entry sequence
+    err |= EPD_3IN7_SendData(0x03);
 
-    EPD_3IN7_SendCommand(0x3C); // set border
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x3C); // set border
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x0C); // set booster strength
-    EPD_3IN7_SendData(0xAE);
-    EPD_3IN7_SendData(0xC7);
-    EPD_3IN7_SendData(0xC3);
-    EPD_3IN7_SendData(0xC0);
-    EPD_3IN7_SendData(0xC0);
+    err |= EPD_3IN7_SendCommand(0x0C); // set booster strength
+    err |= EPD_3IN7_SendData(0xAE);
+    err |= EPD_3IN7_SendData(0xC7);
+    err |= EPD_3IN7_SendData(0xC3);
+    err |= EPD_3IN7_SendData(0xC0);
+    err |= EPD_3IN7_SendData(0xC0);
 
-    EPD_3IN7_SendCommand(0x18); // set internal sensor on
-    EPD_3IN7_SendData(0x80);
+    err |= EPD_3IN7_SendCommand(0x18); // set internal sensor on
+    err |= EPD_3IN7_SendData(0x80);
 
-    EPD_3IN7_SendCommand(0x2C); // set vcom value
-    EPD_3IN7_SendData(0x44);
+    err |= EPD_3IN7_SendCommand(0x2C); // set vcom value
+    err |= EPD_3IN7_SendData(0x44);
 
-    EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x17);
-    EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x17);
+    err |= EPD_3IN7_SendData(0x01);
 
-    EPD_3IN7_SendCommand(0x45); // setting Y direction start/end position of RAM
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0xDF);
-    EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendCommand(0x45); // setting Y direction start/end position of RAM
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0xDF);
+    err |= EPD_3IN7_SendData(0x01);
 
-    EPD_3IN7_SendCommand(0x22); // Display Update Control 2
-    EPD_3IN7_SendData(0xCF);
+    err |= EPD_3IN7_SendCommand(0x22); // Display Update Control 2
+    err |= EPD_3IN7_SendData(0xCF);
+    return err;
 }
 
 /******************************************************************************
 function :  Initialize the e-Paper register
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Init(void)
+esp_err_t EPD_3IN7_1Gray_Init(void)
 {
+    esp_err_t err = ESP_OK;
     EPD_3IN7_Reset();
 
-    EPD_3IN7_SendCommand(0x12);
+    err |= EPD_3IN7_SendCommand(0x12);
     DEV_Delay_ms(300);
 
-    EPD_3IN7_SendCommand(0x46);
-    EPD_3IN7_SendData(0xF7);
-    EPD_3IN7_ReadBusy_HIGH();
-    EPD_3IN7_SendCommand(0x47);
-    EPD_3IN7_SendData(0xF7);
+    err |= EPD_3IN7_SendCommand(0x46);
+    err |= EPD_3IN7_SendData(0xF7);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
 
-    EPD_3IN7_SendCommand(0x01); // setting gaet number
-    EPD_3IN7_SendData(0xDF);
-    EPD_3IN7_SendData(0x01);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x47);
+    err |= EPD_3IN7_SendData(0xF7);
+    ERROR_CHECKRETURN(err);
+    EPD_3IN7_ReadBusy_HIGH();
 
-    EPD_3IN7_SendCommand(0x03); // set gate voltage
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x01); // setting gaet number
+    err |= EPD_3IN7_SendData(0xDF);
+    err |= EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x04); // set source voltage
-    EPD_3IN7_SendData(0x41);
-    EPD_3IN7_SendData(0xA8);
-    EPD_3IN7_SendData(0x32);
+    err |= EPD_3IN7_SendCommand(0x03); // set gate voltage
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x11); // set data entry sequence
-    EPD_3IN7_SendData(0x03);
+    err |= EPD_3IN7_SendCommand(0x04); // set source voltage
+    err |= EPD_3IN7_SendData(0x41);
+    err |= EPD_3IN7_SendData(0xA8);
+    err |= EPD_3IN7_SendData(0x32);
 
-    EPD_3IN7_SendCommand(0x3C); // set border
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x11); // set data entry sequence
+    err |= EPD_3IN7_SendData(0x03);
 
-    EPD_3IN7_SendCommand(0x0C); // set booster strength
-    EPD_3IN7_SendData(0xAE);
-    EPD_3IN7_SendData(0xC7);
-    EPD_3IN7_SendData(0xC3);
-    EPD_3IN7_SendData(0xC0);
-    EPD_3IN7_SendData(0xC0);
+    err |= EPD_3IN7_SendCommand(0x3C); // set border
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x18); // set internal sensor on
-    EPD_3IN7_SendData(0x80);
+    err |= EPD_3IN7_SendCommand(0x0C); // set booster strength
+    err |= EPD_3IN7_SendData(0xAE);
+    err |= EPD_3IN7_SendData(0xC7);
+    err |= EPD_3IN7_SendData(0xC3);
+    err |= EPD_3IN7_SendData(0xC0);
+    err |= EPD_3IN7_SendData(0xC0);
 
-    EPD_3IN7_SendCommand(0x2C); // set vcom value
-    EPD_3IN7_SendData(0x44);
+    err |= EPD_3IN7_SendCommand(0x18); // set internal sensor on
+    err |= EPD_3IN7_SendData(0x80);
 
-    EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
-    EPD_3IN7_SendData(0x00);    // can switch 1 gray or 4 gray
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0x4F);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
-    EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendCommand(0x2C); // set vcom value
+    err |= EPD_3IN7_SendData(0x44);
 
-    EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x17);
-    EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendCommand(0x37); // set display option, these setting turn on previous function
+    err |= EPD_3IN7_SendData(0x00);    // can switch 1 gray or 4 gray
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0x4F);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
+    err |= EPD_3IN7_SendData(0xFF);
 
-    EPD_3IN7_SendCommand(0x45); // setting Y direction start/end position of RAM
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0xDF);
-    EPD_3IN7_SendData(0x01);
+    err |= EPD_3IN7_SendCommand(0x44); // setting X direction start/end position of RAM
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x17);
+    err |= EPD_3IN7_SendData(0x01);
 
-    EPD_3IN7_SendCommand(0x22); // Display Update Control 2
-    EPD_3IN7_SendData(0xCF);
+    err |= EPD_3IN7_SendCommand(0x45); // setting Y direction start/end position of RAM
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0xDF);
+    err |= EPD_3IN7_SendData(0x01);
+
+    err |= EPD_3IN7_SendCommand(0x22); // Display Update Control 2
+    err |= EPD_3IN7_SendData(0xCF);
+    return err;
 }
 
 /******************************************************************************
 function :	Clear screen
 parameter:
 ******************************************************************************/
-void EPD_3IN7_4Gray_Clear(void)
+esp_err_t EPD_3IN7_4Gray_Clear(void)
 {
     uint64_t startTime = esp_timer_get_time();
     UWORD Width, Height;
     Width = (EPD_3IN7_WIDTH % 8 == 0) ? (EPD_3IN7_WIDTH / 8) : (EPD_3IN7_WIDTH / 8 + 1);
     Height = EPD_3IN7_HEIGHT;
 
-    EPD_3IN7_SendCommand(0x49);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    esp_err_t err = ESP_OK;
 
-    EPD_3IN7_SendCommand(0x24);
+    err |= EPD_3IN7_SendCommand(0x49);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+
+    err |= EPD_3IN7_SendCommand(0x24);
+    ERROR_CHECKRETURN(err);
+
     for (UWORD j = 0; j < Height; j++)
     {
         for (UWORD i = 0; i < Width; i++)
         {
-            EPD_3IN7_SendData(0xff);
+            err |= EPD_3IN7_SendData(0xff);
         }
     }
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x26);
+    err |= EPD_3IN7_SendCommand(0x26);
+    ERROR_CHECKRETURN(err);
+
     for (UWORD j = 0; j < Height; j++)
     {
         for (UWORD i = 0; i < Width; i++)
         {
-            EPD_3IN7_SendData(0xff);
+            err |= EPD_3IN7_SendData(0xff);
         }
     }
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_Load_LUT(0);
-    EPD_3IN7_SendCommand(0x22);
-    EPD_3IN7_SendData(0xC7);
+    err |= EPD_3IN7_Load_LUT(0);
+    err |= EPD_3IN7_SendCommand(0x22);
+    err |= EPD_3IN7_SendData(0xC7);
 
-    EPD_3IN7_SendCommand(0x20);
+    err |= EPD_3IN7_SendCommand(0x20);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
+
     printf("Update Time: %llu \n\r", (esp_timer_get_time() - startTime) / 1000);
+    return err;
 }
 
 /******************************************************************************
 function :  Clear screen
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Clear(void)
+esp_err_t EPD_3IN7_1Gray_Clear(void)
 {
     UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
+    esp_err_t err = ESP_OK;
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x24);
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_SendCommand(0x24);
     for (i = 0; i < IMAGE_COUNTER; i++)
     {
-        EPD_3IN7_SendData(0xff);
+        err |= EPD_3IN7_SendData(0xff);
     }
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_Load_LUT(2);
+    err |= EPD_3IN7_Load_LUT(2);
 
-    EPD_3IN7_SendCommand(0x20);
+    err |= EPD_3IN7_SendCommand(0x20);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
+    return err;
 }
 
 /******************************************************************************
 function :	Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_3IN7_4Gray_Display(const UBYTE *Image)
+esp_err_t EPD_3IN7_4Gray_Display(const UBYTE *Image)
 {
     UDOUBLE i, j, k;
     UBYTE temp1, temp2, temp3;
+    esp_err_t err = ESP_OK;
+    err |= EPD_3IN7_SendCommand(0x49);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x49);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x24);
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_SendCommand(0x24);
     for (i = 0; i < 16800; i++)
     {
         temp3 = 0;
@@ -607,18 +592,21 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
                 temp1 <<= 2;
             }
         }
-        EPD_3IN7_SendData(temp3);
+        err |= EPD_3IN7_SendData(temp3);
     }
+    ERROR_CHECKRETURN(err);
     // new  data
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x26);
+    err |= EPD_3IN7_SendCommand(0x26);
+    ERROR_CHECKRETURN(err);
+
     for (i = 0; i < 16800; i++)
     {
         temp3 = 0;
@@ -654,52 +642,57 @@ void EPD_3IN7_4Gray_Display(const UBYTE *Image)
                 temp1 <<= 2;
             }
         }
-        EPD_3IN7_SendData(temp3);
+        err |= EPD_3IN7_SendData(temp3);
     }
+    ERROR_CHECKRETURN(err);
 
-    EPD_3IN7_Load_LUT(0);
+    err |= EPD_3IN7_Load_LUT(0);
 
-    EPD_3IN7_SendCommand(0x22);
-    EPD_3IN7_SendData(0xC7);
+    err |= EPD_3IN7_SendCommand(0x22);
+    err |= EPD_3IN7_SendData(0xC7);
 
-    EPD_3IN7_SendCommand(0x20);
+    err |= EPD_3IN7_SendCommand(0x20);
 
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
+    return err;
 }
 
 /******************************************************************************
 function :  Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
+esp_err_t EPD_3IN7_1Gray_Display(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
     // UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
+    esp_err_t err = ESP_OK;
 
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x24);
-    EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
-    //   for (i = 0; i < IMAGE_COUNTER; i++)
-    //   {
-    //     EPD_3IN7_SendData(Image[i]);
-    //   }
-    EPD_3IN7_Load_LUT(refreshMode);
-    EPD_3IN7_SendCommand(0x20);
+    err |= EPD_3IN7_SendCommand(0x24);
+    ERROR_CHECKRETURN(err);
+
+    err |= EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
+    ERROR_CHECKRETURN(err);
+
+    err |= EPD_3IN7_Load_LUT(refreshMode);
+    err |= EPD_3IN7_SendCommand(0x20);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
-    // return refreshMode == FULL_G_T_BW;
+    return err;
 }
 
 /******************************************************************************
 function :  Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
+esp_err_t EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
     UWORD Width;
     // 1 bit per Pixel. Pro Byte 8 Pixel. Muss ganzes Byte senden darum 8+1
@@ -709,67 +702,67 @@ void EPD_3IN7_1Gray_Display_Part(const UBYTE *PartBuffer, UWORD Xstart, UWORD Ys
     Xend -= 1;
     Yend -= 1;
 
+    esp_err_t err = ESP_OK;
     // Sendet start Adresse von X und Endadresse von X
-    EPD_3IN7_SendCommand(0x44);
-    EPD_3IN7_SendData(Xstart & 0xff);
-    EPD_3IN7_SendData((Xstart >> 8) & 0x03);
-    EPD_3IN7_SendData(Xend & 0xff);
-    EPD_3IN7_SendData((Xend >> 8) & 0x03);
+    err |= EPD_3IN7_SendCommand(0x44);
+    err |= EPD_3IN7_SendData(Xstart & 0xff);
+    err |= EPD_3IN7_SendData((Xstart >> 8) & 0x03);
+    err |= EPD_3IN7_SendData(Xend & 0xff);
+    err |= EPD_3IN7_SendData((Xend >> 8) & 0x03);
     // Sendet start Adresse von Y und Endadresse von Y
-    EPD_3IN7_SendCommand(0x45);
-    EPD_3IN7_SendData(Ystart & 0xff);
-    EPD_3IN7_SendData((Ystart >> 8) & 0x03);
-    EPD_3IN7_SendData(Yend & 0xff);
-    EPD_3IN7_SendData((Yend >> 8) & 0x03);
+    err |= EPD_3IN7_SendCommand(0x45);
+    err |= EPD_3IN7_SendData(Ystart & 0xff);
+    err |= EPD_3IN7_SendData((Ystart >> 8) & 0x03);
+    err |= EPD_3IN7_SendData(Yend & 0xff);
+    err |= EPD_3IN7_SendData((Yend >> 8) & 0x03);
 
-    EPD_3IN7_SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
-    EPD_3IN7_SendData(Xstart & 0xFF);
+    err |= EPD_3IN7_SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
+    err |= EPD_3IN7_SendData(Xstart & 0xFF);
 
-    EPD_3IN7_SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
-    EPD_3IN7_SendData(Ystart & 0xFF);
-    EPD_3IN7_SendData((Ystart >> 8) & 0xFF);
+    err |= EPD_3IN7_SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
+    err |= EPD_3IN7_SendData(Ystart & 0xFF);
+    err |= EPD_3IN7_SendData((Ystart >> 8) & 0xFF);
 
     // Starte senden von Daten in den RAM
-    EPD_3IN7_SendCommand(0x24);
-    //   for (i = 0; i < IMAGE_COUNTER; i++)
-    //   {
-    //     EPD_3IN7_SendData(Image[i]);
-    //   }
-    EPD_3IN7_SendDataStream(PartBuffer, IMAGE_COUNTER);
+    err |= EPD_3IN7_SendCommand(0x24);
+    err |= EPD_3IN7_SendDataStream(PartBuffer, IMAGE_COUNTER);
 
-    EPD_3IN7_Load_LUT(refreshMode);
-    EPD_3IN7_SendCommand(0x20);
+    err |= EPD_3IN7_Load_LUT(refreshMode);
+    err |= EPD_3IN7_SendCommand(0x20);
+    ERROR_CHECKRETURN(err);
     EPD_3IN7_ReadBusy_HIGH();
+    return err;
 }
 
-void EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
+esp_err_t EPD_3IN7_1Gray_Display_Part_FullScreenBuffer(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, Display_RefreshMode refreshMode)
 {
     // 35 = Paint.WidthByte
     UDOUBLE Addr = Xstart / 8 + Ystart * 35;
-    EPD_3IN7_1Gray_Display_Part(&Image[Addr], Xstart, Ystart, Xend, Yend, refreshMode);
+    return EPD_3IN7_1Gray_Display_Part(&Image[Addr], Xstart, Ystart, Xend, Yend, refreshMode);
 }
 
-void EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
+esp_err_t EDP_3IN7_1Gray_Start(const UBYTE *Image, Display_RefreshMode refreshMode)
 {
     // UWORD i;
     UWORD IMAGE_COUNTER = EPD_3IN7_WIDTH * EPD_3IN7_HEIGHT / 8;
 
-    EPD_3IN7_SendCommand(0x4E);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendCommand(0x4F);
-    EPD_3IN7_SendData(0x00);
-    EPD_3IN7_SendData(0x00);
+    esp_err_t err = ESP_OK;
+    err |= EPD_3IN7_SendCommand(0x4E);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendCommand(0x4F);
+    err |= EPD_3IN7_SendData(0x00);
+    err |= EPD_3IN7_SendData(0x00);
 
-    EPD_3IN7_SendCommand(0x24);
-    EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
-    //   for (i = 0; i < IMAGE_COUNTER; i++)
-    //   {
-    //     EPD_3IN7_SendData(Image[i]);
-    //   }
-    EPD_3IN7_Load_LUT(refreshMode);
-    EPD_3IN7_SendCommand(0x20);
-    // return refreshMode == FULL_G_T_BW;
+    err |= EPD_3IN7_SendCommand(0x24);
+    ERROR_CHECKRETURN(err);
+
+    err |= EPD_3IN7_SendDataStream(Image, IMAGE_COUNTER);
+    ERROR_CHECKRETURN(err);
+
+    err |= EPD_3IN7_Load_LUT(refreshMode);
+    err |= EPD_3IN7_SendCommand(0x20);
+    return err;
 }
 void EPD_3IN7_1Gray_WaitBusy()
 {

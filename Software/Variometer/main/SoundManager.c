@@ -6,6 +6,7 @@
 #include "DeviceContext.h"
 #include <esp_log.h>
 #include "Watchdog/Watchdog.h"
+#include "ErrorHandling.h"
 
 #define BUFF_SIZE 2048
 #define PDM_TX_FREQ_HZ 44100 // I2S PDM TX frequency
@@ -42,12 +43,12 @@ SoundManager_Tone_t startSeqeunce[3] = {
 static void SoundManager_NoSound(float duration)
 {
     size_t w_bytes = 0;
+    esp_err_t err;
     for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration); tot_bytes += w_bytes)
     {
-        if (i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
-        {
-            printf("Write Task: i2s write failed\n");
-        }
+        err = i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK;
+        if (err != ESP_OK)
+            error_handle(err, ERR_SOUNDMANAGER, "Can't write I2S data");
     }
 }
 
@@ -59,6 +60,7 @@ void SoundManager_Task(void *parameters)
     biepState_t lastBiepState = no_Sound;
     size_t w_bytes = 0;
     int tone_point = 0;
+    esp_err_t err;
     // SoundManager_playToneArray(startSeqeunce, 3);
     while (true)
     {
@@ -108,12 +110,12 @@ void SoundManager_Task(void *parameters)
         }
         w_bytes = 0;
 #ifdef SOUND_ON
-        // evtl. nicht duration / 2, weil nur ein Channel?. Zeit stimmt auf jeden Fall so.
         for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes)
         {
-            if (i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
+            err = i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 100 / portTICK_PERIOD_MS);
+            if (err != ESP_OK)
             {
-                printf("Write Task: i2s write failed\n");
+                error_handle(err, ERR_SOUNDMANAGER, "Can't write I2S data");
             }
         }
 #else
@@ -122,13 +124,7 @@ void SoundManager_Task(void *parameters)
         // spiele für die gleich lange Zeit kein Ton aus (sende nur Nullen)
         if (currentBiepState != constant_Deep)
         {
-            for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(durationNow); tot_bytes += w_bytes)
-            {
-                if (i2s_write(I2S_NUM, bufferZero, sizeof(bufferZero), &w_bytes, 100 / portTICK_PERIOD_MS) != ESP_OK)
-                {
-                    printf("Write Task: i2s write failed\n");
-                }
-            }
+            SoundManager_NoSound(durationNow);
         }
     }
     vTaskDelete(NULL);
@@ -172,6 +168,7 @@ void SoundManager_calculateNewBiep()
 
 esp_err_t init_SoundManager()
 {
+    esp_err_t err;
     gpio_config_t enableGPIOOutput = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -200,13 +197,16 @@ esp_err_t init_SoundManager()
         .ws_io_num = I2S_LRCLK,
         .data_out_num = I2S_DIN,
         .data_in_num = I2S_PIN_NO_CHANGE};
-    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL));
-    ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM, &pin_config));
+    ERROR_CHECKRETURN(i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL));
+    ERROR_CHECKRETURN(i2s_set_pin(I2S_NUM, &pin_config));
     buffer = (int16_t *)calloc(1, BUFF_SIZE);
-    assert(buffer);
+    if (!buffer)
+        return ESP_ERR_NO_MEM;
 
     soundManager_instance.ToneArray = calloc(6, sizeof(Tonestate_t));
-    assert(soundManager_instance.ToneArray);
+    if (!soundManager_instance.ToneArray)
+        return ESP_ERR_NO_MEM;
+
     soundManager_instance.sizeToneArray = 6;
     Tonestate_t stateBeep[6] = {
         {.state = constant_Deep, .frequency = 250, .duration = 200, .lowerVelocity = -999, .upVelocity = -2.5f},
@@ -219,7 +219,6 @@ esp_err_t init_SoundManager()
     soundManager_instance.indexCurrentToneArray = 1;
     uint16_t volume = 6000;
     vario_settings_set_member(&volume, vario_settings_soundVolume);
-
     soundQueue = xQueueCreate(Sound_Size_Queue, sizeof(SoundManager_Tone_t));
     xTaskCreate(SoundManager_Task, "SoundManager_Task", 2 * 1024, NULL, 7, NULL);
     return ESP_OK;
@@ -233,21 +232,22 @@ esp_err_t deinit_SoundManager()
     return ESP_OK;
 }
 
-void SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray)
+esp_err_t SoundManager_playToneArray(SoundManager_Tone_t *toneArray, size_t sizeToneArray)
 {
     for (size_t i = 0; i < sizeToneArray; i++)
     {
         BaseType_t returnValue = xQueueSend(soundQueue, &toneArray[i], 3);
         if (returnValue != pdTRUE)
         {
-            ESP_LOGI(TAG, "SoundManager: Queue is full");
-            return;
+            return ESP_ERR_NO_MEM;
         }
     }
+    return ESP_OK;
 }
 
 esp_err_t SoundManager_playSinWave(int frequency, int duration)
 {
+    esp_err_t err;
     size_t w_bytes = 0;
     int tone_point = SINE_WAVE_LEN(frequency);
     /* Generate the tone buffer */
@@ -258,9 +258,10 @@ esp_err_t SoundManager_playSinWave(int frequency, int duration)
 
     for (int tot_bytes = 0; tot_bytes < BYTE_NUM_EVERY_TONE(duration * 2); tot_bytes += w_bytes)
     {
-        if (i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK)
+        err = i2s_write(I2S_NUM, buffer, tone_point * sizeof(int16_t), &w_bytes, 1000) != ESP_OK;
+        if (err != ESP_OK)
         {
-            printf("Write Task: i2s write failed\n");
+            error_handle(err, ERR_SOUNDMANAGER, "Can't write I2S data");
         }
     }
     return ESP_OK;
