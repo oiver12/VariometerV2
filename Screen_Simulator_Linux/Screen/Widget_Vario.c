@@ -84,7 +84,6 @@ float get_Value_Text(WidgetContentType contentType, char *const buffer, size_t b
         if (countGPS % 20 == 0)
         {
             snprintf(buffer, bufferSize, "%i:%i", tempGps.tim.hour, tempGps.tim.minute);
-            printf("GPS Time Update \n");
         }
         else if (bufferSize != 0)
             buffer[0] = 0;
@@ -434,6 +433,11 @@ static void add_Airspace_Widget(WidgetData *widget)
     DrawTextWithAlignOffset(widget, buffer, widget->w / 2, 60, &Font12, true, ALIGN_CENTER, ALIGN_TOP);
 }
 
+static void add_TrackPoint_Widget(WidgetData *widget)
+{
+    DrawWidgetBone(widget, "");
+}
+
 /************************ Update Widgets ************************/
 
 static void update_TextBox_Widget(WidgetData *widget)
@@ -740,6 +744,14 @@ static void update_Airspace_Widget(WidgetData *widget)
     add_Airspace_Widget(widget);
 }
 
+static void update_TrackPoint_Widget(WidgetData *widget)
+{
+    const float ZOOM_FACTOR = 0.6;
+    int heading;
+    vario_state_get_member(&heading, vario_state_heading, false);
+    float theta = DEGREE_TO_RADIAN * (180 - heading);
+}
+
 void vario_display_add_widget(WidgetData *widget)
 {
     switch (widget->style)
@@ -764,6 +776,8 @@ void vario_display_add_widget(WidgetData *widget)
     case Widget_Airspace:
         add_Airspace_Widget(widget);
         break;
+    case Widget_TrackPoints:
+        add_TrackPoint_Widget(widget);
     default:
         break;
     }

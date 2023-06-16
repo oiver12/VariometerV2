@@ -140,80 +140,11 @@ void startRender()
         {.extraStyle = WS_FONT_12_CONTENT, .h = 100, .w = 200, .style = Widget_Airspace, .type = WidgetContent_Airspace, .x = 0, .y = 87}};
     ScreenManager_add_Screen_add_widgets(widgetDataScreen1, 5);
     ScreenManager_show_Screen(1);
-    FILE *fileptr;
-    fileptr = fopen("IGC/2023-05-06-XCT-TLE-09.IGC", "r");
-    if (fileptr == NULL)
-    {
-        printf("Can't finde File\n");
-        return;
-    }
-    // vario_display_FlightStatistics(fileptr, "IGC_Flight");
-    fclose(fileptr);
 }
 
 void updateRender()
 {
     ScreenManager_update();
-}
-
-void startRenderTimeProgress()
-{
-    Paint_DrawLine(0, 281, 480, 281, BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID);
-    const int x = 20;
-    const int y = 290;
-    const int width = 440;
-    const int height = 20;
-    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
-    Paint_DrawRectangle(x + 2, y + 2, x + width - 2, y + height - 2, WHITE, DOT_PIXEL_1X1, WHITE);
-}
-
-void updateRenderTimeProgress(float percentage, size_t vario_state_Simulation_size, vario_state_Simulation *bufferSimulation)
-{
-    static int i = 0;
-    if (i % 10 == 0)
-    {
-        startRenderTimeProgress();
-        startHeightDiagramm(vario_state_Simulation_size, bufferSimulation);
-    }
-    const int x = 20;
-    const int y = 290;
-    const int width = 440;
-    const int height = 20;
-    Paint_DrawRectangle(x + 2, y + 2, x + width - 2, y + height - 2, WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-    Paint_DrawRectangle(x + 2, y + 2, x + width * percentage - 2, y + height - 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-}
-
-void startHeightDiagramm(size_t vario_state_Simulation_size, vario_state_Simulation *bufferSimulation)
-{
-    const int x = 10;
-    const int y = 320;
-    const int width = 460;
-    const int height = 80;
-    Paint_DrawRectangle(x, y, x + width, y + height, BLACK, DOT_PIXEL_1X1, FALSE);
-    float ratio = (float)vario_state_Simulation_size / (float)width;
-    float i = 0;
-    int pixelDraw = 0;
-    float maxHeight = 0;
-    float minHeight = 0;
-    for (size_t i = 0; i < vario_state_Simulation_size; i++)
-    {
-        float height = bufferSimulation[i].height;
-        if (height > maxHeight)
-            maxHeight = height;
-        else if (height < minHeight)
-            minHeight = height;
-    }
-
-    maxHeight += 50;
-    minHeight -= 50;
-    while (i < vario_state_Simulation_size && pixelDraw <= width)
-    {
-        float percentageFromHeight = ((float)(bufferSimulation[(int)roundf(i)].height - minHeight)) / (float)(maxHeight - minHeight);
-        float heightY = (uint16_t)((1 - percentageFromHeight) * (float)height) + y;
-        Paint_DrawPoint(x + pixelDraw, heightY, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
-        pixelDraw++;
-        i += ratio;
-    }
 }
 
 void startDownArrow()

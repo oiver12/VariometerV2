@@ -16,7 +16,7 @@
 #define MAX_STRING_SIZE 16
 #define FIFO_VERTLAZY_SIZE 66          // ca. 2 Sekunde integriert
 #define FIFO_MAX_BIEPVERTLAZY_SIZE 100 // max 3s integrated
-#define FIFO_TRACKPOINT_SIZE 30
+#define MAX_TRACKPOINT_SIZE 30
 
 #define Volume_max_Size 20000 // eig. 2^16 / 2 = 32'768, aber wäre zu viel Leistung für den Lautsprecher (denke ich ausprobieren!)
 
@@ -136,9 +136,13 @@ typedef struct
     float lat;
     float lon;
     float vario;
+} TrackPoint_t;
+
+typedef struct
+{
     float dx;
     float dy;
-} TrackPoint_t;
+} TrackDistance_t;
 
 typedef struct
 {
@@ -158,7 +162,10 @@ typedef struct
 
     uint32_t landingStartTime; // in ms
 
-    fifo_t fifo_trackPoints;
+    TrackPoint_t trackPoints[MAX_TRACKPOINT_SIZE];
+    TrackDistance_t trackDistance[MAX_TRACKPOINT_SIZE];
+    int16_t frontPoint;
+    int16_t rearPoint;
     uint16_t stateChange;
 } flight_stats_t;
 
@@ -198,7 +205,6 @@ bool device_state_get_member(void *value, device_state_member_t member, bool sta
 /*
  * Flight Stats
  */
-void flight_stats_set_member(void *value, flight_stats_member_t member);
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange);
 
 #endif
