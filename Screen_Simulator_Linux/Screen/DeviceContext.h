@@ -205,6 +205,9 @@ bool device_state_get_member(void *value, device_state_member_t member, bool sta
 /*
  * Flight Stats
  */
+// return null if the flight_stats havent changed, give doesn't have to be called
+flight_stats_t *flight_stats_take_trackPoints();
+void flight_stats_give_trackPoints();
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange);
 
 #endif

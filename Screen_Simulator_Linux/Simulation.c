@@ -8,12 +8,18 @@
 #include <SDL2/SDL_timer.h>
 #include <unistd.h>
 #include <libgen.h>
+#include "Screen/Util.h"
+#include "Screen/movingAverage.h"
 
 size_t vario_state_Simulation_size;
 vario_state_Simulation *bufferSimulation;
 Uint32 lastbufferTime = 0;
 Uint32 lastFrameTime = 0;
 static size_t currPosStateBuffer = 0;
+bool isIGCSim = FALSE;
+movingAverage_t avg_VertVel;
+
+extern void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
 static void changeToProjectRoot()
 {
@@ -180,7 +186,6 @@ static void startHeightDiagramm()
     size_t i = 0;
     while (i < vario_state_Simulation_size && pixelDraw <= width)
     {
-        float currPres = bufferSimulation[(int)roundf(i)].presHeight;
         float percentageFromHeight = ((float)(bufferSimulation[(int)roundf(i)].presHeight - minHeight)) / (float)(maxHeight - minHeight);
         float heightY = (uint16_t)((1 - percentageFromHeight) * (float)height) + y;
         Paint_DrawPoint(x + pixelDraw, heightY, BLACK, DOT_PIXEL_1X1, DOT_FILL_AROUND);
@@ -202,6 +207,7 @@ static void startRenderTimeProgress()
 
 void simulation_init(bool igc, char *fileName)
 {
+    isIGCSim = igc;
     changeToProjectRoot();
     if (igc)
         startIGCSimulation(fileName);
@@ -209,6 +215,7 @@ void simulation_init(bool igc, char *fileName)
         startFlightLoggerSimulation(fileName);
     startRenderTimeProgress();
     startHeightDiagramm();
+    movingAverage_init(&avg_VertVel, 20);
 }
 
 static void updateRenderTimeProgress(float percentage)
@@ -225,6 +232,32 @@ static void updateRenderTimeProgress(float percentage)
     const int height = 20;
     Paint_DrawRectangle(x + 2, y + 2, x + width - 2, y + height - 2, WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
     Paint_DrawRectangle(x + 2, y + 2, x + width * percentage - 2, y + height - 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+}
+
+static void UpdateIGCSim()
+{
+    vario_state_Simulation currPoint = bufferSimulation[currPosStateBuffer + 1];
+    gps_t gps = {
+        .altitude = currPoint.gpsHeight,
+        .latitude = currPoint.lat,
+        .longitude = currPoint.lon,
+        .fix = GPS_FIX_DGPS,
+        .fix_mode = GPS_MODE_3D,
+        .valid = true,
+    };
+    float speed;
+    int bearing;
+    if (currPosStateBuffer < vario_state_Simulation_size - 1)
+    {
+        vario_state_Simulation nextPoint = bufferSimulation[currPosStateBuffer];
+        bearing = GET_BEARING(currPoint.lat, currPoint.lon, nextPoint.lat, nextPoint.lon);
+        speed = GET_DISTANCEFAST(currPoint.lat, currPoint.lon, nextPoint.lat, nextPoint.lon);
+        float vario = currPoint.presHeight - nextPoint.presHeight;
+        vario_state_set_member(&vario, vario_state_vertVel);
+        vario_state_set_member(&bearing, vario_state_heading);
+        gps.speed = speed;
+    }
+    device_state_gps_handle(NULL, 0, GPS_UPDATE, &gps);
 }
 
 void simulation_nextStep()
@@ -244,11 +277,14 @@ void simulation_nextStep()
             lastbufferTime += time_since_last_frame * 1000;
             if (lastbufferTime >= bufferSimulation[currPosStateBuffer].time)
             {
-                vario_state_set_member(&bufferSimulation[currPosStateBuffer].velocity, vario_state_vertVel);
-                float accX = bufferSimulation[currPosStateBuffer].accX - 9.81;
-                vario_state_set_member(&bufferSimulation[currPosStateBuffer].presHeight, vario_state_altitudeBaro);
+                vario_state_Simulation currPoint = bufferSimulation[currPosStateBuffer];
+                vario_state_set_member(&currPoint.velocity, vario_state_vertVel);
+                float accX = currPoint.accX - 9.81;
+                vario_state_set_member(&currPoint.presHeight, vario_state_altitudeBaro);
                 vario_state_set_member(&accX, vario_state_vertAcc);
-                vario_state_set_member(&bufferSimulation[currPosStateBuffer].gpsHeight, vario_state_altitudeGPS);
+                vario_state_set_member(&currPoint.gpsHeight, vario_state_altitudeGPS);
+                if (isIGCSim)
+                    UpdateIGCSim();
                 currPosStateBuffer++;
             }
         }

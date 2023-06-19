@@ -6,6 +6,7 @@
 #include "Widget_Vario.h"
 #include "Util.h"
 #include "../esp_timer.h"
+#include "ScreenManager.h"
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
     {
@@ -55,7 +56,7 @@ static void TakeOff(gps_t *gps)
         .type = PopUpType_TakeOff,
         .timeToDisplay = 3000,
     };
-    ScreenManager_showPopUp(config);
+    // ScreenManager_showPopUp(config);
     SoundManager_playToneArray(takeOffMelody, 8);
     // startLogging();
     // start_IGCLogger();
@@ -75,7 +76,7 @@ static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
 
     int latest = (flight_stats.frontPoint + MAX_TRACKPOINT_SIZE - 1) % MAX_TRACKPOINT_SIZE;
 
-    for (int i = flight_stats.rearPoint; i |= latest;)
+    for (int i = flight_stats.rearPoint; i != latest;)
     {
         flight_stats.trackDistance[i].dx = -(flight_stats.trackPoints[latest].lon - flight_stats.trackPoints[i].lon);
         flight_stats.trackDistance[i].dy = flight_stats.trackPoints[latest].lat - flight_stats.trackPoints[i].lon;
@@ -83,6 +84,7 @@ static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
     }
     flight_stats.trackDistance[latest].dx = 0;
     flight_stats.trackDistance[latest].dy = 0;
+    flight_stats.stateChange |= flight_stats_trackPoints;
 }
 
 static void updateFlightStats(gps_t *gps)
@@ -115,13 +117,14 @@ static void updateFlightStats(gps_t *gps)
     xSemaphoreGive(semaphore_flight_stats);
 }
 
-static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     gps_t *gps = NULL;
     gps_fix_mode_t oldFixMode;
     switch (event_id)
     {
     case GPS_UPDATE:
+        printf("GPS Update\n");
         gps = (gps_t *)event_data;
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;
@@ -143,7 +146,7 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
                 .type = PopUpType_GPSFix,
                 .timeToDisplay = 3000,
             };
-            ScreenManager_showPopUp(config);
+            // ScreenManager_showPopUp(config);
             SoundManager_playToneArray(gpsFix_ToneArray, 3);
         }
         if (gps->fix_mode != GPS_MODE_INVALID)
@@ -501,4 +504,17 @@ bool flight_stats_get_member(void *value, flight_stats_member_t member, bool sta
         flight_stats.stateChange &= 0xFFFF - member;
     xSemaphoreGive(semaphore_flight_stats);
     return returnValue;
+}
+
+flight_stats_t *flight_stats_take_trackPoints()
+{
+    if (!(flight_stats.stateChange & flight_stats_trackPoints))
+        return NULL;
+    xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
+    return &flight_stats;
+}
+
+void flight_stats_give_trackPoints()
+{
+    xSemaphoreGive(semaphore_flight_stats);
 }

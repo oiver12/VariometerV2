@@ -17,13 +17,13 @@
 #include "MainTasks.h"
 #include "Bluetooth/bluetooth.h"
 #include "ErrorHandling.h"
+#include "Sensor/I2C_Manager.h"
 
 #define POWSW_ENABLE 13
 
 #define I2C_MASTER_FREQ_HZ 80000
 #define I2C_SDA 37
 #define I2C_SCL 36
-#define i2c_master_port 0
 
 #define USART2_TX 17
 #define USART2_RX 18
@@ -129,7 +129,7 @@ void app_main(void)
     startBluetooth();
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
-
+    i2c_manager_init(I2C_NUM_0, I2C_SDA, I2C_SCL, I2C_MASTER_FREQ_HZ);
     startMainTasks();
     // xTaskCreate(sendAttitude, "Send Attitude", 4 * 1024, NULL, 6, NULL);
     // perfmon_start();

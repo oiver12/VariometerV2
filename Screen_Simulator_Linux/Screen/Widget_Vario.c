@@ -750,6 +750,55 @@ static void update_TrackPoint_Widget(WidgetData *widget)
     int heading;
     vario_state_get_member(&heading, vario_state_heading, false);
     float theta = DEGREE_TO_RADIAN * (180 - heading);
+    flight_stats_t *flightStats = flight_stats_take_trackPoints();
+    if (flightStats == NULL)
+        return;
+    float cosT = cosf(theta);
+    float sinT = sinf(theta);
+    for (int i = flightStats->rearPoint; i != flightStats->frontPoint;)
+    {
+#if 0 // 0 clock is heading
+        float x0 = flightStats->trackDistance[i].dx * ZOOM_FACTOR;
+        float y0 = flightStats->trackDistance[i].dy * ZOOM_FACTOR;
+
+        int16_t x = (widget->x + widget->w / 2) - (int16_t)(x0 * cosT - y0 * sinT);
+        int16_t y = (widget->y + widget->h / 2) - (int16_t)(x0 * sinT + y0 * cosT);
+#else // 0 clock is north
+        int16_t x = widget->x + widget->w / 2;
+        int16_t y = widget->y + widget->h / 2;
+
+        x -= flightStats->trackDistance[i].dx * ZOOM_FACTOR;
+        y += flightStats->trackDistance[i].dy * ZOOM_FACTOR;
+#endif
+
+        if (widget->x + 2 < x && widget->y + 2 < y && x < widget->x + widget->w - 2 && y < widget->y + widget->h - 2)
+        {
+            if (flightStats->trackPoints[i].vario < 0)
+            {
+                Paint_DrawRectangle(x - 2, y - 2, x + 2, y + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+            }
+            else
+            {
+                int16_t r = 2;
+
+                if (flightStats->trackPoints[i].vario > 1)
+                    r = (flightStats->trackPoints[i].vario > 2) ? 4 : 3;
+
+                Paint_DrawCircle(x, y, r, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+            }
+        }
+
+        i = (i + 1) % MAX_TRACKPOINT_SIZE;
+    }
+
+    // draw glider
+    {
+        int16_t cx = widget->x + widget->w / 2;
+        int16_t cy = widget->y + widget->h / 2;
+
+        Paint_DrawLine(cx - 10, cy, cx, cy - 18, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+        Paint_DrawLine(cx, cy - 18, cx + 10, cy, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+    }
 }
 
 void vario_display_add_widget(WidgetData *widget)
@@ -806,6 +855,9 @@ void vario_update_widget(WidgetData *widget)
         break;
     case Widget_Airspace:
         update_Airspace_Widget(widget);
+        break;
+    case Widget_TrackPoints:
+        update_TrackPoint_Widget(widget);
         break;
     default:
         break;
