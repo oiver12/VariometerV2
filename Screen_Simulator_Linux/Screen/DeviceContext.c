@@ -129,7 +129,6 @@ void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_bas
     switch (event_id)
     {
     case GPS_UPDATE:
-        printf("GPS Update\n");
         gps = (gps_t *)event_data;
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;

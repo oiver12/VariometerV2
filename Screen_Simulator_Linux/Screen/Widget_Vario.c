@@ -749,11 +749,11 @@ static void update_TrackPoint_Widget(WidgetData *widget)
     const float ZOOM_FACTOR = 0.6;
     int heading;
     vario_state_get_member(&heading, vario_state_heading, false);
-    float theta = DEGREE_TO_RADIAN * (180 + heading);
+    float theta = DEGREE_TO_RADIAN * (180 - heading);
     flight_stats_t *flightStats = flight_stats_take_trackPoints();
     if (flightStats == NULL)
         return;
-    Paint_ClearWindows(widget->x + 2, widget->y + 2, widget->x + widget->w - 2, widget->y + widget->h - 2, WHITE);
+    Paint_ClearWindows(widget->x + 1, widget->y + 1, widget->x + widget->w - 1, widget->y + widget->h - 1, WHITE);
     float cosT = cosf(theta);
     float sinT = sinf(theta);
     for (int i = flightStats->rearPoint; i != flightStats->frontPoint;)
@@ -763,7 +763,7 @@ static void update_TrackPoint_Widget(WidgetData *widget)
         float y0 = flightStats->trackDistance[i].dy * ZOOM_FACTOR;
 
         int16_t x = (widget->x + widget->w / 2) - (int16_t)(x0 * cosT - y0 * sinT);
-        int16_t y = (widget->y + widget->h / 2) - (int16_t)(x0 * sinT + y0 * cosT);
+        int16_t y = (widget->y + widget->h / 2) + (int16_t)(x0 * sinT + y0 * cosT);
 #else // 0 clock is north
         int16_t x = widget->x + widget->w / 2;
         int16_t y = widget->y + widget->h / 2;
@@ -776,7 +776,7 @@ static void update_TrackPoint_Widget(WidgetData *widget)
         {
             if (flightStats->trackPoints[i].vario < 0)
             {
-                Paint_DrawRectangle(x - 2, y - 2, x + 2, y + 2, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+                Paint_DrawRectangle(x - 1, y - 1, x + 1, y + 1, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
             }
             else
             {

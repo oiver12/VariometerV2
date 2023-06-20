@@ -245,13 +245,11 @@ static void UpdateIGCSim()
         .fix_mode = GPS_MODE_3D,
         .valid = true,
     };
-    float speed;
-    int bearing;
     if (currPosStateBuffer > 0)
     {
         vario_state_Simulation lastPoint = bufferSimulation[currPosStateBuffer - 1];
-        bearing = GET_BEARING(currPoint.lat, currPoint.lon, lastPoint.lat, lastPoint.lon);
-        speed = GET_DISTANCEFAST(currPoint.lat, currPoint.lon, lastPoint.lat, lastPoint.lon);
+        int bearing = GET_BEARING(currPoint.lat, currPoint.lon, lastPoint.lat, lastPoint.lon);
+        float speed = GET_DISTANCEFAST(lastPoint.lat, lastPoint.lon, currPoint.lat, currPoint.lon);
         float vario = currPoint.presHeight - lastPoint.presHeight;
         vario_state_set_member(&vario, vario_state_vertVel);
         vario_state_set_member(&bearing, vario_state_heading);
