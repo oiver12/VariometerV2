@@ -749,15 +749,16 @@ static void update_TrackPoint_Widget(WidgetData *widget)
     const float ZOOM_FACTOR = 0.6;
     int heading;
     vario_state_get_member(&heading, vario_state_heading, false);
-    float theta = DEGREE_TO_RADIAN * (180 - heading);
+    float theta = DEGREE_TO_RADIAN * (180 + heading);
     flight_stats_t *flightStats = flight_stats_take_trackPoints();
     if (flightStats == NULL)
         return;
+    Paint_ClearWindows(widget->x + 2, widget->y + 2, widget->x + widget->w - 2, widget->y + widget->h - 2, WHITE);
     float cosT = cosf(theta);
     float sinT = sinf(theta);
     for (int i = flightStats->rearPoint; i != flightStats->frontPoint;)
     {
-#if 0 // 0 clock is heading
+#if 1 // 0 clock is heading
         float x0 = flightStats->trackDistance[i].dx * ZOOM_FACTOR;
         float y0 = flightStats->trackDistance[i].dy * ZOOM_FACTOR;
 

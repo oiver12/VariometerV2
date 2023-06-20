@@ -1,7 +1,7 @@
 #ifndef __MOVINGAVERAGE_H
 #define __MOVINGAVERAGE_H
 
-#include "Screen/FIFO.h"
+#include "FIFO.h"
 
 typedef struct movingAverage_t
 {

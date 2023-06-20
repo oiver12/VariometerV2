@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "FIFO.h"
 #include <stdio.h>
+#include "DeviceContext.h"
 
 #define ChartNumDataPoints 20
 

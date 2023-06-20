@@ -247,12 +247,12 @@ static void UpdateIGCSim()
     };
     float speed;
     int bearing;
-    if (currPosStateBuffer < vario_state_Simulation_size - 1)
+    if (currPosStateBuffer > 0)
     {
-        vario_state_Simulation nextPoint = bufferSimulation[currPosStateBuffer];
-        bearing = GET_BEARING(currPoint.lat, currPoint.lon, nextPoint.lat, nextPoint.lon);
-        speed = GET_DISTANCEFAST(currPoint.lat, currPoint.lon, nextPoint.lat, nextPoint.lon);
-        float vario = currPoint.presHeight - nextPoint.presHeight;
+        vario_state_Simulation lastPoint = bufferSimulation[currPosStateBuffer - 1];
+        bearing = GET_BEARING(currPoint.lat, currPoint.lon, lastPoint.lat, lastPoint.lon);
+        speed = GET_DISTANCEFAST(currPoint.lat, currPoint.lon, lastPoint.lat, lastPoint.lon);
+        float vario = currPoint.presHeight - lastPoint.presHeight;
         vario_state_set_member(&vario, vario_state_vertVel);
         vario_state_set_member(&bearing, vario_state_heading);
         gps.speed = speed;

@@ -8,6 +8,11 @@
 #include "../esp_timer.h"
 #include "ScreenManager.h"
 
+#define RADIUS (6371000) // 6371e3
+
+#define TO_RADIAN(x) ((x) * (PI / 180))
+#define GET_DISTANCELATLON(angle) (2.0 * RADIUS * sin(TO_RADIAN((angle) / 2)))
+
 SoundManager_Tone_t gpsFix_ToneArray[3] =
     {
         {262, 500},
@@ -78,8 +83,8 @@ static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
 
     for (int i = flight_stats.rearPoint; i != latest;)
     {
-        flight_stats.trackDistance[i].dx = -(flight_stats.trackPoints[latest].lon - flight_stats.trackPoints[i].lon);
-        flight_stats.trackDistance[i].dy = flight_stats.trackPoints[latest].lat - flight_stats.trackPoints[i].lon;
+        flight_stats.trackDistance[i].dx = -GET_DISTANCELATLON(flight_stats.trackPoints[latest].lon - flight_stats.trackPoints[i].lon);
+        flight_stats.trackDistance[i].dy = GET_DISTANCELATLON(flight_stats.trackPoints[latest].lat - flight_stats.trackPoints[i].lat);
         i = (i + 1) % MAX_TRACKPOINT_SIZE;
     }
     flight_stats.trackDistance[latest].dx = 0;
