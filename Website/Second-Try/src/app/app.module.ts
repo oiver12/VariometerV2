@@ -13,6 +13,18 @@ import { HomeBottomComponent } from './components/home/home-bottom/home-bottom.c
 import { CardComponent } from './components/card/card.component';
 import { ParallaxDirective } from './components/parallax/parallax.directive';
 import { BulletListComponent } from './components/bullet-list/bullet-list.component';
+import { ModifySoundsComponent } from './components/modify-sounds/modify-sounds.component';
+import { ModifyComponent } from './views/modify/modify.component';
+import { ModifyScreenComponent } from './components/modify-screen/modify-screen.component';
+import {
+    LineSeriesService,
+    ColumnSeriesService,
+    CategoryService,
+    DataEditingService,
+    TooltipService,
+    LegendService,
+    ChartModule,
+} from '@syncfusion/ej2-angular-charts';
 
 @NgModule({
     declarations: [
@@ -25,14 +37,25 @@ import { BulletListComponent } from './components/bullet-list/bullet-list.compon
         CardComponent,
         ParallaxDirective,
         BulletListComponent,
+        ModifySoundsComponent,
+        ModifyComponent,
     ],
     imports: [
         BrowserModule,
         AppRoutingModule,
         MaterialModule,
         BrowserAnimationsModule,
+        ModifyScreenComponent,
+        ChartModule,
     ],
-    providers: [],
+    providers: [
+        LegendService,
+        LineSeriesService,
+        ColumnSeriesService,
+        CategoryService,
+        DataEditingService,
+        TooltipService,
+    ],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

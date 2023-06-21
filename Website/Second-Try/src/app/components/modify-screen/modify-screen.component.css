@@ -1,0 +1,102 @@
+p {
+    transform: scale(1.3);
+    font-weight: lighter;
+}
+.drag-container {
+    height: calc(68vw * 7 / 12);
+    width: 92vw;
+    position: absolute;
+    top: calc(100px + 3.5%);
+    left: 4%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.boundary {
+    height: 100%;
+    width: 68vw;
+    max-width: 100vw;
+    background-color: white;
+    border-radius: 15px;
+}
+.screen-element {
+    border: solid 1px #ccc;
+    color: rgba(0, 0, 0, 0.87);
+    cursor: move;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 15px;
+    position: absolute;
+    z-index: 1;
+    box-sizing: border-box;
+    padding: 10px;
+    transition: box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+.text-element {
+    width: calc(68vw / 3);
+    height: 25%;
+    flex-direction: column;
+}
+.text-title {
+    margin-top: 0;
+}
+.text-value {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 50%;
+    margin-right: 5%;
+    margin-left: auto;
+}
+
+.example-box:active {
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+        0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+.selectbox {
+    background-color: #fff;
+    width: 5vw;
+    height: 100%;
+    width: 20vw;
+    border-radius: 15px;
+}
+.selectbox-item {
+    height: 11%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 4px -2px gray;
+    cursor: pointer;
+}
+.selectbox-item:hover {
+    background-color: #ddd;
+}
+.title-selectbox {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 11%;
+}
+.title-selectbox .selectbox-item {
+    width: 50%;
+    height: 100%;
+}
+.selected-title {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+:not(.title-selectbox) .selectbox-item:last-child {
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+.title-selectbox .selectbox-item:last-child {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}

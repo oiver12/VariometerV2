@@ -1,0 +1,53 @@
+<div class="drag-container">
+    <div class="boundary">
+        <div
+            *ngFor="let element of chosenElements; let i = index"
+            class="screen-element text-element"
+            cdkDrag
+            [cdkDragConstrainPosition]="snap(i)"
+            id="{{ i }}"
+            (mouseup)="onMouseUp()"
+        >
+            <ng-container *ngIf="element.unit != 'None'; else noUnit">
+                <p class="text-title">{{ element.title }}</p>
+                <div class="text-value">
+                    <p>0.0</p>
+                    <p>
+                        {{ element.unit }}
+                    </p>
+                </div>
+            </ng-container>
+            <ng-template #noUnit>
+                <p class="text-title">{{ element.title }}</p>
+                <div class="text-value">
+                    <p>0.0</p>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+    <div class="selectbox">
+        <div class="title-selectbox" *ngIf="selectedTitle === buttonTitleGraph">
+            <div class="selectbox-item" (click)="changeSelectedTitle()">
+                <h2>Text</h2>
+            </div>
+            <div class="selected-title">
+                <h2>Graphics</h2>
+            </div>
+        </div>
+        <div class="title-selectbox" *ngIf="selectedTitle === buttonTitleText">
+            <div class="selected-title">
+                <h2>Text</h2>
+            </div>
+            <div class="selectbox-item" (click)="changeSelectedTitle()">
+                <h2>Graphics</h2>
+            </div>
+        </div>
+        <div
+            class="selectbox-item"
+            *ngFor="let element of selectedTitle"
+            (click)="createBox(element)"
+        >
+            <h2>{{ element.title }}</h2>
+        </div>
+    </div>
+</div>

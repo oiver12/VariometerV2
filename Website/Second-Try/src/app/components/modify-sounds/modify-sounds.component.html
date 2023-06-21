@@ -1,0 +1,21 @@
+<ejs-chart
+    id="chart-container"
+    [primaryXAxis]="primaryXAxis"
+    [primaryYAxis]="primaryYAxis"
+    [title]="title"
+    [chartArea]="chartArea"
+    [tooltip]="tooltip"
+>
+    <e-series-collection>
+        <e-series
+            [dataSource]="lineData"
+            type="Line"
+            xName="x"
+            yName="y"
+            width="2"
+            [marker]="marker"
+            [dragSettings]="dragSettings"
+        ></e-series>
+    </e-series-collection>
+</ejs-chart>
+<mat-icon>test</mat-icon>
