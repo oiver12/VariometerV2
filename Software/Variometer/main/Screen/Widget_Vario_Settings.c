@@ -104,7 +104,8 @@ static void add_Settings_Slider_Widget(WidgetData *widget, bool hovered, bool se
         break;
     }
     Paint_DrawString_EN(widget->x + 5, widget->y + 5, buffer, &Font12, selected ? BLACK : WHITE, selected ? WHITE : BLACK, TRUE);
-    uint16_t currValue, maxVolume;
+    uint16_t currValue = 0;
+    uint16_t maxVolume = 0;
     Slider_Get_Value(widget->type, &currValue, &maxVolume);
     float percentage = (float)currValue / (float)maxVolume;
     if (percentage > 1)
@@ -192,7 +193,8 @@ void vario_display_select_settings_widget(WidgetData *widget, Settings_Page_t cu
 
 void vario_handle_Slider(WidgetData *widget, Button_Direction direction)
 {
-    uint16_t currValue, maxVolume;
+    uint16_t currValue = 0;
+    uint16_t maxVolume = 0;
     Slider_Get_Value(widget->type, &currValue, &maxVolume);
     uint16_t amount = maxVolume * 0.05;
     // currValue += direction == Button_Direction_up ? amount : -amount;

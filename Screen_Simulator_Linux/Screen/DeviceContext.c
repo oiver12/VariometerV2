@@ -6,6 +6,12 @@
 #include "Widget_Vario.h"
 #include "Util.h"
 #include "../esp_timer.h"
+#include "ScreenManager.h"
+
+#define RADIUS (6371000) // 6371e3
+
+#define TO_RADIAN(x) ((x) * (PI / 180))
+#define GET_DISTANCELATLON(angle) (2.0 * RADIUS * sin(TO_RADIAN((angle) / 2)))
 
 SoundManager_Tone_t gpsFix_ToneArray[3] =
     {
@@ -55,10 +61,35 @@ static void TakeOff(gps_t *gps)
         .type = PopUpType_TakeOff,
         .timeToDisplay = 3000,
     };
-    ScreenManager_showPopUp(config);
+    // ScreenManager_showPopUp(config);
     SoundManager_playToneArray(takeOffMelody, 8);
     // startLogging();
     // start_IGCLogger();
+}
+
+static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
+{
+    int nextPoint = (flight_stats.frontPoint + 1) % MAX_TRACKPOINT_SIZE;
+    if (nextPoint == flight_stats.rearPoint)
+        flight_stats.rearPoint = (flight_stats.rearPoint + 1) % MAX_TRACKPOINT_SIZE;
+
+    flight_stats.trackPoints[flight_stats.frontPoint].lat = gps->latitude;
+    flight_stats.trackPoints[flight_stats.frontPoint].lon = gps->longitude;
+    flight_stats.trackPoints[flight_stats.frontPoint].vario = vertVel;
+
+    flight_stats.frontPoint = nextPoint;
+
+    int latest = (flight_stats.frontPoint + MAX_TRACKPOINT_SIZE - 1) % MAX_TRACKPOINT_SIZE;
+
+    for (int i = flight_stats.rearPoint; i != latest;)
+    {
+        flight_stats.trackDistance[i].dx = -GET_DISTANCELATLON(flight_stats.trackPoints[latest].lon - flight_stats.trackPoints[i].lon);
+        flight_stats.trackDistance[i].dy = GET_DISTANCELATLON(flight_stats.trackPoints[latest].lat - flight_stats.trackPoints[i].lat);
+        i = (i + 1) % MAX_TRACKPOINT_SIZE;
+    }
+    flight_stats.trackDistance[latest].dx = 0;
+    flight_stats.trackDistance[latest].dy = 0;
+    flight_stats.stateChange |= flight_stats_trackPoints;
 }
 
 static void updateFlightStats(gps_t *gps)
@@ -70,6 +101,7 @@ static void updateFlightStats(gps_t *gps)
     vario_state_get_member(&vertVel, vario_state_vertVel, false);
     flight_stats.maxVelX = fmaxf(flight_stats_maxVelX, vertVel);
     flight_stats.minVelX = fminf(flight_stats_minVelX, vertVel);
+    // we are flying
     if (flight_stats.takeOffTime > 0)
     {
         flight_stats.flightTime = (esp_timer_get_time() / 1000) - flight_stats.takeOffTime;
@@ -86,15 +118,11 @@ static void updateFlightStats(gps_t *gps)
     flight_stats.lastPosition.lat = gps->latitude;
     flight_stats.lastPosition.lon = gps->longitude;
     flight_stats.lastPosition.alt = gps->altitude;
-    /*TrackPoint_t trackPoint = {
-    .lat = gps->latitude,
-    .lon = gps->longitude,
-    .vario =
-}*/
+    updateFlightStatsTrackHistory(gps, vertVel);
     xSemaphoreGive(semaphore_flight_stats);
 }
 
-static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     gps_t *gps = NULL;
     gps_fix_mode_t oldFixMode;
@@ -122,7 +150,7 @@ static void device_state_gps_handle(void *event_handler_arg, esp_event_base_t ev
                 .type = PopUpType_GPSFix,
                 .timeToDisplay = 3000,
             };
-            ScreenManager_showPopUp(config);
+            // ScreenManager_showPopUp(config);
             SoundManager_playToneArray(gpsFix_ToneArray, 3);
         }
         if (gps->fix_mode != GPS_MODE_INVALID)
@@ -146,7 +174,7 @@ void init_DeviceContext()
     semaphore_flight_stats = xSemaphoreCreateMutex();
     vario_state.vertVel_Fifo = fifo_create(FIFO_VERTLAZY_SIZE, sizeof(float));
     currSizeFIFOVertVelBiep = 0;
-    flight_stats.fifo_trackPoints = fifo_create(FIFO_TRACKPOINT_SIZE, sizeof(TrackPoint_t));
+    flight_stats.rearPoint = flight_stats.frontPoint = 0;
 
     vario_settings.soundVolume = 10000;
     device_state.statusGPS = GPS_MODE_INVALID;
@@ -436,49 +464,6 @@ bool vario_settings_get_member(void *value, vario_settings_member_t member, bool
     return returnValue;
 }
 
-void flight_stats_set_member(void *value, flight_stats_member_t member)
-{
-    xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
-    switch (member)
-    {
-    case flight_stats_altitudeMax:
-        flight_stats.altitudeMax = *((float *)value);
-        break;
-    case flight_stats_altitudeMin:
-        flight_stats.altitudeMin = *((float *)value);
-        break;
-    case flight_stats_maxVelX:
-        flight_stats.maxVelX = *((float *)value);
-        break;
-    case flight_stats_minVelX:
-        flight_stats.minVelX = *((float *)value);
-        break;
-    case flight_stats_takeOffTime:
-        flight_stats.takeOffTime = *((uint32_t *)value);
-        break;
-    case flight_stats_flightTime:
-        flight_stats.flightTime = *((uint32_t *)value);
-        break;
-    case flight_stats_takeOffPosition:
-        flight_stats.takeOffPosition = *((Position_t *)value);
-        break;
-    case flight_stats_distTakeOff:
-        flight_stats.distTakeOff = *((float *)value);
-        break;
-    case flight_stats_distFlight:
-        flight_stats.distFlight = *((float *)value);
-        break;
-    case flight_stats_lastPosition:
-        flight_stats.lastPosition = *((Position_t *)value);
-        break;
-    default:
-        printf("Member von Flight Stats konnte nicht gefunden werden!\n");
-        break;
-    }
-    flight_stats.stateChange |= member;
-    xSemaphoreGive(semaphore_flight_stats);
-}
-
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange)
 {
     xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
@@ -514,9 +499,6 @@ bool flight_stats_get_member(void *value, flight_stats_member_t member, bool sta
     case flight_stats_lastPosition:
         *(Position_t *)value = flight_stats.lastPosition;
         break;
-    case flight_stats_trackPoints:
-        *(fifo_t *)value = flight_stats.fifo_trackPoints;
-        break;
     default:
         printf("Member von Flight Stats konnte nicht gefunden werden!\n");
         break;
@@ -526,4 +508,17 @@ bool flight_stats_get_member(void *value, flight_stats_member_t member, bool sta
         flight_stats.stateChange &= 0xFFFF - member;
     xSemaphoreGive(semaphore_flight_stats);
     return returnValue;
+}
+
+flight_stats_t *flight_stats_take_trackPoints()
+{
+    if (!(flight_stats.stateChange & flight_stats_trackPoints))
+        return NULL;
+    xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
+    return &flight_stats;
+}
+
+void flight_stats_give_trackPoints()
+{
+    xSemaphoreGive(semaphore_flight_stats);
 }

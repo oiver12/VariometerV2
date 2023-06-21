@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "FIFO.h"
 #include <stdio.h>
+#include "DeviceContext.h"
 
 #define ChartNumDataPoints 20
 
@@ -51,6 +52,7 @@ typedef enum
     Widget_SdCardInfo,
     Widget_GPSInfo,
     Widget_Airspace,
+    Widget_TrackPoints,
     /*Settings Widget*/
     Widget_Settings_PageButton,
     Widget_settings_BackButton,
@@ -90,6 +92,9 @@ typedef enum
 
     /* Airspace Widget */
     WidgetContent_Airspace,
+
+    /* Trackpoint Widgets */
+    WidgetContent_TrackPoints,
 
     /* Settings Widget */
     WidgetContent_Settings_PageButton,

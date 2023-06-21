@@ -18,6 +18,7 @@
                 "${workspaceFolder}/UI_Demo.c",
                 "${workspaceFolder}/file_layer.c",
                 "${workspaceFolder}/esp_timer.c",
+                "${workspaceFolder}/Simulation.c",
                 "-o",
                 "${workspaceFolder}/main",
                 "-lm",

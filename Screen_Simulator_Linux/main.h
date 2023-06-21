@@ -12,15 +12,6 @@ typedef struct
 
 typedef struct
 {
-	float height;
-	float velocity;
-	float accX;
-	float rotation[4];
-	long long time;
-} vario_state_Simulation;
-
-typedef struct
-{
 	gps_time_t timeToValid;
 	gps_time_t timeToGPS;
 	gps_time_t timeToDGPS;

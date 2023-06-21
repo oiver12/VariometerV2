@@ -4,147 +4,20 @@
 #include "UI_Demo.h"
 #include "Screen/DeviceContext.h"
 #include "main.h"
-#include <errno.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <libgen.h>
 #include "Screen/IGC_Parser.h"
 #include "airspaceParcer.h"
+#include "Simulation.h"
 
 #define EPD_3IN7_WIDTH 410
 #define EPD_3IN7_HEIGHT 480
 
-Uint32 lastbufferTime = 0;
-Uint32 lastFrameTime = 0;
 Uint32 lastRenderTime = 0;
 Uint32 startedFKeyTime = 0;
 bool startedFKey = false;
-int currPosStateBuffer = 0;
 
 UBYTE *ScreenBuffer;
-
-size_t vario_state_Simulation_size;
-vario_state_Simulation *bufferSimulation;
-
-void open_ReadFile()
-{
-    char cwd[500];
-    // Change to directory, where the Textfile is (Screen_Simulator_Linux folder)
-    if (getcwd(cwd, sizeof(cwd)) != NULL)
-    {
-        // printf("Current working dir: %s\n", cwd);
-        char *last_folder = basename(cwd);
-        while (strcmp(last_folder, "Screen_Simulator_Linux") != 0)
-        {
-            if (chdir("..") != 0)
-                return;
-            if (getcwd(cwd, sizeof(cwd)) == NULL)
-                return;
-            last_folder = basename(cwd);
-        }
-    }
-
-    FILE *fileptr;
-    char *FileName = "2023-05-06-XCT-TLE-09.igc";
-    fileptr = fopen("IGCFlights/2023-05-06-XCT-TLE-09.igc", "r");
-    if (fileptr == NULL)
-    {
-        int error = errno;
-        printf("Error %d \n", error);
-        return;
-    }
-    Track_t track;
-    memset(&track, 0, sizeof(Track_t));
-    if (ParseIGCFile(&track, 50, fileptr, false, false, FileName) != 0)
-    {
-        printf("Failed to parse IGC File\n");
-    }
-    fclose(fileptr);
-    fileptr = fopen("GPSLOG.txt", "w");
-    fprintf(fileptr, "latitude,longitude\n");
-    for (size_t i = 0; i < track.sizeTrackPoints; i++)
-    {
-        fprintf(fileptr, "%.6f,%.6f\n", track.trackPoints[i].lat, track.trackPoints[i].lon);
-    }
-
-    fclose(fileptr);
-    FreeTrackFile(&track);
-    size_t bufferSize;
-    fileptr = fopen("Trackloggs/Vario46.txt", "rb"); // Open the file in binary mode
-    if (fileptr == NULL)
-    {
-        int error = errno;
-        printf("Error %d \n", error);
-        return;
-    }
-    fseek(fileptr, 0, SEEK_END);                                           // Jump to the end of the file
-    bufferSize = ftell(fileptr);                                           // Get the current byte offset in the file
-    rewind(fileptr);                                                       // Jump back to the beginning of the file
-    uint8_t *bufferRead = (uint8_t *)malloc(bufferSize * sizeof(uint8_t)); // Enough memory for the file
-    fread(bufferRead, bufferSize, 1, fileptr);                             // Read in the entire file
-    fclose(fileptr);                                                       // Close the file
-    // fill vario_state with value
-    vario_state_Simulation_size = bufferSize / 37;
-    bufferSimulation = (vario_state_Simulation *)malloc(vario_state_Simulation_size * sizeof(vario_state_Simulation));
-    size_t currPos = 0;
-    int currPosVarioSimulation = 0;
-    while (currPos != bufferSize)
-    {
-        vario_state_file_t *vario_state = (vario_state_file_t *)&bufferRead[currPos];
-        ;
-        currPos += sizeof(vario_state_file_t);
-        int64_t *time = (int64_t *)&bufferRead[currPos];
-        currPos += sizeof(int64_t);
-        currPos += sizeof(char);
-        bufferSimulation[currPosVarioSimulation].height = vario_state->height;
-        bufferSimulation[currPosVarioSimulation].velocity = vario_state->velocity;
-        bufferSimulation[currPosVarioSimulation].accX = vario_state->accX;
-        bufferSimulation[currPosVarioSimulation].rotation[0] = vario_state->rotation[0];
-        bufferSimulation[currPosVarioSimulation].rotation[1] = vario_state->rotation[1];
-        bufferSimulation[currPosVarioSimulation].rotation[2] = vario_state->rotation[2];
-        bufferSimulation[currPosVarioSimulation].rotation[3] = vario_state->rotation[3];
-        bufferSimulation[currPosVarioSimulation].time = *time;
-        currPosVarioSimulation++;
-    }
-    free(bufferRead);
-    FILE *pythonArrayF = fopen("pythonArray", "w");
-    fprintf(pythonArrayF, "y=[");
-    double sum;
-    double lastAcc;
-    double maxAccD = 0;
-    float l = 0;
-    float n = 0;
-    for (size_t i = 0; i < vario_state_Simulation_size; i++)
-    {
-        float val = bufferSimulation[i].height;
-        if (i != 0)
-            fprintf(pythonArrayF, ",");
-        fprintf(pythonArrayF, "%.2f", val);
-        if (i > 0)
-        {
-            sum += fabs(lastAcc - val);
-            if (fabsf(lastAcc - val) > maxAccD)
-            {
-                maxAccD = fabsf(lastAcc - val);
-                l = lastAcc;
-                n = val;
-            }
-        }
-        lastAcc = bufferSimulation[i].accX;
-    }
-    double value = sum / (vario_state_Simulation_size - 1);
-    fprintf(pythonArrayF, "]\n\n\n");
-    fprintf(pythonArrayF, "x=[");
-    for (size_t i = 0; i < vario_state_Simulation_size; i++)
-    {
-        if (i != 0)
-            fprintf(pythonArrayF, ",");
-        fprintf(pythonArrayF, "%i", (int)i);
-    }
-    fprintf(pythonArrayF, "]");
-    fclose(pythonArrayF);
-}
 
 void Get_duration_diffGPSTime(gps_time_t start_time, gps_time_t end_time, gps_time_t *duration)
 {
@@ -297,25 +170,8 @@ void AnalyzeGPS()
     gpsAnalyze.meanSatsInViewValid += ((double)gpsAnalyze.meanSatsInViewValid) / (double)(currPosGPSObj);
 }
 
-void fastForwardSimulation(float percentage)
-{
-    int step = vario_state_Simulation_size * percentage;
-    currPosStateBuffer += step;
-    if (currPosStateBuffer > vario_state_Simulation_size)
-    {
-        currPosStateBuffer = vario_state_Simulation_size;
-    }
-    lastbufferTime = bufferSimulation[currPosStateBuffer].time;
-}
-
 int main(void)
 {
-    float startTemperature = 15;
-    float pressure = 102423.5;
-    float R_SPECIFIC = 287.053f;
-    float GRAVITY_G = 9.80665f;
-    float TEMPGRAD_L = 0.0065f;
-    float heightDifferenz = ((startTemperature + 273.15) / TEMPGRAD_L) * (pow((pressure + 200) / pressure, -TEMPGRAD_L * R_SPECIFIC / GRAVITY_G) - 1);
     // AnalyzeGPS();
     SDL_Renderer *renderer;
     SDL_Window *window;
@@ -337,13 +193,11 @@ int main(void)
     Paint_SelectImage(ScreenBuffer);
     Paint_SetScale(2);
     Paint_Clear(WHITE);
-    open_ReadFile();
     startRender();
-    startRenderTimeProgress();
-    startHeightDiagramm(vario_state_Simulation_size, bufferSimulation);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
+    simulation_init(true, "2023-05-06-XCT-TLE-09.igc");
 
     int sizeXBuffer = EPD_3IN7_WIDTH % 8 == 0 ? EPD_3IN7_WIDTH / 8 : EPD_3IN7_WIDTH / 8 + 1;
     while (1)
@@ -379,7 +233,7 @@ int main(void)
                     }
                     else
                     {
-                        fastForwardSimulation(0.005f);
+                        simulation_fastForward(0.005f);
                     }
                     break;
                 }
@@ -408,31 +262,8 @@ int main(void)
             }
         }
 
-        Uint32 current_time = SDL_GetTicks();
-        Uint32 time_since_last_frame = current_time - lastFrameTime;
-        lastFrameTime = current_time;
-        if (currPosStateBuffer < vario_state_Simulation_size)
-        {
-            if (lastbufferTime == 0)
-            {
-                lastbufferTime = bufferSimulation[currPosStateBuffer].time;
-                currPosStateBuffer++;
-            }
-            else
-            {
-                lastbufferTime += time_since_last_frame * 1000;
-                if (lastbufferTime >= bufferSimulation[currPosStateBuffer].time)
-                {
-                    vario_state_set_member(&bufferSimulation[currPosStateBuffer].velocity, vario_state_vertVel);
-                    float accX = bufferSimulation[currPosStateBuffer].accX - 9.81;
-                    vario_state_set_member(&bufferSimulation[currPosStateBuffer].height, vario_state_altitudeBaro);
-                    vario_state_set_member(&accX, vario_state_vertAcc);
-                    currPosStateBuffer++;
-                }
-            }
-        }
         updateRender();
-        updateRenderTimeProgress((float)currPosStateBuffer / (float)vario_state_Simulation_size, vario_state_Simulation_size, bufferSimulation);
+        simulation_nextStep();
         for (int y = 0; y < EPD_3IN7_HEIGHT; y++)
         {
             for (int x = 0; x < EPD_3IN7_WIDTH; x++)
@@ -452,6 +283,7 @@ int main(void)
                 }
             }
         }
+        Uint32 current_time = SDL_GetTicks();
         if (current_time - lastRenderTime > 300)
         {
             SDL_RenderPresent(renderer);

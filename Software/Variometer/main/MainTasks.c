@@ -134,7 +134,7 @@ static void TaskMeasureHeight(void *parameters)
         // Filter invalid pressure Results (200Pa = 19m -> change of 600 m in one second)
         if (fabsf(lastPressure - (float)DPS310_Data.Pressure) > 200)
         {
-            ESP_LOGW(TAG, "Invalid Pressure Result!");
+            ESP_LOGW(TAG, "Invalid Pressure Result! %.2f, %.2f", DPS310_Data.Pressure, lastPressure);
         }
         else
         {
@@ -153,59 +153,6 @@ static void TaskMeasureHeight(void *parameters)
         // vTaskDelay(30 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
-}
-
-static bool checkBMI088MsValidity(float accMs[], float last_Acc[], uint8_t counterAcc[], float gyrMs[], float last_Gyr[], uint8_t counterGyr[])
-{
-    const uint8_t maxValueCounter = 2;
-    // This means approx. change of 1000 m/s^2 per second
-    const float maxAccD = 10;
-    if (fabsf(accMs[0] - last_Acc[0]) > maxAccD && counterAcc[0] < maxValueCounter)
-    {
-        counterAcc[0]++;
-        ESP_LOGE(TAG, "Not AcX: %.2f, %.2f", accMs[0], last_Acc[0]);
-        return false;
-    }
-    if (fabsf(accMs[1] - last_Acc[1]) > maxAccD && counterAcc[1] < maxValueCounter)
-    {
-        counterAcc[1]++;
-        ESP_LOGE(TAG, "Not AcY: %.2f, %.2f", accMs[1], last_Acc[1]);
-        return false;
-    }
-    if (fabsf(accMs[2] - last_Acc[2]) > maxAccD && counterAcc[2] < maxValueCounter)
-    {
-        counterAcc[2]++;
-        ESP_LOGE(TAG, "Not AcZ: %.2f, %.2f", accMs[2], last_Acc[2]);
-        return false;
-    }
-    const float maxGyrD = 100;
-    if (fabsf(gyrMs[0] - last_Gyr[0]) > maxGyrD && counterGyr[0] < maxValueCounter)
-    {
-        counterGyr[0]++;
-        ESP_LOGE(TAG, "Not GyX: %.2f, %.2f", gyrMs[0], last_Gyr[0]);
-        return false;
-    }
-    if (fabsf(gyrMs[1] - last_Gyr[1]) > maxGyrD && counterGyr[1] < maxValueCounter)
-    {
-        counterGyr[1]++;
-        ESP_LOGE(TAG, "Not GyY: %.2f, %.2f", gyrMs[1], last_Gyr[1]);
-        return false;
-    }
-    if (fabsf(gyrMs[2] - last_Gyr[2]) > maxGyrD && counterGyr[2] < maxValueCounter)
-    {
-        counterGyr[2]++;
-        ESP_LOGE(TAG, "Not GyZ: %.2f, %.2f", gyrMs[2], last_Gyr[2]);
-        return false;
-    }
-    memset(counterAcc, 0, sizeof(uint8_t) * 3);
-    memset(counterGyr, 0, sizeof(uint8_t) * 3);
-    last_Acc[0] = accMs[0];
-    last_Acc[1] = accMs[1];
-    last_Acc[2] = accMs[2];
-    last_Gyr[0] = gyrMs[0];
-    last_Gyr[1] = gyrMs[1];
-    last_Gyr[2] = gyrMs[2];
-    return true;
 }
 
 static void TaskMeasureAcc(void *parameters)
@@ -278,11 +225,6 @@ static void TaskMeasureAcc(void *parameters)
         err = bmi088_ReadGyroskop(&BMI088_Data);
         ERROR_HANDLEBYERROR(err, ERR_BMI088, "Gyro reading failed");
 
-        if (!checkBMI088MsValidity(BMI088_Data.acc_mps2, last_Acc, counterAcc, BMI088_Data.gyr_rps, last_Gyr, counterGyr))
-        {
-            xTaskNotifyGiveIndexed(TaskKalmanFilter_Handle, 1);
-            continue;
-        }
         float deltaT = (esp_timer_get_time() - lastTime) / 1000000;
         lastTime = esp_timer_get_time();
         /* Update Orientation */
@@ -305,7 +247,7 @@ static void TaskMeasureAcc(void *parameters)
         if (fabsf(accX - lastAccX) > 10 && counterAccX < 3)
         {
             counterAccX++;
-            ESP_LOGE(TAG, "Can't accept this Acc");
+            ESP_LOGE(TAG, "Can't accept this Acc %.2f", accX);
         }
         else
         {
@@ -485,8 +427,8 @@ static void TaskKalmanFilter(void *parameters)
             wasGreater = true;
         if (wasGreater)
             ESP_LOGE(TAG, "Was greater");
-        printf("%.2f\n", vertVel);
-        // printf("T: %i, pressure: %.1f, ACC: %.2f, S: %i, V: %.2f\n", (int)(deltaT * 1000), pressure, acc, accSize, vertVel);
+        // printf("%.2f\n", vertVel);
+        //  printf("T: %i, pressure: %.1f, ACC: %.2f, S: %i, V: %.2f\n", (int)(deltaT * 1000), pressure, acc, accSize, vertVel);
         lastTime = esp_timer_get_time();
     }
     vTaskDelete(NULL);
