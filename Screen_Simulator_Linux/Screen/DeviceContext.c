@@ -7,6 +7,7 @@
 #include "Util.h"
 #include "../esp_timer.h"
 #include "ScreenManager.h"
+#include "FlightState.h"
 
 #define RADIUS (6371000) // 6371e3
 
@@ -18,18 +19,6 @@ SoundManager_Tone_t gpsFix_ToneArray[3] =
         {262, 500},
         {339, 500},
         {392, 500},
-};
-
-SoundManager_Tone_t takeOffMelody[8] =
-    {
-        {262, 1000 / 4},
-        {196, 1000 / 8},
-        {196, 1000 / 8},
-        {220, 1000 / 4},
-        {196, 1000 / 4},
-        {0, 1000 / 4},
-        {247, 1000 / 4},
-        {262, 1000 / 4},
 };
 
 vario_state_t vario_state;
@@ -45,27 +34,6 @@ SemaphoreHandle_t semaphore_vario_settings;
 SemaphoreHandle_t semaphore_paraglider_info;
 SemaphoreHandle_t semaphore_device_state;
 SemaphoreHandle_t semaphore_flight_stats;
-
-static void TakeOff(gps_t *gps)
-{
-    // Take Off detected
-    flight_stats.takeOffTime = esp_timer_get_time() / 1000;
-    flight_stats.takeOffPosition.lat = gps->latitude;
-    flight_stats.takeOffPosition.lon = gps->longitude;
-    flight_stats.takeOffPosition.alt = gps->altitude;
-    PopUpConfig_t config = {
-        .x = 150,
-        .y = 100,
-        .w = 100,
-        .h = 60,
-        .type = PopUpType_TakeOff,
-        .timeToDisplay = 3000,
-    };
-    // ScreenManager_showPopUp(config);
-    SoundManager_playToneArray(takeOffMelody, 8);
-    // startLogging();
-    // start_IGCLogger();
-}
 
 static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
 {
@@ -94,13 +62,19 @@ static void updateFlightStatsTrackHistory(gps_t *gps, float vertVel)
 
 static void updateFlightStats(gps_t *gps)
 {
+    // Update Flight State
+    float vario;
+    int heading;
+    vario_state_get_member(&vario, vario_state_vertVel, false);
+    vario_state_get_member(&heading, vario_state_heading, false);
+    FlightState_update(gps, vario, (int16_t)heading);
+
+    // Update flight Stats
     xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
     flight_stats.altitudeMax = fmaxf(flight_stats.altitudeMax, gps->altitude);
     flight_stats.altitudeMin = fminf(flight_stats.altitudeMin, gps->altitude);
-    float vertVel = 0;
-    vario_state_get_member(&vertVel, vario_state_vertVel, false);
-    flight_stats.maxVelX = fmaxf(flight_stats_maxVelX, vertVel);
-    flight_stats.minVelX = fminf(flight_stats_minVelX, vertVel);
+    flight_stats.maxVelX = fmaxf(flight_stats_maxVelX, vario);
+    flight_stats.minVelX = fminf(flight_stats_minVelX, vario);
     // we are flying
     if (flight_stats.takeOffTime > 0)
     {
@@ -108,17 +82,10 @@ static void updateFlightStats(gps_t *gps)
         flight_stats.distTakeOff = GET_DISTANCE(gps->latitude, gps->longitude, flight_stats.takeOffPosition.lat, flight_stats.takeOffPosition.lon);
         flight_stats.distFlight += GET_DISTANCE(gps->latitude, gps->longitude, flight_stats.lastPosition.lat, flight_stats.lastPosition.lon);
     }
-    else
-    {
-        if (gps->speed * 3.6f > 1)
-        {
-            TakeOff(gps);
-        }
-    }
     flight_stats.lastPosition.lat = gps->latitude;
     flight_stats.lastPosition.lon = gps->longitude;
     flight_stats.lastPosition.alt = gps->altitude;
-    updateFlightStatsTrackHistory(gps, vertVel);
+    updateFlightStatsTrackHistory(gps, vario);
     xSemaphoreGive(semaphore_flight_stats);
 }
 
@@ -130,16 +97,17 @@ void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_bas
     {
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
+        // update vario_state
         vario_state_set_member(&gps->altitude, vario_state_altitudeGPS);
         float speedGroundKMH = gps->speed * 3.6f;
         vario_state_set_member(&speedGroundKMH, vario_state_groundSpeed);
         vario_state_set_member(gps, vario_state_gps_data);
-
+        // update device_state
         xSemaphoreTake(semaphore_device_state, portMAX_DELAY);
         oldFixMode = device_state.statusGPS;
         device_state.statusGPS = gps->fix_mode;
         xSemaphoreGive(semaphore_device_state);
-
+        // check for GPS Fix
         if (gps->fix_mode != GPS_MODE_INVALID && oldFixMode == GPS_MODE_INVALID)
         {
             PopUpConfig_t config = {
@@ -157,7 +125,6 @@ void device_state_gps_handle(void *event_handler_arg, esp_event_base_t event_bas
         {
             updateFlightStats(gps);
         }
-        // ESP_LOGI("Device", "%s", gps->infoString);
         break;
     default:
         printf("GPS Event konnte nicht gefunden werden!\n");
@@ -178,6 +145,7 @@ void init_DeviceContext()
 
     vario_settings.soundVolume = 10000;
     device_state.statusGPS = GPS_MODE_INVALID;
+    FlightState_init();
 }
 
 void startGps_DeviceContext(nmea_parser_handle_t nmea_parser_handle)
@@ -462,6 +430,35 @@ bool vario_settings_get_member(void *value, vario_settings_member_t member, bool
         vario_settings.stateChange &= 0xFFFF - member;
     xSemaphoreGive(semaphore_vario_settings);
     return returnValue;
+}
+
+void flight_stats_set_member(void *value, flight_stats_member_t member)
+{
+
+    xSemaphoreTake(semaphore_flight_stats, portMAX_DELAY);
+    switch (member)
+    {
+    case flight_stats_circlingTime:
+        flight_stats.circlingTime = *((uint64_t *)value);
+        break;
+    case flight_stats_circlingGain:
+        flight_stats.circlingGain = *((float *)value);
+        break;
+    case flight_stats_glideRatio:
+        flight_stats.glideRatio = *((float *)value);
+        break;
+    case flight_stats_takeOffTime:
+        flight_stats.takeOffTime = *((uint64_t *)value);
+        break;
+    case flight_stats_takeOffPosition:
+        flight_stats.takeOffPosition = *((Position_t *)value);
+        break;
+    default:
+        printf("Member von Flight Stats konnte nicht gefunden werden!\n");
+        break;
+    }
+    flight_stats.stateChange |= member;
+    xSemaphoreGive(semaphore_flight_stats);
 }
 
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange)

@@ -10,7 +10,7 @@
 
 #define maxVoltage 4 // nicht 4.2, weil der ESP nur bis 3.1V und nicht bis 3.3v lesen kann
 #define minVoltage 3.3
-static const char *TAG = "Battery Manager";
+// static const char *TAG = "Battery Manager";
 
 Battery_Manager_t battery_Manager;
 

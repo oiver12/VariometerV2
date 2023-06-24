@@ -4,6 +4,10 @@
 #include "stdint.h"
 #include <stdbool.h>
 
+#define _MIN(x, y) ((x) < (y) ? (x) : (y))
+#define _MAX(x, y) ((x) > (y) ? (x) : (y))
+#define _CLAMP(x, min, max) (((x) < (min)) ? (min) : (((x) > (max) ? (max) : (x))))
+
 #define PI 3.1415926535897932384626433832795
 
 typedef struct
@@ -83,5 +87,4 @@ bool overlappBoundingBox(BoundingBox_LatLong_t *box1, BoundingBox_LatLong_t *box
 void boundingBoxFromPoint(BoundingBox_LatLong_t *box, float lat, float lon, float distanceMeters);
 
 float pressureToSTDHeight(float pressure, float startTemp);
-
 #endif

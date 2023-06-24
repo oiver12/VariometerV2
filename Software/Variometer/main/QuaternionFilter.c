@@ -88,7 +88,7 @@ void QuaternionFilter_KalmanUpdate(KalmanRollPitch_t *kal, float *acc_mps2)
                   C[1] * (C[2] * kal->P[1] + C[3] * kal->P[3]), kal->R[1] + C[2] * (C[2] * kal->P[0] + C[3] * kal->P[2]) + C[3] * (C[2] * kal->P[1] + C[3] * kal->P[3]), C[4],
                   C[1] * (C[4] * kal->P[1] + C[5] * kal->P[3]), C[2] * (C[4] * kal->P[0] + C[5] * kal->P[2]) + C[3] * (C[4] * kal->P[1] + C[5] * kal->P[3]), kal->R[2]};
 
-    float Gdetinv = 1.0f / (G[0] * G[4] * G[8] - G[0] * G[5] * G[7] - G[1] * G[3] * G[8] + G[1] * G[5] * G[6] + G[2] * G[3] * G[7] - G[2] * G[4] * G[6]);
+    // float Gdetinv = 1.0f / (G[0] * G[4] * G[8] - G[0] * G[5] * G[7] - G[1] * G[3] * G[8] + G[1] * G[5] * G[6] + G[2] * G[3] * G[7] - G[2] * G[4] * G[6]);
 
     // float Ginv[9] = { Gdetinv * (G[4]*G[8] - G[5]*G[7]), -Gdetinv * (G[1]*G[8] - G[2]*G[7]), Gdetinv * (G[1]*G[5] - G[2]*G[4]),
     //                  -Gdetinv * (G[3]*G[8] - G[5]*G[6]),  Gdetinv * (G[0]*G[8] - G[2]*G[6]),-Gdetinv * (G[0]*G[5] - G[2]*G[3]),
@@ -121,7 +121,6 @@ void QuaternionFilter_init()
 // Madgwick Quaternion Update
 void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz, float deltaT, float *q)
 {
-#ifdef QUATERNIONV1
     double q0 = q[0], q1 = q[1], q2 = q[2], q3 = q[3]; // short name local variable for readability
     double recipNorm;
     double s0, s1, s2, s3;
@@ -217,114 +216,6 @@ void QuaternionFilter_Madgwick(float ax, float ay, float az, float gx, float gy,
     q[1] = q1;
     q[2] = q2;
     q[3] = q3;
-#else
-    float q0 = q[0];
-    float q1 = q[1];
-    float q2 = q[2];
-    float q3 = q[3];
-
-    float invNorm;
-    float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
-    float hx, hy, bx, bz;
-    float halfvx, halfvy, halfvz, halfwx, halfwy, halfwz;
-    float halfex, halfey, halfez;
-    float qa, qb, qc;
-
-    float accTotal = sqrt(ax * ax + ay * ay + az * az);
-    int bUseAccel = accTotal > 0.75 && accTotal < 1.25;
-
-    if (bUseAccel)
-    {
-        // Normalise accelerometer measurement
-        invNorm = 1.0f / accTotal;
-        ax *= invNorm;
-        ay *= invNorm;
-        az *= invNorm;
-
-        // Normalise magnetometer measurement
-        invNorm = 1.0f / sqrt(mx * mx + my * my + mz * mz);
-        mx *= invNorm;
-        my *= invNorm;
-        mz *= invNorm;
-
-        // Auxiliary variables to avoid repeated arithmetic
-        q0q0 = q0 * q0;
-        q0q1 = q0 * q1;
-        q0q2 = q0 * q2;
-        q0q3 = q0 * q3;
-        q1q1 = q1 * q1;
-        q1q2 = q1 * q2;
-        q1q3 = q1 * q3;
-        q2q2 = q2 * q2;
-        q2q3 = q2 * q3;
-        q3q3 = q3 * q3;
-
-        // Reference direction of Earth's magnetic field
-        hx = 2.0f * (mx * (0.5f - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2));
-        hy = 2.0f * (mx * (q1q2 + q0q3) + my * (0.5f - q1q1 - q3q3) + mz * (q2q3 - q0q1));
-        bx = sqrt(hx * hx + hy * hy);
-        bz = 2.0f * (mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5f - q1q1 - q2q2));
-
-        // Estimated direction of gravity and magnetic field
-        halfvx = q1q3 - q0q2;
-        halfvy = q0q1 + q2q3;
-        halfvz = q0q0 - 0.5f + q3q3;
-        halfwx = bx * (0.5f - q2q2 - q3q3) + bz * (q1q3 - q0q2);
-        halfwy = bx * (q1q2 - q0q3) + bz * (q0q1 + q2q3);
-        halfwz = bx * (q0q2 + q1q3) + bz * (0.5f - q1q1 - q2q2);
-
-        // Error is sum of cross product between estimated direction and measured direction of field vectors
-        halfex = (ay * halfvz - az * halfvy) + (my * halfwz - mz * halfwy);
-        halfey = (az * halfvx - ax * halfvz) + (mz * halfwx - mx * halfwz);
-        halfez = (ax * halfvy - ay * halfvx) + (mx * halfwy - my * halfwx);
-
-        // Compute and apply integral feedback if enabled
-        if (twoKi > 0.0f)
-        {
-            integralFBx += twoKi * halfex * deltaT; // integral error scaled by Ki
-            integralFBy += twoKi * halfey * deltaT;
-            integralFBz += twoKi * halfez * deltaT;
-            gx += integralFBx; // apply integral feedback
-            gy += integralFBy;
-            gz += integralFBz;
-        }
-        else
-        {
-            integralFBx = 0.0f; // prevent integral windup
-            integralFBy = 0.0f;
-            integralFBz = 0.0f;
-        }
-
-        // Apply proportional feedback
-        gx += twoKp * halfex;
-        gy += twoKp * halfey;
-        gz += twoKp * halfez;
-    }
-
-    // Integrate rate of change of quaternion
-    gx *= (0.5f * deltaT); // pre-multiply common factors
-    gy *= (0.5f * deltaT);
-    gz *= (0.5f * deltaT);
-    qa = q0;
-    qb = q1;
-    qc = q2;
-    q0 += (-qb * gx - qc * gy - q3 * gz);
-    q1 += (qa * gx + qc * gz - q3 * gy);
-    q2 += (qa * gy - qb * gz + q3 * gx);
-    q3 += (qa * gz + qb * gy - qc * gx);
-
-    // Normalise quaternion
-    invNorm = 1.0f / sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    q0 *= invNorm;
-    q1 *= invNorm;
-    q2 *= invNorm;
-    q3 *= invNorm;
-
-    q[0] = q0;
-    q[1] = q1;
-    q[2] = q2;
-    q[3] = q3;
-#endif
 }
 
 void QuaternionFilter_Mahony(float ax, float ay, float az, float gx, float gy, float gz, float deltaT, float *q)

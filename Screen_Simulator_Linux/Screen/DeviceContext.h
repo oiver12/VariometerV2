@@ -152,20 +152,24 @@ typedef struct
     float maxVelX;
     float minVelX;
 
-    uint32_t takeOffTime; // in ms
-    uint32_t flightTime;  // in ms
+    uint64_t takeOffTime; // in ms
+    uint64_t flightTime;  // in ms
     Position_t takeOffPosition;
 
     float distTakeOff;
     float distFlight;
     Position_t lastPosition;
 
-    uint32_t landingStartTime; // in ms
-
     TrackPoint_t trackPoints[MAX_TRACKPOINT_SIZE];
     TrackDistance_t trackDistance[MAX_TRACKPOINT_SIZE];
     int16_t frontPoint;
     int16_t rearPoint;
+
+    uint64_t circlingTime;
+    float circlingGain;
+
+    float glideRatio;
+
     uint16_t stateChange;
 } flight_stats_t;
 
@@ -175,13 +179,16 @@ typedef enum
     flight_stats_altitudeMin = 1 << 1,     // float
     flight_stats_maxVelX = 1 << 2,         // float
     flight_stats_minVelX = 1 << 3,         // float
-    flight_stats_takeOffTime = 1 << 4,     // uint32_t
-    flight_stats_flightTime = 1 << 5,      // uint32_t
+    flight_stats_takeOffTime = 1 << 4,     // uint64_t
+    flight_stats_flightTime = 1 << 5,      // uint64_t
     flight_stats_takeOffPosition = 1 << 6, // Positon_t
     flight_stats_distTakeOff = 1 << 7,     // float
     flight_stats_distFlight = 1 << 8,      // float
     flight_stats_lastPosition = 1 << 9,    // Position_t
     flight_stats_trackPoints = 1 << 10,
+    flight_stats_circlingTime = 1 << 11, // uint64_t
+    flight_stats_circlingGain = 1 << 12, // float
+    flight_stats_glideRatio = 1 << 13,   // float
 } flight_stats_member_t;
 
 void init_DeviceContext();
@@ -208,6 +215,7 @@ bool device_state_get_member(void *value, device_state_member_t member, bool sta
 // return null if the flight_stats havent changed, give doesn't have to be called
 flight_stats_t *flight_stats_take_trackPoints();
 void flight_stats_give_trackPoints();
+void flight_stats_set_member(void *value, flight_stats_member_t member);
 bool flight_stats_get_member(void *value, flight_stats_member_t member, bool stateChange);
 
 #endif

@@ -55,7 +55,7 @@ static void SoundManager_NoSound(float duration)
 void SoundManager_Task(void *parameters)
 {
     watchdog_add(NULL);
-    // TODO: evtl. Race Conditions (solange es funktioniert ändere ich nichts)
+    // No race Conditiom, because all used variables are atomic read and write
     float lastFreqeuncy = soundManager_instance.frequencyNow - 1;
     biepState_t lastBiepState = no_Sound;
     size_t w_bytes = 0;
