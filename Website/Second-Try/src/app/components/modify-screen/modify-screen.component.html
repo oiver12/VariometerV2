@@ -7,6 +7,9 @@
             [cdkDragConstrainPosition]="snap(i)"
             id="{{ i }}"
             (mouseup)="onMouseUp()"
+            style="left: {{ element.startPosition.left }}px; top: {{
+                element.startPosition.top
+            }}px"
         >
             <ng-container *ngIf="element.unit != 'None'; else noUnit">
                 <p class="text-title">{{ element.title }}</p>

@@ -16,6 +16,12 @@ type Rect = {
 type Element = {
     title: string;
     unit: string;
+    startPosition: {
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+    };
     position: {
         left: number;
         right: number;
@@ -35,21 +41,25 @@ export class ModifyScreenComponent {
         {
             title: 'Kompass',
             unit: 'None',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Barometer Altitude',
             unit: 'None',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Thermik Assistant',
             unit: 'None',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'SD Card use',
             unit: 'None',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
     ];
@@ -57,46 +67,55 @@ export class ModifyScreenComponent {
         {
             title: 'Ground Speed',
             unit: 'km/h',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Active Vario',
             unit: 'm/s',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Lazy Vario',
             unit: 'm/s',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Vertical Acceleration',
             unit: 'm/s2',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Barometer Altitude',
             unit: 'm',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'GPS Altitude',
             unit: 'm',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Above Ground Level',
             unit: 'm',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Time',
             unit: '',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
         {
             title: 'Pressure',
             unit: 'hPa',
+            startPosition: { left: 0, right: 0, top: 0, bottom: 0 },
             position: { left: 0, right: 0, top: 0, bottom: 0 },
         },
     ];
@@ -134,29 +153,17 @@ export class ModifyScreenComponent {
         this.copyChosenElements = structuredClone(this.chosenElements);
         // to get the Element rendered
         setTimeout(() => {
-            const elements = Array.from(
-                document.getElementsByClassName('screen-element')
-            ) as HTMLElement[];
-
-            this.chosenElements = this.copyChosenElements;
+            this.copyChosenElements[
+                this.copyChosenElements.length - 1
+            ].startPosition = this.placeNewElement();
             this.copyChosenElements[
                 this.copyChosenElements.length - 1
             ].position = this.placeNewElement();
-            console.log(this.copyChosenElements);
-            elements[elements.length - 1].style.left =
-                this.copyChosenElements[this.copyChosenElements.length - 1]
-                    .position.left + 'px';
-            elements[elements.length - 1].style.top =
-                this.copyChosenElements[this.copyChosenElements.length - 1]
-                    .position.top + 'px';
-            console.log(elements);
+            this.chosenElements = this.copyChosenElements;
         }, 0);
-        setTimeout(() => {
-            // this.chosenElements = this.copyChosenElements;
-        }, 10000);
     }
-    placeNewElement(): Element['position'] {
-        // to set the position of the element we do it "ugly"
+    placeNewElement(): Element['startPosition'] {
+        // we bruteforce the new position of the element
         // we try to place the element at the top left corner of the screen
         // if there is a intersection with another element or the boundary, we move the element to the right
         // we move it in steps of element.width / 5
@@ -168,7 +175,7 @@ export class ModifyScreenComponent {
         // etc.
         // we do this 4 times, then we give up
         const stepsLeft = 15;
-        const stepsDown = 5;
+        const stepsDown = 8;
         const counterMax = 4;
         const documentElement = document.getElementById(
             (this.chosenElements.length - 1).toString()
@@ -191,24 +198,32 @@ export class ModifyScreenComponent {
                     elementPosition = {
                         left: (counterLeft * width) / 5,
                         right: (counterLeft * width) / 5 + width,
-                        top: (counterDown * height) / 5,
-                        bottom: (counterDown * height) / 5 + height,
+                        top: (counterDown * height) / 2,
+                        bottom: (counterDown * height) / 2 + height,
                     } as Rect;
-                    if (!this.elementHasIntersection(elementPosition)) {
+                    if (
+                        !this.elementHasIntersection(
+                            elementPosition,
+                            this.chosenElements.length - 1
+                        )
+                    ) {
                         return elementPosition;
                     }
                 }
             }
         }
-        return elementPosition;
+        return { left: 0, right: width, top: 0, bottom: height };
     }
-    elementHasIntersection(element: Element['position']): boolean {
-        if (this.haveIntersectionWithBoundary(element)) {
+    elementHasIntersection(
+        element: Element['startPosition'],
+        id: number
+    ): boolean {
+        if (!this.isCompletelyWithinBoundary(element)) {
             return true;
         }
         let hasIntersection = false;
         this.chosenElements.forEach((element2, index) => {
-            if (index !== this.chosenElements.length - 1) {
+            if (index !== id) {
                 if (this.haveIntersection(element, element2.position)) {
                     hasIntersection = true;
                     return;
@@ -252,30 +267,39 @@ export class ModifyScreenComponent {
                 )
             );
             const elementPosition = {
-                left: this.elementPositionX,
-                right: this.elementPositionX + dimensions.width,
-                top: this.elementPositionY,
-                bottom: this.elementPositionY + dimensions.height,
+                left: this.elementPositionX - this.boundaryElement.left,
+                right:
+                    this.elementPositionX +
+                    dimensions.width -
+                    this.boundaryElement.left,
+                top: this.elementPositionY - this.boundaryElement.top,
+                bottom:
+                    this.elementPositionY +
+                    dimensions.height -
+                    this.boundaryElement.top,
             } as Rect;
             // the wanted bahaviour is the following:
             // a element can't be dragged over another element but should snap to the nearest free position
 
             this.chosenElements.forEach((element, index) => {
-                // this.calculatePosition(document.getElementById(id.toString())!);
                 if (id !== index) {
                     if (
                         this.haveIntersection(elementPosition, element.position)
                     ) {
+                        console.log('intersection');
                         // snap to nearest free position
                         // for this look which snap position is the nearest
                         // if this position is free, look if it is possible to snap to this position
                         // if not, look for the next nearest position
                         const newPosition = this.snapToNearestFreePosition(
                             elementPosition,
-                            element.position
+                            element.position,
+                            id
                         );
-                        this.elementPositionX = newPosition.left;
-                        this.elementPositionY = newPosition.top;
+                        this.elementPositionX =
+                            newPosition.left + this.boundaryElement.left;
+                        this.elementPositionY =
+                            newPosition.top + this.boundaryElement.top;
                     }
                 }
             });
@@ -294,19 +318,21 @@ export class ModifyScreenComponent {
             r1.left < r2.right
         );
     }
-    haveIntersectionWithBoundary(r1: Rect): boolean {
+    isCompletelyWithinBoundary(r1: Rect): boolean {
         return (
-            r1.bottom > this.boundaryElement.top &&
-            r1.right > this.boundaryElement.left &&
-            r1.top < this.boundaryElement.bottom &&
-            r1.left < this.boundaryElement.right
+            r1.top >= 0 &&
+            r1.left >= 0 &&
+            r1.bottom <= this.boundaryElement.height &&
+            r1.right <= this.boundaryElement.width
         );
     }
+
     snapToNearestFreePosition(
         elementPosition: Rect,
-        otherPosition: Rect
+        otherPosition: Rect,
+        id: number
     ): Rect {
-        const snapPosition = { ...elementPosition }; // Clone the element position
+        const snapPosition = { ...elementPosition };
 
         // Calculate the distances from the element center to the other rectangle edges
         const distances: number[] = [
@@ -315,46 +341,71 @@ export class ModifyScreenComponent {
             Math.abs(otherPosition.top - elementPosition.bottom),
             Math.abs(otherPosition.bottom - elementPosition.top),
         ];
-
         // Find the minimum distance
         const minDistance = Math.min(...distances);
 
         // Snap the element to the nearest free position based on the minimum distance
-        if (minDistance === distances[0]) {
-            snapPosition.left =
-                otherPosition.left -
-                (elementPosition.right - elementPosition.left);
-            snapPosition.right = otherPosition.left;
-        } else if (minDistance === distances[1]) {
-            snapPosition.left = otherPosition.right;
-            snapPosition.right =
-                otherPosition.right +
-                (elementPosition.right - elementPosition.left);
-        } else if (minDistance === distances[2]) {
-            snapPosition.top =
-                otherPosition.top -
-                (elementPosition.bottom - elementPosition.top);
-            snapPosition.bottom = otherPosition.top;
-        } else {
-            snapPosition.top = otherPosition.bottom;
-            snapPosition.bottom =
-                otherPosition.bottom +
-                (elementPosition.bottom - elementPosition.top);
+        // If a position is not free, we put 1000 in the distances array and repeat the process
+        for (let i = 0; i < distances.length; i++) {
+            switch (minDistance) {
+                case distances[0]:
+                    snapPosition.left =
+                        otherPosition.left -
+                        (elementPosition.right - elementPosition.left);
+                    snapPosition.right = otherPosition.left;
+                    if (!this.elementHasIntersection(snapPosition, id)) {
+                        return snapPosition;
+                    } else {
+                        distances[0] = 1000;
+                    }
+                    break;
+                case distances[1]:
+                    snapPosition.left = otherPosition.right;
+                    snapPosition.right =
+                        otherPosition.right +
+                        (elementPosition.right - elementPosition.left);
+                    if (!this.elementHasIntersection(snapPosition, id)) {
+                        return snapPosition;
+                    } else {
+                        distances[1] = 1000;
+                    }
+                    break;
+                case distances[2]:
+                    snapPosition.top =
+                        otherPosition.top -
+                        (elementPosition.bottom - elementPosition.top);
+                    snapPosition.bottom = otherPosition.top;
+                    if (!this.elementHasIntersection(snapPosition, id)) {
+                        return snapPosition;
+                    } else {
+                        distances[2] = 1000;
+                    }
+                    break;
+                default:
+                    snapPosition.top = otherPosition.bottom;
+                    snapPosition.bottom =
+                        otherPosition.bottom +
+                        (elementPosition.bottom - elementPosition.top);
+                    if (!this.elementHasIntersection(snapPosition, id)) {
+                        return snapPosition;
+                    } else {
+                        distances[3] = 1000;
+                    }
+                    break;
+            }
         }
-
         return snapPosition;
     }
     calculatePosition(element: HTMLElement): Rect {
         const rect = element.getBoundingClientRect();
         return {
-            left: rect.left,
-            right: rect.left + rect.width,
-            top: rect.top,
-            bottom: rect.top + rect.height,
+            left: rect.left - this.boundaryElement.left,
+            right: rect.left + rect.width - this.boundaryElement.left,
+            top: rect.top - this.boundaryElement.top,
+            bottom: rect.top + rect.height - this.boundaryElement.top,
         };
     }
     onMouseUp() {
-        // calculate the new position of all elements
         this.chosenElements.forEach((element, index) => {
             const elementPosition = this.calculatePosition(
                 document.getElementById(index.toString())!
