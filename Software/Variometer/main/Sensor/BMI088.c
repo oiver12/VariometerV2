@@ -61,7 +61,6 @@ esp_err_t bmi088_init(bmi088_t *dev, int I2C_Master_Num, uint8_t acc_i2c_addr, u
     dev->acc_i2c_addr = acc_i2c_addr;
     dev->gyr_i2c_addr = gyr_i2c_addr;
     /* Soft Reset Acc */
-    int count = 0;
     esp_err_t err;
     ERROR_RETRYTIMES(writeAccByte(dev, BMI_ACC_SOFTRESET, 0xB6), VARIO_I2C_RETRYS_INIT, err);
     if (err != ESP_OK)

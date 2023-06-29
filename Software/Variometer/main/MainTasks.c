@@ -194,22 +194,12 @@ static void TaskMeasureAcc(void *parameters)
 
     float lastTime = esp_timer_get_time();
     int count = 0;
-    float last_Acc[3];
-    uint8_t counterAcc[3] = {0, 0, 0};
-    float last_Gyr[3];
-    uint8_t counterGyr[3] = {0, 0, 0};
     ERROR_RETRYTIMES(bmi088_ReadAccelerometer(&BMI088_Data), VARIO_I2C_RETRYS, err);
     ERROR_HANDLEBYERROR(err, ERR_BMI088, "Can't measure start Acc");
 
     ERROR_RETRYTIMES(bmi088_ReadGyroskop(&BMI088_Data), VARIO_I2C_RETRYS, err);
     ERROR_HANDLEBYERROR(err, ERR_BMI088, "Can't measure start Gyro");
 
-    last_Acc[0] = BMI088_Data.acc_mps2[0];
-    last_Acc[1] = BMI088_Data.acc_mps2[1];
-    last_Acc[2] = BMI088_Data.acc_mps2[2];
-    last_Gyr[0] = BMI088_Data.gyr_rps[0];
-    last_Gyr[1] = BMI088_Data.gyr_rps[1];
-    last_Gyr[2] = BMI088_Data.gyr_rps[2];
     float lastAccX = 9.81f;
     int counterAccX = 0;
     while (1)
@@ -263,6 +253,7 @@ static void TaskMeasureAcc(void *parameters)
 }
 static void ResetKalman(kalman_t *kf)
 {
+    kalman_filter_reset(kf);
     // kalman_filter_reset(kf);
     float deltaT = 0.025;
     /* Set State Transition Matrix */
@@ -399,11 +390,13 @@ static void TaskKalmanFilter(void *parameters)
         float vertVel = matrix_get(x, 1, 0);
         if (isnanf(vertVel))
         {
+            // not working
             ESP_LOGI(TAG, "A: %.2f, P: %.2f", acc, pressure);
             ESP_LOGI(TAG, "Had to reset Kalman Filter\n");
             ResetKalman(&kf);
             continue;
         }
+        // printf("V: %.2f\n", vertVel);
         vario_state_set_member(&vertVel, vario_state_vertVel);
         float accXCorr = acc - 9.81;
         vario_state_set_member(&accXCorr, vario_state_vertAcc);
@@ -422,7 +415,6 @@ static void TaskKalmanFilter(void *parameters)
         }
         logVarioData(flight_state);
         SoundManager_calculateNewBiep();
-        // SoundManager_calculateNewBiep(2.5f);
         if (vertVel > 10)
             wasGreater = true;
         if (wasGreater)
@@ -438,7 +430,6 @@ void startMainTasks()
 {
     pressure_temperature_Mutex = xSemaphoreCreateMutex();
     accQueue = xQueueCreate(10, sizeof(float));
-    // startKalmanFilter();
     xTaskCreate(TaskKalmanFilter, "Kalman Filter", 4 * 1024, NULL, TASK_KALMAN_PRIORITY, &TaskKalmanFilter_Handle);
     xTaskCreate(TaskMeasureHeight, "Measure Height", 4 * 1024, NULL, TASK_HEIGHT_PRIORITY, NULL);
     xTaskCreate(TaskMeasureAcc, "Measure Acceleration", 4 * 1024, NULL, TASK_ACC_PRIORITY, NULL);

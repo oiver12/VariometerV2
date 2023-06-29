@@ -19,7 +19,7 @@
 #define LandingSpeed 2   // km/h
 #define LandingTimout 10 // s
 
-#define SOUND_ON
+// #define SOUND_ON
 
 #define VARIO_SPI_RETRYS_INIT 5
 #define VARIO_SPI_RETRYS 3
