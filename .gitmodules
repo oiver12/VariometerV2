@@ -1,3 +1,6 @@
 [submodule "Software/variometer-software"]
 	path = Software/variometer-software
 	url = git@github.com:oiver12/variometer-software.git
+[submodule "Simulation/FreeRTOS/Demo/Posix_GCC/variometer-software"]
+	path = Simulation/FreeRTOS/Demo/Posix_GCC/variometer-software
+	url = git@github.com:oiver12/variometer-software.git

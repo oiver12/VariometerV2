@@ -12,6 +12,9 @@ FREERTOS_PLUS_DIR     := $(abspath $(FREERTOS_PLUS_DIR_REL))
 
 KERNEL_DIR            := ${FREERTOS_DIR}/Source
 
+VARIOMETER_DIR_REL   := ./variometer-software/main
+VARIOMETER_DIR       := $(abspath $(VARIOMETER_DIR_REL))
+
 INCLUDE_DIRS          := -I.
 INCLUDE_DIRS          += -I./Trace_Recorder_Configuration
 INCLUDE_DIRS          += -I${KERNEL_DIR}/include
@@ -22,6 +25,22 @@ INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/Inclu
 INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/config
 INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/streamports/File/include
 INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/streamports/File/config
+
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/AirspaceParcer
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Bluetooth
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Flash
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/IGC
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman/Quaternion
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/nkolban
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/assets
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/E_Ink
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Sensor
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/TestTools
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Watchdog
+INCLUDE_DIRS          += -I./Mock
 
 SOURCE_FILES          := $(wildcard *.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Source/*.c)
@@ -59,6 +78,20 @@ SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c
 SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c
 
 
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/AirspaceParcer/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Bluetooth/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Flash/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/IGC/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/Quaternion/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/nkolban/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/assets/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/E_Ink/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Sensor/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/TestTools/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Watchdog/*.c)
 
 CFLAGS                :=    -ggdb3
 LDFLAGS               :=    -ggdb3 -pthread
