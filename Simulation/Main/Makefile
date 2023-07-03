@@ -26,21 +26,20 @@ INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/confi
 INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/streamports/File/include
 INCLUDE_DIRS          += -I${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/streamports/File/config
 
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/AirspaceParcer
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Bluetooth
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Flash
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/IGC
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman/Quaternion
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/nkolban
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/assets
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/E_Ink
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Sensor
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/TestTools
-# INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Watchdog
-# INCLUDE_DIRS          += -I./Mock
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/AirspaceParcer
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Bluetooth
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Flash
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/IGC
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Kalman/Quaternion
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/assets
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/E_Ink
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Sensor
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/TestTools
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Watchdog
+INCLUDE_DIRS          += -I./Mock
 
 SOURCE_FILES          := $(wildcard *.c)
 SOURCE_FILES          += $(wildcard ${FREERTOS_DIR}/Source/*.c)
@@ -78,20 +77,20 @@ SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c
 SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c
 
 
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/AirspaceParcer/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Bluetooth/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Flash/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/IGC/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/Quaternion/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/nkolban/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/assets/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/E_Ink/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Sensor/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/TestTools/*.c)
-# SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Watchdog/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/AirspaceParcer/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Bluetooth/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Flash/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/IGC/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Kalman/Quaternion/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/assets/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/E_Ink/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Sensor/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/TestTools/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Watchdog/*.c)
+SOURCE_FILES 			+= $(wildcard ./Mock/*.c)
 
 CFLAGS                :=    -ggdb3
 LDFLAGS               :=    -ggdb3 -pthread
@@ -156,6 +155,20 @@ ${BUILD_DIR}/%.o : %.c Makefile
 	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c $< -o $@
 
 .PHONY: clean
+
+build:
+	${BUILD_DIR}/${BIN} : ${OBJ_FILES}
+		-mkdir -p ${@D}
+		$(CC) $^ ${LDFLAGS} -o $@
+
+	-include ${DEP_FILE}
+
+	${BUILD_DIR}/%.o : %.c Makefile
+		-mkdir -p $(@D)
+		$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -c $< -o $@
+
+run: build
+	./${BUILD_DIR}/${BIN}
 
 clean:
 	-rm -rf $(BUILD_DIR)
