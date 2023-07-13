@@ -1,0 +1,24 @@
+#include "RenderSystem.h"
+#include "EPD_3in7.h"
+#include "SDLHelper/SDL_helper.h"
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
+
+void simulationDisplayTask(void *arg)
+{
+    ScreenRender_arg *arguments = (ScreenRender_arg *)arg;
+    uint8_t *ScreenBuffer = (uint8_t *)arguments->ScreenBuffer;
+    QueueHandle_t renderQueue = (QueueHandle_t)arguments->renderQueue;
+    SemaphoreHandle_t buffer_Mutex = (SemaphoreHandle_t)arguments->buffer_Mutex;
+    Display_RefreshMode refreshMode;
+    while (1)
+    {
+        xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+        SDLH_update(ScreenBuffer);
+        xSemaphoreGive(buffer_Mutex);
+    }
+}

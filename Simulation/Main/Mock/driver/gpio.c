@@ -20,3 +20,7 @@ esp_err_t gpio_isr_handler_remove(gpio_num_t gpio_num)
 {
     return ESP_OK;
 }
+esp_err_t gpio_install_isr_service(int intr_alloc_flags)
+{
+    return ESP_OK;
+}

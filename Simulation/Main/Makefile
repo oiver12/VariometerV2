@@ -77,7 +77,7 @@ SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c
 SOURCE_FILES          += ${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c
 
 
-SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/AirspaceParcer/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Bluetooth/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Flash/*.c)
@@ -90,12 +90,15 @@ SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/E_Ink/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Sensor/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/TestTools/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Watchdog/*.c)
-SOURCE_FILES 			+= $(wildcard ./Mock/*.c)
+SOURCE_FILES 		  += $(wildcard ./Mock/*.c)
+SOURCE_FILES          += $(wildcard ./Mock/driver/*.c)
+SOURCE_FILES          += $(wildcard ./Mock/esp_adc/*.c)
+SOURCE_FILES          += ${wildcard ./SDLHelper/*.c}
 
 CFLAGS                :=    -ggdb3
-LDFLAGS               :=    -ggdb3 -pthread
+LDFLAGS               :=    -ggdb3 -pthread -lm -lSDL2
 CPPFLAGS              :=    $(INCLUDE_DIRS) -DBUILD_DIR=\"$(BUILD_DIR_ABS)\"
-CPPFLAGS              +=    -D_WINDOWS_
+CPPFLAGS              +=    -D_WINDOWS_ -D ISSIMULATION
 
 ifeq ($(TRACE_ON_ENTER),1)
   CPPFLAGS              += -DTRACE_ON_ENTER=1
@@ -113,8 +116,8 @@ else
 endif
 
 ifdef PROFILE
-  CFLAGS              +=   -pg  -O0
-  LDFLAGS             +=   -pg  -O0
+  CFLAGS              +=   -pg  -O0 -g
+  LDFLAGS             +=   -pg  -O0 -g
 else
   CFLAGS              +=   -O3
   LDFLAGS             +=   -O3

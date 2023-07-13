@@ -4,6 +4,18 @@
 #include "esp_err.h"
 #include "stdint.h"
 
+#define ESP_INTR_FLAG_LEVEL1 (1 << 1)        ///< Accept a Level 1 interrupt vector (lowest priority)
+#define ESP_INTR_FLAG_LEVEL2 (1 << 2)        ///< Accept a Level 2 interrupt vector
+#define ESP_INTR_FLAG_LEVEL3 (1 << 3)        ///< Accept a Level 3 interrupt vector
+#define ESP_INTR_FLAG_LEVEL4 (1 << 4)        ///< Accept a Level 4 interrupt vector
+#define ESP_INTR_FLAG_LEVEL5 (1 << 5)        ///< Accept a Level 5 interrupt vector
+#define ESP_INTR_FLAG_LEVEL6 (1 << 6)        ///< Accept a Level 6 interrupt vector
+#define ESP_INTR_FLAG_NMI (1 << 7)           ///< Accept a Level 7 interrupt vector (highest priority)
+#define ESP_INTR_FLAG_SHARED (1 << 8)        ///< Interrupt can be shared between ISRs
+#define ESP_INTR_FLAG_EDGE (1 << 9)          ///< Edge-triggered interrupt
+#define ESP_INTR_FLAG_IRAM (1 << 10)         ///< ISR can be called if cache is disabled
+#define ESP_INTR_FLAG_INTRDISABLED (1 << 11) ///< Return with this interrupt disabled
+
 typedef enum
 {
     GPIO_NUM_NC = -1, /*!< Use to signal not connected to S/W */
@@ -65,6 +77,8 @@ typedef enum
 #define GPIO_MODE_DEF_OUTPUT (BIT1) ///< bit mask for output
 #define GPIO_MODE_DEF_OD (BIT2)     ///< bit mask for OD mode
 
+#define IRAM_ATTR
+
 typedef enum
 {
     GPIO_MODE_DISABLE = GPIO_MODE_DEF_DISABLE,                                                         /*!< GPIO mode : disable input and output             */
@@ -120,6 +134,7 @@ typedef void (*gpio_isr_t)(void *arg);
 esp_err_t gpio_set_level(gpio_num_t gpio_num, uint32_t level);
 int gpio_get_level(gpio_num_t gpio_num);
 esp_err_t gpio_config(const gpio_config_t *pGPIOConfig);
+esp_err_t gpio_install_isr_service(int intr_alloc_flags);
 esp_err_t gpio_isr_handler_add(gpio_num_t gpio_num, gpio_isr_t isr_handler, void *args);
 esp_err_t gpio_isr_handler_remove(gpio_num_t gpio_num);
 
