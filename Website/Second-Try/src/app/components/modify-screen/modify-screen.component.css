@@ -66,12 +66,22 @@ p {
     border-radius: 15px;
 }
 .selectbox-item {
-    height: 11%;
+    height: 9.8%;
     display: flex;
     justify-content: center;
     align-items: center;
     box-shadow: 0 8px 4px -2px gray;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+.selectbox-item h2 {
+    margin: 0 5%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .selectbox-item:hover {
     background-color: #ddd;
