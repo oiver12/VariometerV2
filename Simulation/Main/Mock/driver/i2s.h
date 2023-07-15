@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef enum
 {
@@ -13,7 +14,7 @@ typedef enum
     I2S_NUM_AUTO,  /*!< Select whichever port is available */
 } i2s_port_t;
 
-typedef uint32_t TickType_t;
+typedef unsigned long TickType_t;
 
 typedef enum
 {
@@ -77,6 +78,8 @@ typedef struct
     int data_out_num; /*!< DATA pin, output */
     int data_in_num;  /*!< DATA pin, input */
 } i2s_pin_config_t;
+
+#define I2S_PIN_NO_CHANGE (-1) /*!< Used in i2s_pin_config_t for pins which should not be changed */
 
 /**
  * @brief I2S driver configuration parameters

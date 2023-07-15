@@ -26,4 +26,6 @@ typedef int esp_err_t;
 #define ESP_ERR_HW_CRYPTO_BASE 0xc000 /*!< Starting number of HW cryptography module error codes */
 #define ESP_ERR_MEMPROT_BASE 0xd000   /*!< Starting number of Memory Protection API error codes */
 
+const char *esp_err_to_name(esp_err_t code);
+
 #endif // _ESP_ERR_H_

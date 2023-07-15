@@ -1,0 +1,106 @@
+#include "SDLHelper/SDL_helper.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
+#include <stdbool.h>
+
+SDL_Renderer *renderer;
+SDL_Window *window;
+int windowWidth;
+int windowHeight;
+
+void SDLH_initializeScreen(int width, int height)
+{
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_CreateWindowAndRenderer(width, height, 0, &window, &renderer);
+    windowWidth = height;
+    windowHeight = width;
+}
+void SDLH_update(uint8_t *buffer)
+{
+    int sizeXBuffer = windowWidth % 8 == 0 ? windowWidth / 8 : windowWidth / 8 + 1;
+    for (int y = 0; y < windowHeight; y++)
+    {
+        for (int x = 0; x < windowWidth; x++)
+        {
+            int addr = x / 8 + y * sizeXBuffer;
+            uint8_t rdata = buffer[addr];
+            // Black
+            if ((rdata & (0x80 >> (x % 8))) == 0)
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                SDL_RenderDrawPoint(renderer, windowHeight - 1 - y, x);
+            }
+            else
+            {
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+                SDL_RenderDrawPoint(renderer, windowHeight - 1 - y, x);
+            }
+        }
+    }
+    SDL_RenderPresent(renderer);
+}
+void SDLH_HandleKey()
+{
+    // bool startedFKey = false;
+    // Uint32 startedFKeyTime = 0;
+    // SDL_Event event;
+    // while (SDL_PollEvent(&event))
+    // {
+    //     switch (event.type)
+    //     {
+    //     case SDL_KEYDOWN:
+    //         switch (event.key.keysym.sym)
+    //         {
+    //         case SDLK_DOWN:
+    //             startDownArrow();
+    //             break;
+    //         case SDLK_UP:
+    //             startUpArrow();
+    //             break;
+    //         case SDLK_m:
+    //             startMenuKey();
+    //             break;
+    //         case SDLK_RETURN:
+    //             startEnterKey();
+    //             break;
+    //         case SDLK_p:
+    //             PKeyPressed();
+    //             break;
+    //         case SDLK_f:
+    //             if (!startedFKey)
+    //             {
+    //                 startedFKeyTime = SDL_GetTicks();
+    //                 startedFKey = true;
+    //             }
+    //             else
+    //             {
+    //                 simulation_fastForward(0.005f);
+    //             }
+    //             break;
+    //         }
+    //         break;
+    //     case SDL_KEYUP:
+    //         switch (event.key.keysym.sym)
+    //         {
+    //         case SDLK_DOWN:
+    //             DownArrowReleased();
+    //             break;
+    //         case SDLK_UP:
+    //             UpArrowReleased();
+    //             break;
+    //         case SDLK_m:
+    //             MenuKeyReleased();
+    //             break;
+    //         case SDLK_RETURN:
+    //             EnterKeyReleased();
+    //             break;
+    //         case SDLK_f:
+    //             startedFKey = false;
+    //             break;
+    //         }
+    //         break;
+    //         // Handle other event types as needed
+    //     }
+    // }
+}

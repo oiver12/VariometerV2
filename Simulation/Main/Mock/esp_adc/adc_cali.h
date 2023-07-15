@@ -4,57 +4,6 @@
 #include "esp_err.h"
 #include <stdint.h>
 
-struct adc_cali_scheme_t
-{
-
-    /**
-     * @brief Convert ADC raw data to calibrated voltage
-     *
-     * @param[in]  arg        ///< ADC calibration scheme specific context
-     * @param[in]  raw        ///< ADC raw data
-     * @param[out] voltage    ///< Calibrated ADC voltage (in mV)
-     *
-     * @return
-     *         - ESP_OK:                On success
-     *         - ESP_ERR_INVALID_ARG:   Invalid argument
-     *         - ESP_ERR_INVALID_STATE: Invalid state, scheme didn't registered
-     */
-    esp_err_t (*raw_to_voltage)(void *arg, int raw, int *voltage);
-
-    /**
-     * @brief ADC calibration specific contexts
-     * Can be customized to difference calibration schemes
-     */
-    void *ctx;
-};
-typedef struct adc_cali_scheme_t *adc_cali_handle_t;
-
-typedef struct adc_oneshot_unit_ctx_t
-{
-    uint32_t unit_id;
-} adc_oneshot_unit_ctx_t;
-
-typedef enum adc_one_shot_clk_src
-{
-    ADC_CLK_SRC_APB = 0, ///< ADC clock source is APB clock
-    ADC_CLK_SRC_PLL = 1, ///< ADC clock source is PLL
-} adc_oneshot_clk_src_t;
-
-typedef struct
-{
-    adc_unit_t unit_id;            ///< ADC unit
-    adc_oneshot_clk_src_t clk_src; ///< Clock source
-    adc_ulp_mode_t ulp_mode;       ///< ADC controlled by ULP, see `adc_ulp_mode_t`
-} adc_oneshot_unit_init_cfg_t;
-
-typedef struct adc_oneshot_unit_ctx_t *adc_oneshot_unit_handle_t;
-
-typedef enum
-{
-    ADC_UNIT_1, ///< SAR ADC 1
-    ADC_UNIT_2, ///< SAR ADC 2
-} adc_unit_t;
-
 /**
  * @brief ADC channels
  */
@@ -99,6 +48,57 @@ typedef enum
     ADC_ULP_MODE_FSM = 1,     ///< ADC is controlled by ULP FSM
     ADC_ULP_MODE_RISCV = 2,   ///< ADC is controlled by ULP RISCV
 } adc_ulp_mode_t;
+
+struct adc_cali_scheme_t
+{
+
+    /**
+     * @brief Convert ADC raw data to calibrated voltage
+     *
+     * @param[in]  arg        ///< ADC calibration scheme specific context
+     * @param[in]  raw        ///< ADC raw data
+     * @param[out] voltage    ///< Calibrated ADC voltage (in mV)
+     *
+     * @return
+     *         - ESP_OK:                On success
+     *         - ESP_ERR_INVALID_ARG:   Invalid argument
+     *         - ESP_ERR_INVALID_STATE: Invalid state, scheme didn't registered
+     */
+    esp_err_t (*raw_to_voltage)(void *arg, int raw, int *voltage);
+
+    /**
+     * @brief ADC calibration specific contexts
+     * Can be customized to difference calibration schemes
+     */
+    void *ctx;
+};
+typedef struct adc_cali_scheme_t *adc_cali_handle_t;
+
+typedef struct adc_oneshot_unit_ctx_t
+{
+    uint32_t unit_id;
+} adc_oneshot_unit_ctx_t;
+
+typedef enum adc_one_shot_clk_src
+{
+    ADC_CLK_SRC_APB = 0, ///< ADC clock source is APB clock
+    ADC_CLK_SRC_PLL = 1, ///< ADC clock source is PLL
+} adc_oneshot_clk_src_t;
+
+typedef enum
+{
+    ADC_UNIT_1, ///< SAR ADC 1
+    ADC_UNIT_2, ///< SAR ADC 2
+} adc_unit_t;
+
+typedef struct
+{
+    adc_unit_t unit_id;            ///< ADC unit
+    adc_oneshot_clk_src_t clk_src; ///< Clock source
+    adc_ulp_mode_t ulp_mode;       ///< ADC controlled by ULP, see `adc_ulp_mode_t`
+} adc_oneshot_unit_init_cfg_t;
+
+typedef struct adc_oneshot_unit_ctx_t *adc_oneshot_unit_handle_t;
 
 typedef struct
 {

@@ -27,28 +27,28 @@
  */
 
 /*-----------------------------------------------------------
-* Implementation of functions defined in portable.h for the Posix port.
-*
-* Each task has a pthread which eases use of standard debuggers
-* (allowing backtraces of tasks etc). Threads for tasks that are not
-* running are blocked in sigwait().
-*
-* Task switch is done by resuming the thread for the next task by
-* signaling the condition variable and then waiting on a condition variable
-* with the current thread.
-*
-* The timer interrupt uses SIGALRM and care is taken to ensure that
-* the signal handler runs only on the thread for the current task.
-*
-* Use of part of the standard C library requires care as some
-* functions can take pthread mutexes internally which can result in
-* deadlocks as the FreeRTOS kernel can switch tasks while they're
-* holding a pthread mutex.
-*
-* stdio (printf() and friends) should be called from a single task
-* only or serialized with a FreeRTOS primitive such as a binary
-* semaphore or mutex.
-*----------------------------------------------------------*/
+ * Implementation of functions defined in portable.h for the Posix port.
+ *
+ * Each task has a pthread which eases use of standard debuggers
+ * (allowing backtraces of tasks etc). Threads for tasks that are not
+ * running are blocked in sigwait().
+ *
+ * Task switch is done by resuming the thread for the next task by
+ * signaling the condition variable and then waiting on a condition variable
+ * with the current thread.
+ *
+ * The timer interrupt uses SIGALRM and care is taken to ensure that
+ * the signal handler runs only on the thread for the current task.
+ *
+ * Use of part of the standard C library requires care as some
+ * functions can take pthread mutexes internally which can result in
+ * deadlocks as the FreeRTOS kernel can switch tasks while they're
+ * holding a pthread mutex.
+ *
+ * stdio (printf() and friends) should be called from a single task
+ * only or serialized with a FreeRTOS primitive such as a binary
+ * semaphore or mutex.
+ *----------------------------------------------------------*/
 #include "portmacro.h"
 
 #include <errno.h>
@@ -68,26 +68,26 @@
 #include "utils/wait_for_event.h"
 /*-----------------------------------------------------------*/
 
-#define SIG_RESUME    SIGUSR1
+#define SIG_RESUME SIGUSR1
 
 typedef struct THREAD
 {
     pthread_t pthread;
     pdTASK_CODE pxCode;
-    void * pvParams;
+    void *pvParams;
     BaseType_t xDying;
-    struct event * ev;
+    struct event *ev;
 } Thread_t;
 
 /*
  * The additional per-thread data is stored at the beginning of the
  * task's stack.
  */
-static inline Thread_t * prvGetThreadFromTask( TaskHandle_t xTask )
+static inline Thread_t *prvGetThreadFromTask(TaskHandle_t xTask)
 {
-    StackType_t * pxTopOfStack = *( StackType_t ** ) xTask;
+    StackType_t *pxTopOfStack = *(StackType_t **)xTask;
 
-    return ( Thread_t * ) ( pxTopOfStack + 1 );
+    return (Thread_t *)(pxTopOfStack + 1);
 }
 
 /*-----------------------------------------------------------*/
@@ -95,76 +95,76 @@ static inline Thread_t * prvGetThreadFromTask( TaskHandle_t xTask )
 static pthread_once_t hSigSetupThread = PTHREAD_ONCE_INIT;
 static sigset_t xAllSignals;
 static sigset_t xSchedulerOriginalSignalMask;
-static pthread_t hMainThread = ( pthread_t ) NULL;
+static pthread_t hMainThread = (pthread_t)NULL;
 static volatile portBASE_TYPE uxCriticalNesting;
 /*-----------------------------------------------------------*/
 
 static portBASE_TYPE xSchedulerEnd = pdFALSE;
 /*-----------------------------------------------------------*/
 
-static void prvSetupSignalsAndSchedulerPolicy( void );
-static void prvSetupTimerInterrupt( void );
-static void * prvWaitForStart( void * pvParams );
-static void prvSwitchThread( Thread_t * xThreadToResume,
-                             Thread_t * xThreadToSuspend );
-static void prvSuspendSelf( Thread_t * thread );
-static void prvResumeThread( Thread_t * xThreadId );
-static void vPortSystemTickHandler( int sig );
-static void vPortStartFirstTask( void );
-static void prvPortYieldFromISR( void );
+static void prvSetupSignalsAndSchedulerPolicy(void);
+static void prvSetupTimerInterrupt(void);
+static void *prvWaitForStart(void *pvParams);
+static void prvSwitchThread(Thread_t *xThreadToResume,
+                            Thread_t *xThreadToSuspend);
+static void prvSuspendSelf(Thread_t *thread);
+static void prvResumeThread(Thread_t *xThreadId);
+static void vPortSystemTickHandler(int sig);
+static void vPortStartFirstTask(void);
+static void prvPortYieldFromISR(void);
 /*-----------------------------------------------------------*/
 
-static void prvFatalError( const char * pcCall,
-                           int iErrno )
+static void prvFatalError(const char *pcCall,
+                          int iErrno)
 {
-    fprintf( stderr, "%s: %s\n", pcCall, strerror( iErrno ) );
+    fprintf(stderr, "%s: %s\n", pcCall, strerror(iErrno));
     abort();
 }
 
 /*
  * See header file for description.
  */
-portSTACK_TYPE * pxPortInitialiseStack( portSTACK_TYPE * pxTopOfStack,
-                                        portSTACK_TYPE * pxEndOfStack,
-                                        pdTASK_CODE pxCode,
-                                        void * pvParameters )
+portSTACK_TYPE *pxPortInitialiseStack(portSTACK_TYPE *pxTopOfStack,
+                                      portSTACK_TYPE *pxEndOfStack,
+                                      pdTASK_CODE pxCode,
+                                      void *pvParameters)
 {
-    Thread_t * thread;
+    Thread_t *thread;
     pthread_attr_t xThreadAttributes;
     size_t ulStackSize;
     int iRet;
 
-    ( void ) pthread_once( &hSigSetupThread, prvSetupSignalsAndSchedulerPolicy );
+    (void)pthread_once(&hSigSetupThread, prvSetupSignalsAndSchedulerPolicy);
 
     /*
      * Store the additional thread data at the start of the stack.
      */
-    thread = ( Thread_t * ) ( pxTopOfStack + 1 ) - 1;
-    pxTopOfStack = ( portSTACK_TYPE * ) thread - 1;
-    ulStackSize = ( pxTopOfStack + 1 - pxEndOfStack ) * sizeof( *pxTopOfStack );
+    thread = (Thread_t *)(pxTopOfStack + 1) - 1;
+    pxTopOfStack = (portSTACK_TYPE *)thread - 1;
+    ulStackSize = (pxTopOfStack + 1 - pxEndOfStack) * sizeof(*pxTopOfStack);
 
     thread->pxCode = pxCode;
     thread->pvParams = pvParameters;
     thread->xDying = pdFALSE;
 
-    pthread_attr_init( &xThreadAttributes );
-    iRet = pthread_attr_setstack( &xThreadAttributes, pxEndOfStack, ulStackSize );
-    if( iRet != 0 )
+    pthread_attr_init(&xThreadAttributes);
+    iRet = pthread_attr_setstack(&xThreadAttributes, pxEndOfStack, ulStackSize);
+    if (iRet != 0)
     {
-        fprintf( stderr, "[WARN] pthread_attr_setstack failed with return value: %d. Default stack will be used.\n", iRet );
-        fprintf( stderr, "[WARN] Increase the stack size to PTHREAD_STACK_MIN.\n" );
+        fprintf(stderr, "[WARN] pthread_attr_setstack failed with return value: %d. Default stack will be used.\n", iRet);
+        fprintf(stderr, "[WARN] Increase the stack size to PTHREAD_STACK_MIN.\n");
     }
 
     thread->ev = event_create();
 
     vPortEnterCritical();
 
-    iRet = pthread_create( &thread->pthread, &xThreadAttributes,
-                           prvWaitForStart, thread );
+    iRet = pthread_create(&thread->pthread, &xThreadAttributes,
+                          prvWaitForStart, thread);
 
-    if( iRet != 0 )
+    if (iRet != 0)
     {
-        prvFatalError( "pthread_create", iRet );
+        prvFatalError("pthread_create", iRet);
     }
 
     vPortExitCritical();
@@ -173,19 +173,19 @@ portSTACK_TYPE * pxPortInitialiseStack( portSTACK_TYPE * pxTopOfStack,
 }
 /*-----------------------------------------------------------*/
 
-void vPortStartFirstTask( void )
+void vPortStartFirstTask(void)
 {
-    Thread_t * pxFirstThread = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
+    Thread_t *pxFirstThread = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
 
     /* Start the first task. */
-    prvResumeThread( pxFirstThread );
+    prvResumeThread(pxFirstThread);
 }
 /*-----------------------------------------------------------*/
 
 /*
  * See header file for description.
  */
-portBASE_TYPE xPortStartScheduler( void )
+portBASE_TYPE xPortStartScheduler(void)
 {
     int iSignal;
     sigset_t xSignals;
@@ -201,41 +201,41 @@ portBASE_TYPE xPortStartScheduler( void )
      * To sigwait on an unblocked signal is undefined.
      * https://pubs.opengroup.org/onlinepubs/009604499/functions/sigwait.html
      */
-    sigemptyset( &xSignals );
-    sigaddset( &xSignals, SIG_RESUME );
-    ( void ) pthread_sigmask( SIG_BLOCK, &xSignals, NULL );
+    sigemptyset(&xSignals);
+    sigaddset(&xSignals, SIG_RESUME);
+    (void)pthread_sigmask(SIG_BLOCK, &xSignals, NULL);
 
     /* Start the first task. */
     vPortStartFirstTask();
 
     /* Wait until signaled by vPortEndScheduler(). */
-    while( xSchedulerEnd != pdTRUE )
+    while (xSchedulerEnd != pdTRUE)
     {
-        sigwait( &xSignals, &iSignal );
+        sigwait(&xSignals, &iSignal);
     }
 
-    /* Cancel the Idle task and free its resources */
-    #if ( INCLUDE_xTaskGetIdleTaskHandle == 1 )
-        vPortCancelThread( xTaskGetIdleTaskHandle() );
-    #endif
+/* Cancel the Idle task and free its resources */
+#if (INCLUDE_xTaskGetIdleTaskHandle == 1)
+    vPortCancelThread(xTaskGetIdleTaskHandle());
+#endif
 
-    #if ( configUSE_TIMERS == 1 )
-        /* Cancel the Timer task and free its resources */
-        vPortCancelThread( xTimerGetTimerDaemonTaskHandle() );
-    #endif /* configUSE_TIMERS */
+#if (configUSE_TIMERS == 1)
+    /* Cancel the Timer task and free its resources */
+    vPortCancelThread(xTimerGetTimerDaemonTaskHandle());
+#endif /* configUSE_TIMERS */
 
     /* Restore original signal mask. */
-    ( void ) pthread_sigmask( SIG_SETMASK, &xSchedulerOriginalSignalMask, NULL );
+    (void)pthread_sigmask(SIG_SETMASK, &xSchedulerOriginalSignalMask, NULL);
 
     return 0;
 }
 /*-----------------------------------------------------------*/
 
-void vPortEndScheduler( void )
+void vPortEndScheduler(void)
 {
     struct itimerval itimer;
     struct sigaction sigtick;
-    Thread_t * xCurrentThread;
+    Thread_t *xCurrentThread;
 
     /* Stop the timer and ignore any pending SIGALRMs that would end
      * up running on the main thread when it is resumed. */
@@ -244,25 +244,25 @@ void vPortEndScheduler( void )
 
     itimer.it_interval.tv_sec = 0;
     itimer.it_interval.tv_usec = 0;
-    ( void ) setitimer( ITIMER_REAL, &itimer, NULL );
+    (void)setitimer(ITIMER_REAL, &itimer, NULL);
 
     sigtick.sa_flags = 0;
     sigtick.sa_handler = SIG_IGN;
-    sigemptyset( &sigtick.sa_mask );
-    sigaction( SIGALRM, &sigtick, NULL );
+    sigemptyset(&sigtick.sa_mask);
+    sigaction(SIGALRM, &sigtick, NULL);
 
     /* Signal the scheduler to exit its loop. */
     xSchedulerEnd = pdTRUE;
-    ( void ) pthread_kill( hMainThread, SIG_RESUME );
+    (void)pthread_kill(hMainThread, SIG_RESUME);
 
-    xCurrentThread = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
-    prvSuspendSelf( xCurrentThread );
+    xCurrentThread = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
+    prvSuspendSelf(xCurrentThread);
 }
 /*-----------------------------------------------------------*/
 
-void vPortEnterCritical( void )
+void vPortEnterCritical(void)
 {
-    if( uxCriticalNesting == 0 )
+    if (uxCriticalNesting == 0)
     {
         vPortDisableInterrupts();
     }
@@ -271,34 +271,34 @@ void vPortEnterCritical( void )
 }
 /*-----------------------------------------------------------*/
 
-void vPortExitCritical( void )
+void vPortExitCritical(void)
 {
     uxCriticalNesting--;
 
     /* If we have reached 0 then re-enable the interrupts. */
-    if( uxCriticalNesting == 0 )
+    if (uxCriticalNesting == 0)
     {
         vPortEnableInterrupts();
     }
 }
 /*-----------------------------------------------------------*/
 
-static void prvPortYieldFromISR( void )
+static void prvPortYieldFromISR(void)
 {
-    Thread_t * xThreadToSuspend;
-    Thread_t * xThreadToResume;
+    Thread_t *xThreadToSuspend;
+    Thread_t *xThreadToResume;
 
-    xThreadToSuspend = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
+    xThreadToSuspend = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
 
     vTaskSwitchContext();
 
-    xThreadToResume = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
+    xThreadToResume = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
 
-    prvSwitchThread( xThreadToResume, xThreadToSuspend );
+    prvSwitchThread(xThreadToResume, xThreadToSuspend);
 }
 /*-----------------------------------------------------------*/
 
-void vPortYield( void )
+void vPortYield(void)
 {
     vPortEnterCritical();
 
@@ -308,19 +308,19 @@ void vPortYield( void )
 }
 /*-----------------------------------------------------------*/
 
-void vPortDisableInterrupts( void )
+void vPortDisableInterrupts(void)
 {
-    pthread_sigmask( SIG_BLOCK, &xAllSignals, NULL );
+    pthread_sigmask(SIG_BLOCK, &xAllSignals, NULL);
 }
 /*-----------------------------------------------------------*/
 
-void vPortEnableInterrupts( void )
+void vPortEnableInterrupts(void)
 {
-    pthread_sigmask( SIG_UNBLOCK, &xAllSignals, NULL );
+    pthread_sigmask(SIG_UNBLOCK, &xAllSignals, NULL);
 }
 /*-----------------------------------------------------------*/
 
-portBASE_TYPE xPortSetInterruptMask( void )
+portBASE_TYPE xPortSetInterruptMask(void)
 {
     /* Interrupts are always disabled inside ISRs (signals
      * handlers). */
@@ -328,17 +328,17 @@ portBASE_TYPE xPortSetInterruptMask( void )
 }
 /*-----------------------------------------------------------*/
 
-void vPortClearInterruptMask( portBASE_TYPE xMask )
+void vPortClearInterruptMask(portBASE_TYPE xMask)
 {
-    ( void ) xMask;
+    (void)xMask;
 }
 /*-----------------------------------------------------------*/
 
-static uint64_t prvGetTimeNs( void )
+static uint64_t prvGetTimeNs(void)
 {
     struct timespec t;
 
-    clock_gettime( CLOCK_MONOTONIC, &t );
+    clock_gettime(CLOCK_MONOTONIC, &t);
 
     return t.tv_sec * 1000000000ULL + t.tv_nsec;
 }
@@ -353,17 +353,17 @@ static uint64_t prvStartTimeNs;
  * Setup the systick timer to generate the tick interrupts at the required
  * frequency.
  */
-void prvSetupTimerInterrupt( void )
+void prvSetupTimerInterrupt(void)
 {
     struct itimerval itimer;
     int iRet;
 
     /* Initialise the structure with the current timer information. */
-    iRet = getitimer( ITIMER_REAL, &itimer );
+    iRet = getitimer(ITIMER_REAL, &itimer);
 
-    if( iRet == -1 )
+    if (iRet == -1)
     {
-        prvFatalError( "getitimer", errno );
+        prvFatalError("getitimer", errno);
     }
 
     /* Set the interval between timer events. */
@@ -375,112 +375,112 @@ void prvSetupTimerInterrupt( void )
     itimer.it_value.tv_usec = portTICK_RATE_MICROSECONDS;
 
     /* Set-up the timer interrupt. */
-    iRet = setitimer( ITIMER_REAL, &itimer, NULL );
+    iRet = setitimer(ITIMER_REAL, &itimer, NULL);
 
-    if( iRet == -1 )
+    if (iRet == -1)
     {
-        prvFatalError( "setitimer", errno );
+        prvFatalError("setitimer", errno);
     }
 
     prvStartTimeNs = prvGetTimeNs();
 }
 /*-----------------------------------------------------------*/
 
-static void vPortSystemTickHandler( int sig )
+static void vPortSystemTickHandler(int sig)
 {
-    Thread_t * pxThreadToSuspend;
-    Thread_t * pxThreadToResume;
+    Thread_t *pxThreadToSuspend;
+    Thread_t *pxThreadToResume;
 
-    ( void ) sig;
+    (void)sig;
 
-/* uint64_t xExpectedTicks; */
+    /* uint64_t xExpectedTicks; */
 
     uxCriticalNesting++; /* Signals are blocked in this signal handler. */
 
-    #if ( configUSE_PREEMPTION == 1 )
-        pxThreadToSuspend = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
-    #endif
+#if (configUSE_PREEMPTION == 1)
+    pxThreadToSuspend = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
+#endif
 
     /* Tick Increment, accounting for any lost signals or drift in
      * the timer. */
 
-/*
- *      Comment code to adjust timing according to full demo requirements
- *      xExpectedTicks = (prvGetTimeNs() - prvStartTimeNs)
- *        / (portTICK_RATE_MICROSECONDS * 1000);
- * do { */
+    /*
+     *      Comment code to adjust timing according to full demo requirements
+     *      xExpectedTicks = (prvGetTimeNs() - prvStartTimeNs)
+     *        / (portTICK_RATE_MICROSECONDS * 1000);
+     * do { */
     xTaskIncrementTick();
 
-/*        prvTickCount++;
- *    } while (prvTickCount < xExpectedTicks);
- */
+    /*        prvTickCount++;
+     *    } while (prvTickCount < xExpectedTicks);
+     */
 
-    #if ( configUSE_PREEMPTION == 1 )
-        /* Select Next Task. */
-        vTaskSwitchContext();
+#if (configUSE_PREEMPTION == 1)
+    /* Select Next Task. */
+    vTaskSwitchContext();
 
-        pxThreadToResume = prvGetThreadFromTask( xTaskGetCurrentTaskHandle() );
+    pxThreadToResume = prvGetThreadFromTask(xTaskGetCurrentTaskHandle());
 
-        prvSwitchThread( pxThreadToResume, pxThreadToSuspend );
-    #endif
+    prvSwitchThread(pxThreadToResume, pxThreadToSuspend);
+#endif
 
     uxCriticalNesting--;
 }
 /*-----------------------------------------------------------*/
 
-void vPortThreadDying( void * pxTaskToDelete,
-                       volatile BaseType_t * pxPendYield )
+void vPortThreadDying(void *pxTaskToDelete,
+                      volatile BaseType_t *pxPendYield)
 {
-    Thread_t * pxThread = prvGetThreadFromTask( pxTaskToDelete );
+    Thread_t *pxThread = prvGetThreadFromTask(pxTaskToDelete);
 
-    ( void ) pxPendYield;
+    (void)pxPendYield;
 
     pxThread->xDying = pdTRUE;
 }
 
-void vPortCancelThread( void * pxTaskToDelete )
+void vPortCancelThread(void *pxTaskToDelete)
 {
-    Thread_t * pxThreadToCancel = prvGetThreadFromTask( pxTaskToDelete );
+    Thread_t *pxThreadToCancel = prvGetThreadFromTask(pxTaskToDelete);
 
     /*
      * The thread has already been suspended so it can be safely cancelled.
      */
-    pthread_cancel( pxThreadToCancel->pthread );
-    pthread_join( pxThreadToCancel->pthread, NULL );
-    event_delete( pxThreadToCancel->ev );
+    pthread_cancel(pxThreadToCancel->pthread);
+    pthread_join(pxThreadToCancel->pthread, NULL);
+    event_delete(pxThreadToCancel->ev);
 }
 /*-----------------------------------------------------------*/
 
-static void * prvWaitForStart( void * pvParams )
+static void *prvWaitForStart(void *pvParams)
 {
-    Thread_t * pxThread = pvParams;
+    Thread_t *pxThread = pvParams;
 
-    prvSuspendSelf( pxThread );
+    prvSuspendSelf(pxThread);
 
     /* Resumed for the first time, unblocks all signals. */
     uxCriticalNesting = 0;
     vPortEnableInterrupts();
 
     /* Call the task's entry point. */
-    pxThread->pxCode( pxThread->pvParams );
+    pxThread->pxCode(pxThread->pvParams);
 
     /* A function that implements a task must not exit or attempt to return to
      * its caller as there is nothing to return to. If a task wants to exit it
      * should instead call vTaskDelete( NULL ). Artificially force an assert()
      * to be triggered if configASSERT() is defined, so application writers can
      * catch the error. */
-    configASSERT( pdFALSE );
+    configASSERT(pdFALSE);
 
     return NULL;
 }
 /*-----------------------------------------------------------*/
 
-static void prvSwitchThread( Thread_t * pxThreadToResume,
-                             Thread_t * pxThreadToSuspend )
+static void prvSwitchThread(Thread_t *pxThreadToResume,
+                            Thread_t *pxThreadToSuspend)
 {
     BaseType_t uxSavedCriticalNesting;
 
-    if( pxThreadToSuspend != pxThreadToResume )
+    if (pxThreadToSuspend != pxThreadToResume)
     {
         /*
          * Switch tasks.
@@ -491,21 +491,21 @@ static void prvSwitchThread( Thread_t * pxThreadToResume,
          */
         uxSavedCriticalNesting = uxCriticalNesting;
 
-        prvResumeThread( pxThreadToResume );
+        prvResumeThread(pxThreadToResume);
 
-        if( pxThreadToSuspend->xDying == pdTRUE )
+        if (pxThreadToSuspend->xDying == pdTRUE)
         {
-            pthread_exit( NULL );
+            pthread_exit(NULL);
         }
 
-        prvSuspendSelf( pxThreadToSuspend );
+        prvSuspendSelf(pxThreadToSuspend);
 
         uxCriticalNesting = uxSavedCriticalNesting;
     }
 }
 /*-----------------------------------------------------------*/
 
-static void prvSuspendSelf( Thread_t * thread )
+static void prvSuspendSelf(Thread_t *thread)
 {
     /*
      * Suspend this thread by waiting for a pthread_cond_signal event.
@@ -520,21 +520,21 @@ static void prvSuspendSelf( Thread_t * thread )
      *
      * - A thread with all signals blocked with pthread_sigmask().
      */
-    event_wait( thread->ev );
+    event_wait(thread->ev);
 }
 
 /*-----------------------------------------------------------*/
 
-static void prvResumeThread( Thread_t * xThreadId )
+static void prvResumeThread(Thread_t *xThreadId)
 {
-    if( pthread_self() != xThreadId->pthread )
+    if (pthread_self() != xThreadId->pthread)
     {
-        event_signal( xThreadId->ev );
+        event_signal(xThreadId->ev);
     }
 }
 /*-----------------------------------------------------------*/
 
-static void prvSetupSignalsAndSchedulerPolicy( void )
+static void prvSetupSignalsAndSchedulerPolicy(void)
 {
     struct sigaction sigtick;
     int iRet;
@@ -542,11 +542,11 @@ static void prvSetupSignalsAndSchedulerPolicy( void )
     hMainThread = pthread_self();
 
     /* Initialise common signal masks. */
-    sigfillset( &xAllSignals );
+    sigfillset(&xAllSignals);
 
     /* Don't block SIGINT so this can be used to break into GDB while
      * in a critical section. */
-    sigdelset( &xAllSignals, SIGINT );
+    sigdelset(&xAllSignals, SIGINT);
 
     /*
      * Block all signals in this thread so all new threads
@@ -555,29 +555,29 @@ static void prvSetupSignalsAndSchedulerPolicy( void )
      * When a thread is resumed for the first time, all signals
      * will be unblocked.
      */
-    ( void ) pthread_sigmask( SIG_SETMASK,
-                              &xAllSignals,
-                              &xSchedulerOriginalSignalMask );
+    (void)pthread_sigmask(SIG_SETMASK,
+                          &xAllSignals,
+                          &xSchedulerOriginalSignalMask);
 
     sigtick.sa_flags = 0;
     sigtick.sa_handler = vPortSystemTickHandler;
-    sigfillset( &sigtick.sa_mask );
+    sigfillset(&sigtick.sa_mask);
 
-    iRet = sigaction( SIGALRM, &sigtick, NULL );
+    iRet = sigaction(SIGALRM, &sigtick, NULL);
 
-    if( iRet == -1 )
+    if (iRet == -1)
     {
-        prvFatalError( "sigaction", errno );
+        prvFatalError("sigaction", errno);
     }
 }
 /*-----------------------------------------------------------*/
 
-unsigned long ulPortGetRunTime( void )
+unsigned long ulPortGetRunTime(void)
 {
     struct tms xTimes;
 
-    times( &xTimes );
+    times(&xTimes);
 
-    return ( unsigned long ) xTimes.tms_utime;
+    return (unsigned long)xTimes.tms_utime;
 }
 /*-----------------------------------------------------------*/

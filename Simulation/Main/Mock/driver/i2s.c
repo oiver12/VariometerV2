@@ -1,4 +1,4 @@
-#include "i2c.h"
+#include "i2s.h"
 
 // TODO: also play tone in Simulation, when switched to new i2s driver
 
