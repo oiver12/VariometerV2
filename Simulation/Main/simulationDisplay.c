@@ -7,6 +7,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 
+void simulationKeyHandlerTask(void *arg)
+{
+    while (1)
+    {
+        SDLH_HandleKey();
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
+}
+
 void simulationDisplayTask(void *arg)
 {
     ScreenRender_arg *arguments = (ScreenRender_arg *)arg;
@@ -20,5 +29,6 @@ void simulationDisplayTask(void *arg)
         xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         SDLH_update(ScreenBuffer);
         xSemaphoreGive(buffer_Mutex);
+        vTaskDelay(1);
     }
 }

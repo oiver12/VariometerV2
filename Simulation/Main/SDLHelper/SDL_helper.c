@@ -1,13 +1,86 @@
 #include "SDLHelper/SDL_helper.h"
+#include "ScreenManager.h"
 
+#include <stddef.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include <stdbool.h>
+#include <esp_timer.h>
 
 SDL_Renderer *renderer;
 SDL_Window *window;
 int windowWidth;
 int windowHeight;
+
+uint64_t startTimeDown = 0.0f;
+uint8_t startedDown = false;
+uint8_t startedLeft = false;
+uint8_t startedRight = false;
+uint8_t startedEnter = false;
+
+void startDownArrow()
+{
+    if (!startedLeft)
+        startedLeft = true;
+}
+
+void DownArrowReleased()
+{
+    if (startedLeft)
+    {
+        ScreenManager_DownArrowPressed();
+        startedLeft = false;
+    }
+}
+
+void startUpArrow()
+{
+    if (!startedRight)
+        startedRight = true;
+}
+
+void UpArrowReleased()
+{
+    if (startedRight)
+    {
+        ScreenManager_UpArrowPressed();
+        startedRight = false;
+    }
+}
+
+void startEnterKey()
+{
+    if (!startedEnter)
+        startedEnter = true;
+}
+
+void EnterKeyReleased()
+{
+    if (startedEnter)
+    {
+        ScreenManager_EnterKeyPressed();
+        startedEnter = false;
+    }
+}
+
+void startMenuKey()
+{
+    if (!startedDown)
+    {
+        startTimeDown = esp_timer_get_time(); // in microseconds
+        startedDown = true;
+    }
+}
+
+void MenuKeyReleased()
+{
+    if (startedDown)
+    {
+        uint64_t difference = ((esp_timer_get_time()) - startTimeDown) / 1000;
+        startedDown = false;
+        ScreenManager_powerButtonPressed(difference > 500);
+    }
+}
 
 void SDLH_initializeScreen(int width, int height)
 {
@@ -42,65 +115,65 @@ void SDLH_update(uint8_t *buffer)
 }
 void SDLH_HandleKey()
 {
-    // bool startedFKey = false;
-    // Uint32 startedFKeyTime = 0;
-    // SDL_Event event;
-    // while (SDL_PollEvent(&event))
-    // {
-    //     switch (event.type)
-    //     {
-    //     case SDL_KEYDOWN:
-    //         switch (event.key.keysym.sym)
-    //         {
-    //         case SDLK_DOWN:
-    //             startDownArrow();
-    //             break;
-    //         case SDLK_UP:
-    //             startUpArrow();
-    //             break;
-    //         case SDLK_m:
-    //             startMenuKey();
-    //             break;
-    //         case SDLK_RETURN:
-    //             startEnterKey();
-    //             break;
-    //         case SDLK_p:
-    //             PKeyPressed();
-    //             break;
-    //         case SDLK_f:
-    //             if (!startedFKey)
-    //             {
-    //                 startedFKeyTime = SDL_GetTicks();
-    //                 startedFKey = true;
-    //             }
-    //             else
-    //             {
-    //                 simulation_fastForward(0.005f);
-    //             }
-    //             break;
-    //         }
-    //         break;
-    //     case SDL_KEYUP:
-    //         switch (event.key.keysym.sym)
-    //         {
-    //         case SDLK_DOWN:
-    //             DownArrowReleased();
-    //             break;
-    //         case SDLK_UP:
-    //             UpArrowReleased();
-    //             break;
-    //         case SDLK_m:
-    //             MenuKeyReleased();
-    //             break;
-    //         case SDLK_RETURN:
-    //             EnterKeyReleased();
-    //             break;
-    //         case SDLK_f:
-    //             startedFKey = false;
-    //             break;
-    //         }
-    //         break;
-    //         // Handle other event types as needed
-    //     }
-    // }
+    bool startedFKey = false;
+    Uint32 startedFKeyTime = 0;
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_DOWN:
+                startDownArrow();
+                break;
+            case SDLK_UP:
+                startUpArrow();
+                break;
+            case SDLK_m:
+                startMenuKey();
+                break;
+            case SDLK_RETURN:
+                startEnterKey();
+                break;
+                // case SDLK_p:
+                //     PKeyPressed();
+                //     break;
+                // case SDLK_f:
+                //     if (!startedFKey)
+                //     {
+                //         startedFKeyTime = SDL_GetTicks();
+                //         startedFKey = true;
+                //     }
+                //     else
+                //     {
+                //         simulation_fastForward(0.005f);
+                //     }
+                //     break;
+            }
+            break;
+        case SDL_KEYUP:
+            switch (event.key.keysym.sym)
+            {
+            case SDLK_DOWN:
+                DownArrowReleased();
+                break;
+            case SDLK_UP:
+                UpArrowReleased();
+                break;
+            case SDLK_m:
+                MenuKeyReleased();
+                break;
+            case SDLK_RETURN:
+                EnterKeyReleased();
+                break;
+            case SDLK_f:
+                startedFKey = false;
+                break;
+            }
+            break;
+            // Handle other event types as needed
+        }
+    }
 }
