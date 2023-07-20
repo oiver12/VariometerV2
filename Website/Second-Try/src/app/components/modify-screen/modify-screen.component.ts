@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Renderer2, ElementRef } from '@angular/core';
 import { CdkDrag, DragRef, Point } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from 'app/material/material.module';
@@ -37,6 +37,8 @@ type Element = {
     imports: [CommonModule, CdkDrag, MaterialModule],
 })
 export class ModifyScreenComponent {
+    constructor(private renderer: Renderer2, private elementRef: ElementRef) {}
+    debugArray: HTMLElement[] = [];
     buttonTitleGraph = [
         {
             title: 'Kompass',
@@ -151,16 +153,17 @@ export class ModifyScreenComponent {
     createBox(element: Element) {
         this.chosenElements.push(element);
         this.copyChosenElements = structuredClone(this.chosenElements);
-        // to get the Element rendered
+        this.chosenElements = structuredClone(this.copyChosenElements);
         setTimeout(() => {
+            // setTimeout to get the Element rendered
             this.copyChosenElements[
                 this.copyChosenElements.length - 1
             ].startPosition = this.placeNewElement();
             this.copyChosenElements[
                 this.copyChosenElements.length - 1
             ].position = this.placeNewElement();
-            this.chosenElements = this.copyChosenElements;
-        }, 0);
+            this.chosenElements = structuredClone(this.copyChosenElements);
+        }, 1000);
     }
     placeNewElement(): Element['startPosition'] {
         // we bruteforce the new position of the element
@@ -311,11 +314,13 @@ export class ModifyScreenComponent {
         };
     }
     haveIntersection(r1: Rect, r2: Rect): boolean {
+        // To adjust for that It also fits if there is not enough space for a rect but only for 1 px we have a buffer
+        const buffer = 2;
         return (
-            r1.bottom > r2.top &&
-            r1.right > r2.left &&
-            r1.top < r2.bottom &&
-            r1.left < r2.right
+            r1.bottom - buffer > r2.top &&
+            r1.right - buffer > r2.left &&
+            r1.top + buffer < r2.bottom &&
+            r1.left + buffer < r2.right
         );
     }
     isCompletelyWithinBoundary(r1: Rect): boolean {
@@ -415,5 +420,36 @@ export class ModifyScreenComponent {
             element.position.top = elementPosition.top;
             element.position.bottom = elementPosition.bottom;
         });
+    }
+    drawRect() {
+        const bound = document.getElementsByClassName('boundary')[0];
+        // to debug, we draw e red rectangle in every supposed position of the rectangles
+        this.debugArray.forEach((element) => {
+            document.body.removeChild(element);
+        });
+        this.debugArray = [];
+        this.chosenElements.forEach((element) => {
+            console.log(element.position);
+            console.log(document.getElementById('0')?.getBoundingClientRect());
+            const rect = document.createElement('div');
+            this.debugArray.push(rect);
+            rect.style.position = 'absolute';
+            rect.style.left =
+                element.position.left +
+                bound.getBoundingClientRect().left +
+                'px';
+            rect.style.top =
+                element.position.top + bound.getBoundingClientRect().top + 'px';
+            rect.style.width =
+                element.position.right - element.position.left + 'px';
+            rect.style.height =
+                element.position.bottom - element.position.top + 'px';
+            console.log(rect.style);
+            rect.style.border = '1px solid red';
+            rect.style.zIndex = '1000';
+            rect.style.pointerEvents = 'none';
+            document.body.appendChild(rect);
+        });
+        console.log(this.debugArray);
     }
 }
