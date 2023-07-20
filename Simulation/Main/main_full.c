@@ -1,4 +1,5 @@
 #include "SDLHelper/SDL_helper.h"
+#include "SimulationData.h"
 
 /* Standard includes. */
 #include <stdlib.h>
@@ -21,6 +22,7 @@ extern void app_main(void);
 int main_full(void)
 {
     SDLH_initializeScreen(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH);
+    simulation_start("screenlog.0", SIMULATION_SERIAL);
     xTaskCreate(app_main, "Main App", 1024, NULL, 2, NULL);
     portENABLE_INTERRUPTS();
     vTaskStartScheduler();
