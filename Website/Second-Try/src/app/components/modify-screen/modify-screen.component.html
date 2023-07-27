@@ -51,12 +51,14 @@
                     <h2>Graphics</h2>
                 </div>
             </div>
-            <div
-                class="selectbox-item"
-                *ngFor="let element of selectedTitle"
-                (click)="createBox(element)"
-            >
-                <h2>{{ element.title }}</h2>
+            <div *ngFor="let element of selectedTitle">
+                <div
+                    class="selectbox-item"
+                    (click)="createBox(element)"
+                    *ngIf="!chosenElements.includes(element)"
+                >
+                    <h2>{{ element.title }}</h2>
+                </div>
             </div>
         </div>
     </div>

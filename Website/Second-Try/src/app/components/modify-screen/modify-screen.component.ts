@@ -122,7 +122,6 @@ export class ModifyScreenComponent {
         },
     ];
     chosenElements: Element[] = [];
-    copyChosenElements: Element[] = [];
     selectedTitle: Element[] = this.buttonTitleText;
     elementPositionX: number = 0;
     elementPositionY: number = 0;
@@ -152,23 +151,17 @@ export class ModifyScreenComponent {
 
     createBox(element: Element) {
         this.chosenElements.push(element);
-        this.copyChosenElements = structuredClone(this.chosenElements);
-        this.chosenElements = structuredClone(this.copyChosenElements);
         setTimeout(() => {
-            // setTimeout to get the Element rendered
-            this.copyChosenElements[
-                this.copyChosenElements.length - 1
-            ].startPosition = this.placeNewElement();
-            this.copyChosenElements[
-                this.copyChosenElements.length - 1
-            ].position = this.placeNewElement();
-            this.chosenElements = structuredClone(this.copyChosenElements);
-        }, 1000);
+            this.chosenElements[this.chosenElements.length - 1].startPosition =
+                this.placeNewElement();
+            this.chosenElements[this.chosenElements.length - 1].position =
+                this.placeNewElement();
+        }, 0);
     }
     placeNewElement(): Element['startPosition'] {
         // we bruteforce the new position of the element
         // we try to place the element at the top left corner of the screen
-        // if there is a intersection with another element or the boundary, we move the element to the right
+        // if there is a> intersection with another element or the boundary, we move the element to the right
         // we move it in steps of element.width / 5
         // if after 15 steps there is still a intersection (all the way to the right), we move the element to the start
         // then we move the element in steps of element.height / 5 down for 5 steps
