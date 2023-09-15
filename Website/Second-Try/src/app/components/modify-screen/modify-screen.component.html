@@ -11,37 +11,51 @@
             fontIcon="chevron_left"
         ></mat-icon>
     </div>
+    <!-- We can't just change between the elements because the html looses the reference for "style: transform (that the way angular does drag and drop)"-->
+    <!-- Because of this we redner everything all the time, and just change z-indexes of the planes-->
     <div class="drag-container">
+        <!-- <div class="counter">
+            <p>{{ counter }} / 3</p>
+        </div> -->
         <div class="boundary">
-            <div class="counter">
-                <p>{{ counter }} / 3</p>
-            </div>
-            <div
-                *ngFor="let element of chosenElements; let i = index"
-                class="screen-element text-element"
-                cdkDrag
-                [cdkDragConstrainPosition]="snap(i)"
-                id="{{ i }}"
-                style="left: {{ element.startPosition.left }}px; top: {{
-                    element.startPosition.top
-                }}px"
-            >
-                <ng-container *ngIf="element.unit != 'None'; else noUnit">
-                    <p class="text-title">{{ element.title }}</p>
-                    <div class="text-value">
-                        <p>0.0</p>
-                        <p>
-                            {{ element.unit }}
-                        </p>
-                    </div>
-                </ng-container>
-                <ng-template #noUnit>
-                    <p class="text-title">{{ element.title }}</p>
-                    <div class="text-value">
-                        <p>0.0</p>
-                    </div>
-                </ng-template>
-            </div>
+            <!-- <div
+                *ngFor="let index of [0, 1, 2]"
+                class="screen"
+                [ngStyle]="{
+                    'z-index': index === counter ? 1 : 0
+                }"
+            > -->
+                <div
+                    *ngFor="let element of chosenElements[counter]; let i = index"
+                    class="screen-element text-element"
+                    cdkDrag
+                    [cdkDragConstrainPosition]="snap(i)"
+                    id="{{ i }}"
+                    style="left: {{ element.startPosition.left }}px; top: {{
+                        element.startPosition.top
+                    }}px;"
+                >
+                    <!-- [ngStyle]="{
+                        left: element.startPosition.left + 'px',
+                        top: element.startPosition.top + 'px'
+                    }" -->
+                    <ng-container *ngIf="element.unit != 'None'; else noUnit">
+                        <p class="text-title">{{ element.title }}</p>
+                        <div class="text-value">
+                            <p>0.0</p>
+                            <p>
+                                {{ element.unit }}
+                            </p>
+                        </div>
+                    </ng-container>
+                    <ng-template #noUnit>
+                        <p class="text-title">{{ element.title }}</p>
+                        <div class="text-value">
+                            <p>0.0</p>
+                        </div>
+                    </ng-template>
+                </div>
+            <!-- </div> -->
         </div>
         <div class="selectbox">
             <div
@@ -70,7 +84,7 @@
                 <div
                     class="selectbox-item"
                     (click)="createBox(element)"
-                    *ngIf="!chosenElements.includes(element)"
+                    *ngIf="!chosenElements[this.counter].includes(element)"
                 >
                     <h2>{{ element.title }}</h2>
                 </div>
