@@ -6,6 +6,7 @@
 #include <SDL2/SDL_timer.h>
 #include <stdbool.h>
 #include <esp_timer.h>
+#include <esp_log.h>
 
 SDL_Renderer *renderer;
 SDL_Window *window;
@@ -84,11 +85,29 @@ void MenuKeyReleased()
 
 void SDLH_initializeScreen(int width, int height)
 {
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_CreateWindowAndRenderer(width, height, 0, &window, &renderer);
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
+        ESP_LOGE("SDL", "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
+    if (SDL_CreateWindowAndRenderer(width, height, 0, &window, &renderer) < 0)
+    {
+        ESP_LOGE("SDL", "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
     windowWidth = height;
     windowHeight = width;
+    // Clear the screen
+    SDL_RenderClear(renderer);
+    // Set the color to draw
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Red color (R, G, B, Alpha)
+
+    SDL_Rect rect = {300, 200, 200, 200};
+    SDL_RenderFillRect(renderer, &rect);
+    // Update the screen
+    SDL_RenderPresent(renderer);
 }
+
 void SDLH_update(uint8_t *buffer)
 {
     int sizeXBuffer = windowWidth % 8 == 0 ? windowWidth / 8 : windowWidth / 8 + 1;
@@ -111,8 +130,10 @@ void SDLH_update(uint8_t *buffer)
             }
         }
     }
+    // Update the screen
     SDL_RenderPresent(renderer);
 }
+
 void SDLH_HandleKey()
 {
     bool startedFKey = false;

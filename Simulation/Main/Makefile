@@ -39,6 +39,7 @@ INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Screen/E_Ink
 INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Sensor
 INCLUDE_DIRS          += -I${VARIOMETER_DIR}/TestTools
 INCLUDE_DIRS          += -I${VARIOMETER_DIR}/Watchdog
+INCLUDE_DIRS          += -I${VARIOMETER_DIR}/crc
 INCLUDE_DIRS          += -I./Mock
 
 SOURCE_FILES          := $(wildcard *.c)
@@ -90,6 +91,7 @@ SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Screen/E_Ink/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Sensor/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/TestTools/*.c)
 SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/Watchdog/*.c)
+SOURCE_FILES          += $(wildcard ${VARIOMETER_DIR}/crc/*.c)
 SOURCE_FILES 		  += $(wildcard ./Mock/*.c)
 SOURCE_FILES          += $(wildcard ./Mock/driver/*.c)
 SOURCE_FILES          += $(wildcard ./Mock/esp_adc/*.c)
