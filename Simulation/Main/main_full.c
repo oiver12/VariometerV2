@@ -14,15 +14,11 @@
 #include <timers.h>
 #include <semphr.h>
 
-#define EPD_3IN7_WIDTH 280
-#define EPD_3IN7_HEIGHT 480
-
 extern void app_main(void);
 
 int main_full(void)
 {
-    SDLH_initializeScreen(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH);
-    simulation_start("screenlog.0", SIMULATION_SERIAL);
+    simulation_start("vario2.txt", "gps2.txt");
     xTaskCreate(app_main, "Main App", 1024, NULL, 2, NULL);
     portENABLE_INTERRUPTS();
     vTaskStartScheduler();
