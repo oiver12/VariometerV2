@@ -29,10 +29,10 @@ void simulationDisplayTask(void *arg)
     Display_RefreshMode refreshMode;
     while (1)
     {
-        // xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
-        // xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
+        xQueueReceive(renderQueue, &refreshMode, portMAX_DELAY);
+        xSemaphoreTake(buffer_Mutex, portMAX_DELAY);
         SDLH_update(ScreenBuffer);
-        // xSemaphoreGive(buffer_Mutex);
-        vTaskDelay(1);
+        xSemaphoreGive(buffer_Mutex);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }

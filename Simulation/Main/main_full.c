@@ -19,7 +19,7 @@ extern void app_main(void);
 int main_full(void)
 {
     simulation_start("vario2.txt", "gps2.txt");
-    xTaskCreate(app_main, "Main App", 1024, NULL, 2, NULL);
+    xTaskCreate(app_main, "Main App", 1024 * 3, NULL, 2, NULL);
     portENABLE_INTERRUPTS();
     vTaskStartScheduler();
     for (;;)
