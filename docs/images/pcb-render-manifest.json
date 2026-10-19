@@ -1,0 +1,28 @@
+{
+  "kicad_version": "9.0.9",
+  "source_boards_modified": false,
+  "model_resolution": "Render-only copies relocate archived workstation paths to repository and installed KiCad models.",
+  "revisions": {
+    "1.0": {
+      "unresolved_model_references": [
+        "${KISYS3DMOD}/Connector_Wire.3dshapes/SolderWire-0.25sqmm_1x02_P4.2mm_D0.65mm_OD1.7mm.wrl",
+        "C:\\\\Users\\\\Oliver\\\\Documents\\\\LibraryLoaderBibliothek\\\\SamacSys_Parts.3dshapes\\\\5-1814832-2.stp",
+        "TP4056-42-ESOP8.stp"
+      ]
+    },
+    "2.0": {
+      "unresolved_model_references": [
+        "C:\\\\Users\\\\Oliver\\\\Documents\\\\LibraryLoaderBibliothek\\\\SamacSys_Parts.3dshapes\\\\5-1814832-2.stp",
+        "C:\\\\Users\\\\Oliver\\\\Documents\\\\LibraryLoaderBibliothek\\\\SamacSys_Parts.3dshapes\\\\MAX809STRG.stp",
+        "C:\\\\Users\\\\Oliver\\\\Documents\\\\LibraryLoaderBibliothek\\\\SamacSys_Parts.3dshapes\\\\QMC5883L.stp",
+        "TP4056-42-ESOP8.stp"
+      ]
+    },
+    "2.1": {
+      "unresolved_model_references": [
+        "${KICAD6_3DMODEL_DIR}/Connector_USB.3dshapes/USB_C_Receptacle_HRO_TYPE-C-31-M-12.wrl",
+        "QMC5883L.stp"
+      ]
+    }
+  }
+}

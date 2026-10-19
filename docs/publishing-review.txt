@@ -44,7 +44,7 @@ before publication can bring the original history back into local tracking refs.
 
 Changes
 -------
-* English root README: pitch/photo placeholder, features, board revisions and
+* English root README: pitch/flight photograph, features, board revisions and
   schematics, architecture Mermaid diagram, tasks and folder map, desktop replay,
   build/flash commands, Maturarbeit history, credits and photo checklist.
 * Short firmware README linking back to VariometerV2; portable Software/README.
@@ -59,8 +59,11 @@ Changes
   license does not assign rights to other contributors' CAD or third-party assets.
 * Third-party inventories in both repositories; restored upstream Apache license
   texts for nkolban and goigc and common Apache/GPL license texts.
-* Six PCB SVGs and seven schematic SVGs, exported from real KiCad source. The
-  script adds a dark PCB canvas for readable copper/silkscreen on GitHub pages.
+* Six PCB SVGs, seven schematic SVGs, and angled 3D views for all three
+  revisions, exported with a temporary KiCad 9.0.9 runtime. Model paths are
+  resolved in temporary board copies; editable source designs are unchanged.
+* Real in-flight hero photograph, original MP4 and animated GIF preview, copied
+  from the author's personal portfolio assets. Removed unneeded placeholders.
 * Three real Linux simulator screenshots, Makefile, deterministic capture mode,
   SDL initialization/error checks, window-close handling and a capture helper.
 * Offline raw-record replay/plot tooling that compiles the existing firmware
@@ -86,29 +89,32 @@ sensor replay, offline plot, SVG parsing/visual inspection, README links, and
 git diff whitespace checks passed. Retained historical contents and names/dates
 were compared across every rewritten commit. Remaining Gitleaks hits are
 upstream fixtures/constants and the default OpenThread example value.
-Flashing and on-device behavior were not revalidated.
+The author confirms the device is tested; supplied photo/video show flight use.
 
 Remaining author inputs / assets
 --------------------------------
-* Real photos: assembled device, PCB close-up, and device in flight/on the harness.
-* Angled 3D board views: use KiCad 9+ and tools/export_kicad.py. This environment
-  has no system KiCad; SVGs were exported using a temporary KiCad 7.0.11 runtime.
-  The original revision 1.0 export reported zero-size pads; source CAD was unchanged.
-* Confirm import provenance/versions for NXPMotionSense, the EJML-referenced
-  matrix/Cholesky routines, SkyDrop-referenced compass code, goigc-derived parser
-  and font tables. Source references are credited; missing terms are not invented.
-* Confirm the preferred revision labels: directories are 1.0 / 2.0 / 2.1, while
-  the last two board filenames contain V2.2 / V2.2.1. README uses directory labels.
-* Confirm whether BLE should be described as implemented but disabled in startup:
-  startBluetooth() is commented out. README currently describes a BLE module.
-* Identify which sensor log was acquired in flight and its sampling timing.
-  The claimed 15 ms latency improvement is intentionally absent from the README
-  until supporting data/method can be provided; the plot does not establish it.
-* The pressure widget currently labels a raw Pa value as hPa in the simulator
-  and firmware. A display-only unit correction has been proposed to the author;
-  it has not been applied without a response.
-* Optional: provide the name/link to use for your brother's enclosure/CAD credit,
-  and decide licensing for contributed CAD separately from original software.
+* Optional photographs: populated PCB close-up and neutral-background device view.
+* SkyDrop compass reference: the original upstream is unavailable; source
+  provenance and applicable terms remain unresolved. The author does not recall
+  imports. NXPMotionSense/Freescale, kalman-clib/EJML and Waveshare font notices
+  were recovered by source comparison; exact imported commits are unrecorded.
+* Sampling timing/source log for the latency comparison. The author recalls
+  comparison with versus without acceleration. The available raw sensor log has
+  no timestamps, so the plot does not substantiate the reported 15 ms difference
+  and that number is absent from the README.
+* Optional name/link for the brother's enclosure/CAD credit; hardware/CAD
+  licensing is separate from the software MIT license.
+
+Follow-up changes
+-----------------
+* Corrected Pa-to-hPa conversion in the firmware and Linux simulator pressure
+  widgets, with author approval; refreshed the flight screen capture.
+* Confirmed revision labels 1.0 / 2.0 / 2.1 and described BLE as experimental.
+* Removed the preparation-specific flashing caveat from both READMEs. Device
+  testing is credited to the author; ESP-IDF 5.1.4 compilation remains verified.
+* Restored Freescale sensor-fusion and STMicroelectronics bitmap font notices,
+  and the MIT license for matching Markus Mayer kalman-clib matrix routines.
+  The underlying algorithms and bitmap bytes were not changed.
 
 Review and push (AUTHOR ACTIONS; NOT EXECUTED)
 --------------------------------------------

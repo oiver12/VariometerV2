@@ -2,7 +2,9 @@
 
 A paragliding variometer built from custom KiCad PCBs, ESP32 firmware, sensor fusion, and an e-ink flight interface.
 
-![Device in flight — photograph to be added](docs/images/photo-device-in-flight-placeholder.svg)
+<img src="docs/images/photo-device-in-flight.jpeg" alt="Variometer mounted on the harness during a paragliding flight" width="600">
+
+Built and tested on the device, including in flight. [Watch the flight video](docs/media/flight.mp4).
 
 I started this project in 2021 as my **Maturarbeit** (Swiss high-school thesis), then continued developing it independently through 2024. My work spans PCB design, sensor integration, estimation, and the application’s rendering system, screens, and widgets. The enclosure/CAD work combines contributions from my brother and me. Third-party foundations are credited below.
 
@@ -11,7 +13,7 @@ I started this project in 2021 as my **Maturarbeit** (Swiss high-school thesis),
 - Three custom PCB revisions designed in KiCad.
 - ESP32 firmware, primarily C, on ESP-IDF and FreeRTOS.
 - BMI088 IMU, DPS310 barometer, and QMC5883L magnetometer; quaternion orientation estimation and a Kalman filter combining barometric altitude with acceleration.
-- GPS/NMEA input, IGC flight logging, airspace parsing, sound output, a BLE module, and watchdog support.
+- GPS/NMEA input, IGC flight logging, airspace parsing, sound output, an experimental BLE module, and watchdog support.
 - E-ink UI with a custom rendering system, screens, and widgets.
 - Sensor mocks, a FreeRTOS host simulation, a Linux screen simulator, and recorded-sensor replay for analysis.
 
@@ -25,7 +27,9 @@ These exports show the PCB in `Hardware/Version 2.1/`. The bottom view is mirror
 | --- | --- |
 | ![Latest PCB, top](docs/images/pcb-2.1-top.svg) | ![Latest PCB, mirrored bottom](docs/images/pcb-2.1-bottom.svg) |
 
-![Angled 3D view — export pending](docs/images/pcb-3d-placeholder.svg)
+![Latest PCB, angled KiCad 3D render](docs/images/pcb-2.1-3d.png)
+
+Rendered from the archived board and available component models; these are design views, not photographs.
 
 The [schematic overview](docs/images/schematic-2.1/VariometerV2.2.1.svg) connects the main subsystems. Individual sheets: [power](docs/images/schematic-2.1/VariometerV2.2.1-Power.svg), [sensors](docs/images/schematic-2.1/VariometerV2.2.1-Devices.svg), [display](docs/images/schematic-2.1/VariometerV2.2.1-Screen.svg), and [peripherals](docs/images/schematic-2.1/VariometerV2.2.1-Peripherals.svg).
 
@@ -35,9 +39,9 @@ The revision labels follow the archive’s directories. Each retains editable Ki
 
 | Revision | Design files | PCB views | Schematic |
 | --- | --- | --- | --- |
-| 1.0 | [Hardware/Version 1.0](Hardware/Version%201.0/) | [Top](docs/images/pcb-1.0-top.svg) · [bottom](docs/images/pcb-1.0-bottom.svg) | [SVG](docs/images/schematic-1.0/VariometerV2.svg) |
-| 2.0 | [Hardware/Version 2.0](Hardware/Version%202.0/) | [Top](docs/images/pcb-2.0-top.svg) · [bottom](docs/images/pcb-2.0-bottom.svg) | [SVG](docs/images/schematic-2.0/VariometerV2.2.svg) |
-| 2.1 | [Hardware/Version 2.1](Hardware/Version%202.1/) | [Top](docs/images/pcb-2.1-top.svg) · [bottom](docs/images/pcb-2.1-bottom.svg) | [SVG overview](docs/images/schematic-2.1/VariometerV2.2.1.svg) |
+| 1.0 | [Hardware/Version 1.0](Hardware/Version%201.0/) | [Top](docs/images/pcb-1.0-top.svg) · [bottom](docs/images/pcb-1.0-bottom.svg) · [3D](docs/images/pcb-1.0-3d.png) | [SVG](docs/images/schematic-1.0/VariometerV2.svg) |
+| 2.0 | [Hardware/Version 2.0](Hardware/Version%202.0/) | [Top](docs/images/pcb-2.0-top.svg) · [bottom](docs/images/pcb-2.0-bottom.svg) · [3D](docs/images/pcb-2.0-3d.png) | [SVG](docs/images/schematic-2.0/VariometerV2.2.svg) |
+| 2.1 | [Hardware/Version 2.1](Hardware/Version%202.1/) | [Top](docs/images/pcb-2.1-top.svg) · [bottom](docs/images/pcb-2.1-bottom.svg) · [3D](docs/images/pcb-2.1-3d.png) | [SVG overview](docs/images/schematic-2.1/VariometerV2.2.1.svg) |
 
 `Case/` contains enclosure designs and printing exports. Regenerate the board and schematic SVGs with:
 
@@ -45,7 +49,7 @@ The revision labels follow the archive’s directories. Each retains editable Ki
 python3 tools/export_kicad.py
 ```
 
-The SVGs were exported with KiCad 7.0.11. Use **KiCad 9+** for angled 3D views with the same script; KiCad 8 supports SVG exports but does not provide `pcb render`. See the [KiCad CLI reference](https://docs.kicad.org/9.0/en/cli/cli.html).
+The exports and angled renders were generated with **KiCad 9.0.9**. Install KiCad’s standard 3D models as well; `--models /path/to/3dmodels` selects a custom location. The script resolves old model paths in temporary copies and records unresolved references in `docs/images/pcb-render-manifest.json`. KiCad 7/8 can export SVGs; `pcb render` requires KiCad 9+. See the [KiCad CLI reference](https://docs.kicad.org/9.0/en/cli/cli.html).
 
 ## Firmware architecture
 
@@ -63,13 +67,13 @@ flowchart LR
     Airspace["Airspace parser"] --> State
     State --> UI["E-ink UI / screens / widgets"]
     State --> IGC["IGC logger"]
-    State --> BLE["BLE module"]
+    State --> BLE["BLE module (experimental)"]
     State --> Sound["Sound"]
 ```
 
 `main/MainTasks.c` defines **Measure Height**, **Measure Acceleration**, and **Kalman Filter**. The barometer task notifies the filter; the acceleration task updates orientation and queues vertical acceleration; the filter updates shared flight state. Queues, task notifications, and mutexes connect them.
 
-Rendering and display refresh run in separate tasks. GPS parsing, IGC logging, button input, battery management, sound, storage checks, and airspace parsing have their own task entry points. The diagram shows module relationships; the configuration and startup code determine which modules run.
+Rendering and display refresh run in separate tasks. GPS parsing, IGC logging, button input, battery management, sound, storage checks, and airspace parsing have their own task entry points. BLE remains experimental and its startup call is disabled in the archived configuration. The diagram shows module relationships; the configuration and startup code determine which modules run.
 
 ### Folder map
 
@@ -183,7 +187,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 
 For later shell sessions, activate the SDK with `. /path/to/esp-idf/export.sh` before building. The checked-in `sdkconfig` already selects ESP32-S3; review `main/pinDefines.h` and the PCB revision before flashing. See [Espressif’s v5.1.4 setup guide](https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32s3/get-started/index.html).
 
-The archived binary identifies the historical development SDK as `v5.1-dev-4557-gf404fe96b1-dirty`; the old 4.4.3 lockfile was stale. The stable version above is the reproducible build baseline. Flashing and on-device behavior have not been revalidated in this preparation environment.
+The archived binary identifies the historical development SDK as `v5.1-dev-4557-gf404fe96b1-dirty`; the old 4.4.3 lockfile was stale. The stable version above is the reproducible build baseline.
 
 ## From Maturarbeit to V2
 
@@ -196,24 +200,28 @@ Existing libraries and reference implementations are credited here and in [THIRD
 | Code | Credit and license status |
 | --- | --- |
 | `main/nkolban/` | Neil Kolban / esp32-snippets contributors; upstream Apache-2.0 license included |
-| `main/Screen/E_Ink/` and simulator copies | Waveshare driver, GUI_Paint, and fonts; embedded notices retained; font provenance to confirm |
+| `main/Screen/E_Ink/` and simulator copies | Waveshare driver and GUI_Paint, with STMicroelectronics bitmap fonts from that package; restored upstream font notices |
 | `main/Screen/FIFO.*` and simulator copies | Jesús Rubén Santa Anna Zamudio / Geek Factory; **GPL-3.0-or-later** notices; GPL text included |
 | `main/nmea_parser.*` | Espressif Systems; Apache-2.0 notices |
 | `main/crc/` | Michael Barr; public-domain dedication with retained notice |
 | `main/IGC/IGC_Parser.*` | Source credits ezgliding/goigc; upstream Apache-2.0 license included; adaptation provenance to confirm |
-| `main/Kalman/Quaternion/` | Source references Paul Stoffregen’s NXPMotionSense; provenance and licensing to confirm |
-| Matrix/Cholesky routines; `main/compass.c` | Source references EJML and SkyDrop respectively; provenance and licensing to confirm |
+| `main/Kalman/Quaternion/` | Adapted Freescale sensor fusion via Paul Stoffregen’s NXPMotionSense; BSD-3-Clause notice restored |
+| `main/Kalman/` matrix/Cholesky routines | Markus Mayer / kalman-clib (MIT), with EJML references; upstream license restored |
+| `main/compass.c` | References SkyDrop; original upstream is unavailable and provenance remains unresolved |
 | `Simulation/FreeRTOS/` | FreeRTOS/Amazon, Percepio trace recorder, and bundled dependencies; per-component licenses retained |
 | Windows simulator and analysis dependencies | cJSON (Dave Gamble and contributors), SDL, packaged .NET dependencies; existing notices retained |
 
 **My original software is licensed under [MIT](LICENSE).** Third-party code retains its own licenses, including the FIFO’s GPL-3.0-or-later obligations; the combined tree is not uniformly MIT-licensed. Enclosure/CAD contributions and third-party assets are outside this software license unless separately stated.
 
-## Photos to add
+## Flight footage & photos
 
-- [ ] Replace the hero placeholder with the device in flight or on the harness.
-- [ ] Add `docs/images/photo-assembled-device.jpg`: finished assembled instrument.
-- [ ] Add `docs/images/photo-pcb-closeup.jpg`: assembled PCB close-up.
-- [ ] Export angled PCB views with KiCad 9+ and replace the render placeholder.
-- [ ] Review photos and flight data for identifying details before publication.
+[![Short preview of the variometer during flight](docs/images/flight-preview.gif)](docs/media/flight.mp4)
 
-Placeholders: [assembled device](docs/images/photo-assembled-device-placeholder.svg) · [PCB close-up](docs/images/photo-pcb-closeup-placeholder.svg).
+The photograph and video show the assembled instrument on the harness during flight. The footage predates the pressure-label correction in this repository.
+
+Optional additional photos:
+
+- [ ] Assembled PCB close-up, showing the actual populated board.
+- [ ] Assembled device on a neutral background, showing the enclosure and controls.
+
+[PCB close-up placeholder](docs/images/photo-pcb-closeup-placeholder.svg).

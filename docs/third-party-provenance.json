@@ -1,0 +1,36 @@
+{
+  "author_confirmation": "Waveshare driver, GUI and fonts from same package; possible local modifications. Other import details not remembered.",
+  "NXPMotionSense": {
+    "source": "https://github.com/PaulStoffregen/NXPMotionSense/blob/master/SensorFusion.cpp",
+    "matrix_source": "https://github.com/PaulStoffregen/NXPMotionSense/blob/master/matrix.c",
+    "evidence": "matrixSensorFusion.c matches after whitespace/comments removal; SensorFusion shares named functions, constants and code",
+    "restored_notice": "Freescale Semiconductor 2014 BSD-3-Clause"
+  },
+  "kalman_clib": {
+    "source": "https://github.com/sunsided/kalman-clib/tree/4fce41c992b4026ce8bf9245c85ef0706426a7d2",
+    "evidence": "matching cholesky decomposition and matrix routines, including identical EJML references; local adaptations present",
+    "license": "https://github.com/sunsided/kalman-clib/blob/master/LICENSE.md",
+    "exact_import_revision": "unknown"
+  },
+  "Waveshare_fonts": {
+    "source": "https://github.com/waveshareteam/e-Paper/tree/master/RaspberryPi_JetsonNano/c/lib/Fonts",
+    "bitmap_bytes_equal": [
+      8,
+      12,
+      16,
+      20,
+      24
+    ],
+    "restored_notice": "STMicroelectronics 2014 BSD-style notice"
+  },
+  "SkyDrop": {
+    "source": "https://github.com/fhorinek/SkyDrop/blob/master/skydrop/src/fc/compass.cpp",
+    "status": "Original source URL unavailable. Retained reference; licensing provenance unresolved."
+  },
+  "goigc": {
+    "source": "https://github.com/ezgliding/goigc",
+    "evidence": "IGC_Parser.h explicitly credits translation from Go to C",
+    "exact_import_revision": "unknown",
+    "license": "Apache-2.0"
+  }
+}

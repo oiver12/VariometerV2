@@ -1,0 +1,16 @@
+{
+  "docs/images/photo-device-in-flight.jpeg": {
+    "source": "Author's personal portfolio: public/images/variometer/variometer-image.jpeg",
+    "sha256": "9eb4d4bfd59253c37a4f5b8ed070292886b164de7a61e4caa195a52e04121058",
+    "modification": "Copied unchanged"
+  },
+  "docs/media/flight.mp4": {
+    "source": "Author's personal portfolio: public/images/variometer/live-footage.mp4",
+    "sha256": "b198d5360c9838ba6a8204a2a9f9f9830db59e6aab92b1c09c7540a5cffcaa95",
+    "modification": "Copied unchanged"
+  },
+  "docs/images/flight-preview.gif": {
+    "source": "docs/media/flight.mp4",
+    "modification": "ffmpeg: 8 fps, 320px width, generated palette"
+  }
+}
