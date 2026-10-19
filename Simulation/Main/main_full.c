@@ -18,7 +18,10 @@ extern void app_main(void);
 
 int main_full(void)
 {
-    simulation_start("vario2.txt", "gps2.txt");
+    char *vario = getenv("VARIO_REPLAY_VARIO");
+    char *gps = getenv("VARIO_REPLAY_GPS");
+    simulation_start(vario ? vario : "VarioLogs/vario2.txt",
+                     gps ? gps : "VarioLogs/gps2.txt");
     xTaskCreate(app_main, "Main App", 1024 * 3, NULL, 2, NULL);
     portENABLE_INTERRUPTS();
     vTaskStartScheduler();

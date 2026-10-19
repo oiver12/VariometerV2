@@ -1,0 +1,54 @@
+# Build products and generated diagnostics
+**/build/
+**/Debug/
+**/Release/
+**/bin/
+**/obj/
+**/node_modules/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+compile_commands.json
+Trace.dump
+debug.log
+gmon.out
+screenlog.*
+sdkconfig.old
+core
+core.*
+*.o
+*.obj
+*.elf
+*.exe
+*.pdb
+*.ilk
+*.idb
+*.tlog/
+
+# Local editor/application state (portable project tasks remain tracked)
+**/.vs/
+**/.idea/
+*.suo
+*.vcxproj.user
+*.code-workspace
+**/.cproject
+**/.project
+.DS_Store
+Thumbs.db
+.~lock.*
+
+# KiCad caches, automatic backups, and Blender recovery copies
+fp-info-cache
+*.kicad_prl
+*.lck
+*.bak
+*-backups/
+*.blend[0-9]
+
+# Private local configuration and new, unreviewed flight recordings
+.env
+.env.*
+!.env.example
+sdkconfig.local*
+Simulation/Main/sdcard/Trackloggs/
+Simulation/Main/sdcard/Tracklogs/

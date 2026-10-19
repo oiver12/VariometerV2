@@ -1,0 +1,110 @@
+{
+  "audit_date": "2026-10-19",
+  "scope": "All fetched branch/tag history; all unique reachable blobs, including deleted files; ASCII/UTF-16 strings extracted from binary blobs; ZIP/Office/3MF members inspected separately",
+  "history_rewritten": true,
+  "confirmed_live_project_credentials": 0,
+  "repositories": [
+    {
+      "repo": ".",
+      "commits": 252,
+      "blobs": 10638,
+      "bytes_scanned": 3870882103,
+      "author_identity_count": 9,
+      "pattern_candidate_blob_counts": {
+        "email": 591,
+        "personal-path": 392,
+        "igc-identity": 5,
+        "gps-record": 5,
+        "private-key": 190,
+        "provider-token": 2,
+        "wifi-assignment": 10
+      }
+    },
+    {
+      "repo": "Software/variometer-software",
+      "commits": 21,
+      "blobs": 526,
+      "bytes_scanned": 26472451,
+      "author_identity_count": 3,
+      "pattern_candidate_blob_counts": {
+        "personal-path": 142,
+        "email": 3
+      }
+    }
+  ],
+  "archive_scan": {
+    "archives": 170,
+    "members": 1708,
+    "metadata_candidate_members": 541
+  },
+  "findings": [
+    {
+      "category": "SDK placeholders",
+      "repo": "firmware",
+      "paths": [
+        "sdkconfig",
+        "sdkconfig.old",
+        "historical build/config/sdkconfig.json"
+      ],
+      "details": "Wi-Fi strings are SDK placeholder values. Gitleaks flags the default OpenThread example master key in commit 1c754581594f234628edc89b7cd4e84766bed459, sdkconfig:1898 and sdkconfig.old:1897. No confirmed live project credential."
+    },
+    {
+      "category": "Vendored tests and parser constants",
+      "repo": "VariometerV2",
+      "paths": [
+        "Simulation/FreeRTOS/",
+        "historical Simulation/FreeRTOS-Plus/"
+      ],
+      "details": "Private keys and example credentials in upstream crypto/network tests and demos. Some matches are PEM marker strings or cryptographic constants rather than credentials. Preserve upstream license files; do not treat test keys as trusted credentials."
+    },
+    {
+      "category": "False positives",
+      "repo": "VariometerV2",
+      "paths": [
+        "Hardware/**/fp-info-cache",
+        "Website/Vario-Frontend/src/assets/models/case_not_optimized.gltf"
+      ],
+      "details": "Footprint cache descriptions and base64-encoded model bytes match generic secret/token patterns."
+    },
+    {
+      "category": "Personal data",
+      "repo": "both",
+      "paths": [
+        "Git author/committer metadata",
+        "IDE caches/build metadata",
+        "Documentation/*.docx",
+        "CAD/3MF archive metadata",
+        "Screen_Simulator_Linux/IGCFlights/",
+        "Screen_Simulator_Linux/Trackloggs/",
+        "Simulation/Main/VarioLogs/",
+        "Simulation/Main/sdcard/"
+      ],
+      "details": "Non-GitHub emails, local usernames/paths, document/CAD creators, pilot identifiers and GPS routes. Publication/identity policy requires author review; values intentionally omitted from this report."
+    }
+  ],
+  "limitations": [
+    "Pattern-based scanning is not proof that every secret or personal detail has been found.",
+    "No live credential verification or external token validation was attempted.",
+    "Binary files were searched for printable strings; proprietary binary metadata and encrypted data may need tool-specific review.",
+    "Historical phone/address-like content in documents or photographs may require manual review.",
+    "Unreachable server-side refs, forks and remote caches are outside this local audit."
+  ],
+  "tools": {
+    "gitleaks": "8.24.3; git mode --log-opts=--all --full-history --redact",
+    "supplemental": "all-blob string scan, source/sdkconfig assignment scan, archive member scan, author/committer metadata review"
+  },
+  "approved_policy": {
+    "author_names": "preserved",
+    "author_committer_emails": "Non-GitHub emails replaced with the owner GitHub noreply address",
+    "flight_routes": "retained by explicit author choice",
+    "document_cad_creators": "retained by explicit author choice",
+    "commit_counts": "All 252 superproject and 21 firmware historical commits retained; empty commits preserved"
+  },
+  "post_rewrite": {
+    "gitleaks_superproject_findings": 990,
+    "gitleaks_firmware_findings": 2,
+    "classification": "Remaining hits are vendored fixtures/parser constants and the same SDK OpenThread example value in historical and migrated sdkconfig; no confirmed live project credential.",
+    "verification": "All retained historical tree entries unchanged except remapped firmware gitlinks; author names/dates and all existing license notices preserved."
+  },
+  "backup_directory": "/tmp/variometer-publication-backup"
+}

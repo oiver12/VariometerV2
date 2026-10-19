@@ -1,0 +1,9 @@
+{
+  "source": "vario2.txt",
+  "source_sha256": "60865f28e0c917033eca87bc78a8e098309219ca223b306c218f292ba32c21eb",
+  "complete_records": 2893,
+  "discarded_tail_bytes": 20,
+  "assumed_dt_seconds": 0.03,
+  "timestamps_available": false,
+  "method": "Firmware filter functions with one sensor update per record; not a scheduler replay or latency benchmark"
+}

@@ -1,6 +1,6 @@
 [submodule "Software/variometer-software"]
 	path = Software/variometer-software
-	url = git@github.com:oiver12/variometer-software.git
+	url = https://github.com/oiver12/variometer-software.git
 [submodule "Simulation/Main/variometer-software"]
 	path = Simulation/Main/variometer-software
-	url = git@github.com:oiver12/variometer-software.git
+	url = https://github.com/oiver12/variometer-software.git

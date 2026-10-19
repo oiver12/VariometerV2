@@ -9,6 +9,7 @@
 #include "Screen/IGC_Parser.h"
 #include "airspaceParcer.h"
 #include "Simulation.h"
+#include "Screen/ScreenManager.h"
 
 #define EPD_3IN7_WIDTH 410
 #define EPD_3IN7_HEIGHT 480
@@ -170,14 +171,45 @@ void AnalyzeGPS()
     gpsAnalyze.meanSatsInViewValid += ((double)gpsAnalyze.meanSatsInViewValid) / (double)(currPosGPSObj);
 }
 
-int main(void)
+static int captureScreen(SDL_Renderer *renderer, const char *directory, const char *name)
 {
+    char path[4096];
+    if (snprintf(path, sizeof(path), "%s/%s.bmp", directory, name) >= sizeof(path))
+        return -1;
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, EPD_3IN7_HEIGHT,
+                                                         EPD_3IN7_WIDTH, 32,
+                                                         SDL_PIXELFORMAT_ARGB8888);
+    if (!surface)
+        return -1;
+    int result = SDL_RenderReadPixels(renderer, NULL, surface->format->format,
+                                     surface->pixels, surface->pitch);
+    if (result == 0)
+        result = SDL_SaveBMP(surface, path);
+    SDL_FreeSurface(surface);
+    return result;
+}
+
+int main(int argc, char **argv)
+{
+    const char *captureDirectory = NULL;
+    if (argc == 3 && strcmp(argv[1], "--capture-dir") == 0)
+        captureDirectory = argv[2];
+    else if (argc != 1)
+    {
+        fprintf(stderr, "Usage: %s [--capture-dir EXISTING_DIRECTORY]\n", argv[0]);
+        return EXIT_FAILURE;
+    }
     // AnalyzeGPS();
     SDL_Renderer *renderer;
     SDL_Window *window;
 
-    SDL_Init(SDL_INIT_VIDEO);
-    SDL_CreateWindowAndRenderer(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH, 0, &window, &renderer);
+    if (SDL_Init(SDL_INIT_VIDEO) != 0 ||
+        SDL_CreateWindowAndRenderer(EPD_3IN7_HEIGHT, EPD_3IN7_WIDTH, 0, &window, &renderer) != 0)
+    {
+        fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return EXIT_FAILURE;
+    }
     // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // for (i = 0; i < EPD_3IN7_WIDTH; ++i)
     //     SDL_RenderDrawPoint(renderer, i, i);
@@ -199,14 +231,24 @@ int main(void)
     SDL_RenderPresent(renderer);
     simulation_init(true, "2023-05-06-XCT-TLE-09.igc");
 
+    unsigned captureIndex = 0;
+    Uint32 captureTime = SDL_GetTicks();
+    int result = EXIT_SUCCESS;
+    bool running = true;
+    if (captureDirectory)
+        ScreenManager_show_Screen(0);
+
     int sizeXBuffer = EPD_3IN7_WIDTH % 8 == 0 ? EPD_3IN7_WIDTH / 8 : EPD_3IN7_WIDTH / 8 + 1;
-    while (1)
+    while (running)
     {
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
             {
+            case SDL_QUIT:
+                running = false;
+                break;
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym)
                 {
@@ -284,6 +326,24 @@ int main(void)
             }
         }
         Uint32 current_time = SDL_GetTicks();
+        if (captureDirectory && current_time - captureTime >= 1600)
+        {
+            const char *names[] = {"screen-flight", "screen-navigation", "screen-settings"};
+            if (captureScreen(renderer, captureDirectory, names[captureIndex]) != 0)
+            {
+                fprintf(stderr, "Screen capture failed: %s\n", SDL_GetError());
+                result = EXIT_FAILURE;
+                break;
+            }
+            captureIndex++;
+            captureTime = current_time;
+            if (captureIndex == 1)
+                ScreenManager_show_Screen(1);
+            else if (captureIndex == 2)
+                ScreenManager_powerButtonPressed(false);
+            else
+                running = false;
+        }
         if (current_time - lastRenderTime > 300)
         {
             SDL_RenderPresent(renderer);
@@ -295,5 +355,5 @@ int main(void)
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    return EXIT_SUCCESS;
+    return result;
 }

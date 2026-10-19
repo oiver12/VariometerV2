@@ -1,0 +1,140 @@
+Publication review
+==================
+
+Prepared locally. Nothing has been pushed; both GitHub repositories remain
+PRIVATE. Descriptions and topics were updated as requested.
+
+Security and approved history cleanup
+-------------------------------------
+Both complete fetched histories were audited: 252 superproject commits and 21
+firmware commits, including deleted files, binary strings and archive members.
+No confirmed live project credential was found. SDK placeholders, upstream
+crypto/network fixtures, PEM parser strings, cache descriptions and encoded
+model data explain the secret-scanner matches. See security-audit.json.
+
+With the author's explicit approval, git-filter-repo removed generated junk
+from every commit and replaced non-GitHub author/committer emails with the
+existing GitHub noreply address. Author names/dates, flight routes, document/CAD
+creator metadata, existing license notices and retained source were preserved.
+Every retained historical tree entry was compared to its original; the only
+retained entries changed are firmware gitlinks, remapped to rewritten commits.
+All original commits were retained, including commits made empty by cleanup.
+
+Every fetched branch was cleaned, including Vario_STM32 and testbranch.
+Commit maps and removal reports are in history/ and history-cleanup-manifest.txt.
+The obsolete unmapped empty gitlink was removed, repairing recursive clones.
+The archived simulator remains at the rewritten counterpart of its old pin.
+The primary firmware checkout uses the later main-branch firmware.
+
+Original histories and snapshots of pending preparation edits were backed up
+before applying the rewrite:
+
+  /tmp/variometer-publication-backup/VariometerV2.git
+  /tmp/variometer-publication-backup/variometer-software.git
+  /tmp/variometer-publication-backup/*-working.patch
+  /tmp/variometer-publication-backup/*-index.patch
+  /tmp/variometer-publication-backup/*-new-files.tar.gz
+
+Keep these local backups until the rewrite has been reviewed. They contain the
+old personal metadata and are outside the project, so will not be pushed.
+The local object stores/reflogs can still contain old, unreachable objects;
+only the rewritten branch histories are intended for publication. Do not push
+backup refs or use --mirror. A fetch from the unchanged GitHub repositories
+before publication can bring the original history back into local tracking refs.
+
+Changes
+-------
+* English root README: pitch/photo placeholder, features, board revisions and
+  schematics, architecture Mermaid diagram, tasks and folder map, desktop replay,
+  build/flash commands, Maturarbeit history, credits and photo checklist.
+* Short firmware README linking back to VariometerV2; portable Software/README.
+* Removed build/IDE output, logs, document locks, automatic CAD backups and caches.
+  Initial working-tree removals and full historical removals have separate lists.
+  Editable CAD, printing/fabrication exports and license notices were retained.
+* Root and firmware .gitignore/.gitattributes classify generated and vendored
+  content. Firmware remains primarily C without hiding original source files.
+* MIT LICENSE for Oliver's original software, as requested. Third-party licenses
+  remain intact, including the GPL-3.0-or-later FIFO obligations. Credits identify
+  the enclosure/CAD as contributions from Oliver and his brother. The software
+  license does not assign rights to other contributors' CAD or third-party assets.
+* Third-party inventories in both repositories; restored upstream Apache license
+  texts for nkolban and goigc and common Apache/GPL license texts.
+* Six PCB SVGs and seven schematic SVGs, exported from real KiCad source. The
+  script adds a dark PCB canvas for readable copper/silkscreen on GitHub pages.
+* Three real Linux simulator screenshots, Makefile, deterministic capture mode,
+  SDL initialization/error checks, window-close handling and a capture helper.
+* Offline raw-record replay/plot tooling that compiles the existing firmware
+  quaternion and Kalman code. PNG and JSON show sampling assumptions. No latency
+  claim is made because the available sensor logs contain no timestamps.
+* Host replay fixes: serialized record sizes, bounded reads, truncated tails,
+  last-sample/EOF handling, input-file selection, initialized temperature and
+  monotonic mock timing. Disabled the trace stack monitor whose 64-bit output
+  parameter overwrote a 32-bit local. The archived optimized runner is unstable;
+  the documented AddressSanitizer configuration completed the full recording.
+* Identified the historical SDK from archived binaries/build data as
+  v5.1-dev-4557-gf404fe96b1-dirty. Verified stable ESP-IDF v5.1.4 for ESP32-S3,
+  pinned it in a manifest/lockfile, and migrated sdkconfig with that SDK.
+  One firmware source fix guards the simulator-only SDL include with ISSIMULATION.
+  No estimation algorithm was changed.
+* GitHub descriptions and topics set for both repos; no push/visibility change.
+
+Verification
+------------
+See verification.json. Firmware application/bootloader builds and partition
+checks passed with ESP-IDF 5.1.4. Desktop screen build/captures, full sanitizer
+sensor replay, offline plot, SVG parsing/visual inspection, README links, and
+git diff whitespace checks passed. Retained historical contents and names/dates
+were compared across every rewritten commit. Remaining Gitleaks hits are
+upstream fixtures/constants and the default OpenThread example value.
+Flashing and on-device behavior were not revalidated.
+
+Remaining author inputs / assets
+--------------------------------
+* Real photos: assembled device, PCB close-up, and device in flight/on the harness.
+* Angled 3D board views: use KiCad 9+ and tools/export_kicad.py. This environment
+  has no system KiCad; SVGs were exported using a temporary KiCad 7.0.11 runtime.
+  The original revision 1.0 export reported zero-size pads; source CAD was unchanged.
+* Confirm import provenance/versions for NXPMotionSense, the EJML-referenced
+  matrix/Cholesky routines, SkyDrop-referenced compass code, goigc-derived parser
+  and font tables. Source references are credited; missing terms are not invented.
+* Confirm the preferred revision labels: directories are 1.0 / 2.0 / 2.1, while
+  the last two board filenames contain V2.2 / V2.2.1. README uses directory labels.
+* Confirm whether BLE should be described as implemented but disabled in startup:
+  startBluetooth() is commented out. README currently describes a BLE module.
+* Identify which sensor log was acquired in flight and its sampling timing.
+  The claimed 15 ms latency improvement is intentionally absent from the README
+  until supporting data/method can be provided; the plot does not establish it.
+* The pressure widget currently labels a raw Pa value as hPa in the simulator
+  and firmware. A display-only unit correction has been proposed to the author;
+  it has not been applied without a response.
+* Optional: provide the name/link to use for your brother's enclosure/CAD credit,
+  and decide licensing for contributed CAD separately from original software.
+
+Review and push (AUTHOR ACTIONS; NOT EXECUTED)
+--------------------------------------------
+Local preparation commits are ready to inspect with git show in each repository.
+The push commands deliberately use explicit leases against the ORIGINAL GitHub
+branch tips. They will stop if a remote branch has changed since the audit.
+Push firmware first so the updated superproject gitlink is available remotely.
+
+  git -C Software/variometer-software show --stat HEAD
+  git show --stat HEAD
+
+  git -C Software/variometer-software push \
+    --force-with-lease=refs/heads/main:f888a32e8eea6e62b628f380ed76415723be3895 \
+    origin main:refs/heads/main
+
+  git push \
+    --force-with-lease=refs/heads/main:2d5ef27c899a0d441101d73d618938128dacb1af \
+    --force-with-lease=refs/heads/Vario_STM32:b9af2fc1cbb34d9e067f8b9e4535db66e29c57a4 \
+    --force-with-lease=refs/heads/testbranch:f74e6b0a5ecf960f4bd55bdda3bf755c1ddbfb19 \
+    origin main:refs/heads/main \
+    refs/remotes/origin/Vario_STM32:refs/heads/Vario_STM32 \
+    refs/remotes/origin/testbranch:refs/heads/testbranch
+
+After review and successful pushes, make both repos public yourself:
+
+  gh repo edit oiver12/variometer-software --visibility public --accept-visibility-change-consequences
+  gh repo edit oiver12/VariometerV2 --visibility public --accept-visibility-change-consequences
+
+Then pin VariometerV2 on your GitHub profile. No profile/pin changes were made.

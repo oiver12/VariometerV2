@@ -1,0 +1,51 @@
+{
+  "firmware": {
+    "esp_idf": "v5.1.4",
+    "target": "esp32s3",
+    "result": "PASS: application and bootloader binaries generated; partition checks passed",
+    "source_fix": "SDL helper include is compiled only when ISSIMULATION is defined",
+    "sdk_version_pin": "main/idf_component.yml and dependencies.lock",
+    "historical_sdk_evidence": "v5.1-dev-4557-gf404fe96b1-dirty in archived firmware/bootloader binaries and project description",
+    "flashed": false,
+    "on_device_tested": false
+  },
+  "screen_simulator": {
+    "result": "PASS: Linux build and three PNG captures",
+    "build_compatibility": "Legacy tentative global declarations require -fcommon",
+    "capture_command": "python tools/capture_screens.py"
+  },
+  "freertos_replay": {
+    "result": "PASS: sanitizer build reached Replay complete with the full default sensor recording",
+    "configuration": "SANITIZE_ADDRESS=1 USER_DEMO=FULL_DEMO; ASAN_OPTIONS=detect_leaks=0; SDL dummy backend for verification",
+    "optimized_build": "Known unstable; not the validated replay configuration",
+    "timing": "Host replay is not a real-time embedded performance benchmark"
+  },
+  "offline_plot": {
+    "result": "PASS: complete-record parsing, existing firmware filters, finite estimates, PNG and assumptions JSON",
+    "input": "Simulation/Main/VarioLogs/vario2.txt",
+    "assumed_sample_interval_seconds": 0.03,
+    "source_has_timestamps": false,
+    "latency_result_claimed": false
+  },
+  "kicad": {
+    "version_used": "7.0.11 (temporary runtime)",
+    "result": "PASS: six PCB SVGs and seven schematic SVGs; XML parsed and latest views visually checked",
+    "three_dimensional_render": "Pending KiCad 9+",
+    "source_designs_modified": false
+  },
+  "documentation": {
+    "local_links": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "history": {
+    "original_commits_preserved": {
+      "VariometerV2": 252,
+      "variometer-software": 21
+    },
+    "retained_content_comparison": "PASS for all historical trees; only firmware gitlinks remapped",
+    "author_names_dates": "Preserved",
+    "author_committer_emails": "All use GitHub noreply addresses",
+    "license_notice_paths": "Preserved",
+    "routes_creator_metadata": "Retained by user instruction"
+  }
+}

@@ -1,2 +1,31 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep generated fabrication/printing files available without counting them as code.
+*.gcode linguist-generated=true
+*.gco linguist-generated=true
+*.stl linguist-generated=true
+*.3mf linguist-generated=true
+*.step linguist-generated=true
+*.stp linguist-generated=true
+*.wrl linguist-generated=true
+*.gbr linguist-generated=true
+*.drl linguist-generated=true
+*.hgt linguist-vendored=true
+docs/images/** linguist-generated=true
+
+# Imported dependencies and archived development tools.
+Simulation/FreeRTOS/** linguist-vendored=true
+VariometerAnalysis/FormsVariometerAnalysis/packages/** linguist-vendored=true
+Screen_Simulator/**/include/** linguist-vendored=true
+Screen_Simulator/**/lib/** linguist-vendored=true
+Hardware/Komponenten/** linguist-vendored=true
+Hardware/Library/** linguist-vendored=true
+Website/**/package-lock.json linguist-generated=true
+Screen_Simulator/**/cJSON.[ch] linguist-vendored=true
+**/Screen/FIFO.[ch] linguist-vendored=true
+**/Screen/E_Ink/** linguist-vendored=true
+**/Screen/nmea_parser.[ch] linguist-vendored=true
+
+# C# analysis and web experiments are retained as supporting work.
+# Do not force language classifications on original source files.

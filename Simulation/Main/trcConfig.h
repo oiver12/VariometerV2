@@ -146,7 +146,10 @@ extern "C" {
  * In snapshot mode, the TzCtrl task is only used for stack monitoring and is
  * not created unless this is enabled.
  */
-#define TRC_CFG_ENABLE_STACK_MONITOR 1
+/* The archived snapshot recorder passes a uint32_t to a host-width output
+ * parameter on LP64 Linux. Disable its optional stack monitor for host replay.
+ */
+#define TRC_CFG_ENABLE_STACK_MONITOR 0
 
 /**
  * @def TRC_CFG_STACK_MONITOR_MAX_TASKS

@@ -1,0 +1,808 @@
+Approved targeted history cleanup (before application to the local checkouts).
+Author names and dates, flight routes, creator metadata, retained source and
+license notices are preserved. Non-GitHub author/committer emails are replaced
+with 36069780+oiver12@users.noreply.github.com. Empty commits are retained.
+
+VariometerV2.git: historical paths removed (565)
+Case/Saemi/V_1,0.blend1
+Case/Saemi/V_1.1.1.blend1
+Case/Saemi/V_1.1.10.blend1
+Case/Saemi/V_1.1.11.blend1
+Case/Saemi/V_1.1.2.blend1
+Case/Saemi/V_1.1.3.blend1
+Case/Saemi/V_1.1.4.blend1
+Case/Saemi/V_1.1.5.blend1
+Case/Saemi/V_1.1.7.blend1
+Case/Saemi/V_1.1.8.blend1
+Case/Saemi/V_1.1.9.blend1
+Case/Saemi/V_1.1.blend1
+Case/Saemi/V_1.2.0.blend1
+Case/Saemi/V_1.2.1.blend1
+Case/Saemi/V_1.2.3.blend1
+Case/Saemi/V_1.2.5.blend1
+Case/Saemi/V_1.2.6.blend1
+Case/Saemi/V_1.2.7.blend1
+Case/Saemi/V_1.2.8.blend1
+Case/Saemi/V_1.2.9.blend1
+Case/Saemi/V_1.3.0.blend1
+Case/Saemi/V_1.3.1.blend1
+Case/Saemi/V_1.3.2.blend1
+Case/Saemi/V_1.3.3.blend1
+Case/Saemi/V_1.3.4.blend1
+Case/Saemi/case_unoptimized.blend1
+Case/Saemi/test.blend1
+Documentation/.~lock.Widgets.docx#
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-08_170649.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-08_181359.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-08_220630.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-13_165041.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-13_170249.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-13_171155.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_125138.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_132910.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_170024.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_170651.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_171532.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_173416.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_174025.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-14_174851.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-04-18_182321.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-03_143906.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-25_172210.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-25_181848.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-25_192127.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-30_162716.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-30_165706.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-30_171555.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-05-30_173139.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-06-02_222717.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout-backups/L96-M33_Breakout-2023-06-07_184720.zip
+Hardware/GPS_Test/L96-M33_Breakout/L96-M33_Breakout.kicad_prl
+Hardware/GPS_Test/L96-M33_Breakout/fp-info-cache
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-07_171452.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_193723.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_212242.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_220021.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_220627.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_222742.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-08_234354.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-10_183011.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-10_184606.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-10_191251.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-10_204523.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-11_172859.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-11_175349.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-12_174919.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-12_181427.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-12_183340.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_155943.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_161050.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_165400.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_170008.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_170556.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-13_171157.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_133750.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_134355.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_135824.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_141300.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_142650.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_143355.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-04-14_165005.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-05-20_161619.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-05-20_182520.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-05-20_194926.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-05-20_195854.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout-backups/MAX_M10S_Breakout-2023-05-25_172206.zip
+Hardware/GPS_Test/MAX_M10S_Breakout/MAX_M10S_Breakout.kicad_prl
+Hardware/GPS_Test/MAX_M10S_Breakout/fp-info-cache
+Hardware/Library/Main_LibraryVario.bak
+Hardware/VariometerV2-backups/VariometerV2-2022-01-30_230134.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-30_230719.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-30_231508.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-30_232104.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-30_232704.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_220733.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_221356.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_221859.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_222500.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_223223.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-01-31_224611.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-05_164517.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-05_165121.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-05_165734.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-05_170434.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-05_180920.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-06_150959.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-07_140544.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-14_184426.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-17_184117.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-17_185118.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-17_185808.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-17_210629.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-17_220714.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_150359.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_151251.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_151832.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_153539.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_155429.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-02-21_184117.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-05_232255.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-09_110021.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-09_212855.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-10_111818.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-10_174132.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-10_181652.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-10_184935.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-03-10_220104.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-04-02_230745.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-04-03_213518.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-04-06_231759.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-04-07_192413.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-04-09_232226.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-05-18_190003.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-06-30_175221.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-07-19_235302.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-07-20_233903.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-07-21_230019.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-07-26_181642.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-07-29_191914.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-08-04_210151.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-08-06_004714.zip
+Hardware/VariometerV2-backups/VariometerV2-2022-08-06_125952.zip
+Hardware/VariometerV2.kicad_prl
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-06_130348.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-07_001321.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-07_130755.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-07_232432.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-07_235607.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-08_120732.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-08_145554.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-08_164009.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-08_165402.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-09_002707.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-10_002253.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-10_195159.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-10_201427.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-10_235711.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-11_230227.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-12_203618.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-12_221744.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-14_210951.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-14_221510.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-17_195945.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-17_201740.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-17_221247.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-18_211139.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-18_214912.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-19_163201.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2022-08-19_170631.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2023-02-17_192434.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2023-02-24_212940.zip
+Hardware/Version 1.0/VariometerV2-backups/VariometerV2-2023-05-01_151350.zip
+Hardware/Version 1.0/VariometerV2.kicad_prl
+Hardware/Version 1.0/fp-info-cache
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-17_221238.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-18_211518.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-18_212144.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-18_213253.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-18_213954.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-18_214822.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-19_161438.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-19_162109.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-19_170436.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-19_173555.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-19_230756.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-20_112405.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-20_113934.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-20_122756.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-20_123401.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-20_124527.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-21_134515.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-21_212802.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-22_160245.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-22_193703.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-23_203725.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-23_204643.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-23_213403.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-24_222132.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-25_224228.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-27_120224.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-08-28_214230.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-05_170106.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-09_103230.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-09_225634.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-11_164042.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-17_133404.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-17_143446.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-18_234855.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-19_161309.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-19_185415.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-09-22_182104.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-10-17_215005.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-07_214801.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-11_153229.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-11_155431.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-12_162757.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-12_172755.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-12_193645.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-13_001555.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-13_232632.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-21_204918.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-26_004946.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-28_195412.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-11-28_222341.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2022-12-31_165951.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-07_132327.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-08_204405.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-15_001032.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-16_213938.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-19_221728.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-29_004011.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-01-29_185520.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-02-17_192302.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-02-24_213958.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-10_230012.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-11_200055.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-13_231554.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-14_153618.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-14_221802.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-21_225624.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-22_082112.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-24_190024.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-25_120447.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-25_123649.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-26_172504.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-03-29_222035.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-01_205319.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-02_003724.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-03_222713.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-08_154848.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-08_162026.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-08_173832.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-08_220631.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-11_175651.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-12_164649.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-13_165929.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-14_134507.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-14_141517.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-19_175029.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-20_164524.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-20_181054.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-21_170022.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-25_181407.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-26_075140.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-26_090041.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-26_094223.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-26_140500.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-26_163849.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-04-27_170425.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-01_110741.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-01_143935.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-01_151319.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-01_164248.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-01_173031.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2-backups/VariometerV2.2-2023-05-02_092820.zip
+Hardware/Version 2.0/VariometerV2.2/VariometerV2.2.kicad_prl
+Hardware/Version 2.0/VariometerV2.2/fp-info-cache
+Hardware/Version 2.0/VariometerV2.bak
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-03-14_221811.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-03-29_162038.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-03-29_215136.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-03-29_222029.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-01_205951.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-03_223130.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-05_143031.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-07_171404.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-11_174005.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-18_182411.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-19_160025.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-19_175025.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-20_181027.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-21_150201.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-21_155808.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-21_170026.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_125433.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_130659.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_191715.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_193756.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_201342.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-22_212716.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-24_131848.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-25_091613.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-25_172044.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-25_180621.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-25_181156.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_140504.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_153928.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_155509.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_160048.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_161721.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-26_163854.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-04-27_184054.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_163936.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_164557.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_170626.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_171424.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_172025.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1-backups/VariometerV2.2.1-2023-05-01_172823.zip
+Hardware/Version 2.1/VariometerV2.2.1/VariometerV2.2.1.kicad_prl
+Hardware/Version 2.1/VariometerV2.2.1/fp-info-cache
+Hardware/fp-info-cache
+STM32/.project
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/1696fa16-4f6a-49e7-a98f-242d5802a7c6.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/1703d2fa-9993-45f3-becc-734fdf23fae6.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/1be950ff-e35f-4f8c-9aa3-c1d8ceaae404.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/1ddabff3-465c-446b-b231-b766e072897d.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/2d0d22e4-b847-4720-836d-6c42670b484b.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/32dc3a56-5ae1-4ac1-aea7-b83dc61e074e.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/3cc5decd-24ce-41d0-af86-7ac0a489359b.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/50c4fa96-fe2b-4476-b901-267c71941c3a.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/5a4cce70-c8a5-46e0-8ff5-aa7b71e4f142.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/65d892c7-9189-4951-ae16-beac17d9df87.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/6c1be0cf-ba1b-49c5-8210-dc4bdeb26432.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/71326a3b-4006-44fe-82dc-cb7cac10ddde.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/7879aba8-dfb6-4380-b54a-62b3facae839.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/7d64dda0-8aad-48a7-a378-306ec750d7a2.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/88213bf2-8d93-4284-9d8a-e48d5a083eed.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/8fa013df-c4a8-4849-bc61-26be76cb91b9.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/929e4a61-af5a-4729-8fdf-acaaa8669769.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/96b3c1e6-dc2f-4fd6-b161-c1a240513013.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/a86f4c97-6776-4182-a55c-938368edfb97.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/b71cd8ab-e8d6-4c67-9387-e107579b5dce.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/bcb5ebd3-7b2d-43ab-985a-94a4c6ce180f.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/d2c09471-1f75-45d8-8e93-65fba2aab819.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/db921d32-afbc-4204-a6cf-dd012e54dc74.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/ef761adb-0020-4c24-9a3b-394a9e63d486.vsidx
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/FileContentIndex/read.lock
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v15/.suo
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v15/Browse.VC.db
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/.suo
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/Browse.VC.db
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/21f92411a04fc7ff/UI_DEMO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/22a29cdf985e8ced/GAME.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/2a892b943bfca23f/INPUT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/2d334e788b8bd3d0/SEMAPHORTEMP.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/2d3359788b8be681/SEMAPHORTEMP.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/304611b2ae575733/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/314825957b1d5381/FIFO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/466f6fd7db292768/FONT8.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/679b573f8142e55e/MAIN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/6b3a5c3ec6cd15f8/RENDERER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/79362b5f949c90ee/DEVICECONTEXT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/988713a6819759c1/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/995f2498cc83d9dc/FONT24.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/9f38cc7e98b5c459/FONT16.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/b1659c2da385049d/VARIO_SCREEN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/bbb38098dfde88b0/FONT20.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/c1f9e87eac6cd84d/FONT12.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/de57fce133487a79/UI_DEMO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/ea3823f2d53cac78/DEWCIN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/ef4be27a341a1825/WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v16/ipch/AutoPCH/f5fb79e886a66ea2/GUI_PAIN1T.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/.suo
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/Browse.VC.db
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/102a8bb9ea917a54/AIRSPACEPARCER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/1ff2cd4775b765ae/POPUP_WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/21f92411a04fc7ff/UI_DEMO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/22a29cdf985e8ced/GAME.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/27918ceb2b74eb6b/VARIO_SCREEN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/2d334e788b8bd3d0/SEMAPHORTEMP.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/2fb18da2f208a9a3/WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/314825957b1d5381/FIFO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/3e8bbb84fc851cef/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/4e40bafd8a9bb973/FONT8.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/500649cfbaabd580/POPUP_SETTINGS_WIDGET.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/520245bb3ed16434/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/542d5872e06da3b4/AIRSPACEPARCER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/663d0f9da9d449dd/SEMAPHORTEMP.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/679b573f8142e55e/MAIN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/690c2ef1aae08015/SRTMHGTREADER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/6b3a5c3ec6cd15f8/RENDERER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/74f0449edc645005/WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/79362b5f949c90ee/DEVICECONTEXT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/85593f2aff2b8cc5/UTIL.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/8f75dfa87022a66b/SETTINGS_WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/988713a6819759c1/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/99f47fd596bfec43/GUI_PAINT.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/a71b8c0778e008bb/UTIL.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/aa0132d28fa37d95/NMEA_PARSER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/aa0137d28fa38614/NMEA_PARSER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/aba10f0fcca02f14/MAIN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/b1659c2da385049d/VARIO_SCREEN.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/b483915b5e1fd7ce/CJSON.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/c109331cdf0ae815/UI_DEMO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/c93dd029f9c5b8d2/RENDERSYSTEM.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/d5a55681cb957dfc/FIFO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/dcd4a441799987a6/SEMPHR.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/dcd4ab417999938b/SEMPHR.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/df025e5e99cd2942/AIRSPACEPARCER.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/ef4be27a341a1825/WIDGET_VARIO.ipch
+Screen_Simulator/dewcin_yt/.vs/dewcin_yt/v17/ipch/AutoPCH/fe73515945b66b5f/UI_DEMO.ipch
+Screen_Simulator/dewcin_yt/bin/x64-Debug/dewcin_yt.exe
+Screen_Simulator/dewcin_yt/bin/x64-Debug/dewcin_yt.exp
+Screen_Simulator/dewcin_yt/bin/x64-Debug/dewcin_yt.lib
+Screen_Simulator/dewcin_yt/bin/x64-Debug/dewcin_yt.pdb
+Screen_Simulator/dewcin_yt/dewcin_yt/.vscode/settings.json
+Screen_Simulator/dewcin_yt/dewcin_yt/dewcin_yt.vcxproj.user
+Screen_Simulator/dewcin_yt/obj/x64-Debug/DeviceContext.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/FIFO.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/GUI_Paint.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/SemaphorTemp.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/UI_Demo.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/Vario_Screen.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/Widget_Vario.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.Build.CppClean.log
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.exe.recipe
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.ilk
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.log
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/CL.command.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/CL.read.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/CL.write.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/dewcin_yt.lastbuildstate
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/link.command.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/link.read.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/dewcin_yt.tlog/link.write.1.tlog
+Screen_Simulator/dewcin_yt/obj/x64-Debug/font12.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/font16.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/font20.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/font24.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/font8.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/game.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/input.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/main.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/renderer.obj
+Screen_Simulator/dewcin_yt/obj/x64-Debug/vc142.idb
+Screen_Simulator/dewcin_yt/obj/x64-Debug/vc142.pdb
+Screen_Simulator/dewcin_yt/obj/x64-Debug/vc143.idb
+Screen_Simulator/dewcin_yt/obj/x64-Debug/vc143.pdb
+Screen_Simulator_Linux/.vscode/c_cpp_properties.json
+Screen_Simulator_Linux/.vscode/settings.json
+Simulation/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Minimal_Windows_Simulator/FreeRTOS_Plus_TCP_Minimal.suo
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/compute_patch.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/patch.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/patches_constants.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_cbmc_batch_files.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_common_makefile.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_configuration_directories.cpython-36.pyc
+Simulation/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_proof_makefiles.cpython-36.pyc
+Simulation/FreeRTOS/Demo/Posix_GCC/.vscode/c_cpp_properties.json
+Simulation/FreeRTOS/Demo/Posix_GCC/.vscode/settings.json
+Simulation/FreeRTOS/Demo/Posix_GCC/variometer-software
+Simulation/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Minimal_Windows_Simulator/FreeRTOS_Plus_TCP_Minimal.suo
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/compute_patch.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/patch.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/patches/__pycache__/patches_constants.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_cbmc_batch_files.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_common_makefile.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_configuration_directories.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/test/cbmc/proofs/__pycache__/make_proof_makefiles.cpython-36.pyc
+Simulation/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/Trace.dump
+Simulation/Main/Trace.dump
+Simulation/Main/VarioLogs/screenlog.0
+Simulation/Main/compile_commands.json
+Simulation/Main/gmon.out
+Software/Variometer/.cproject
+Software/Variometer/.project
+Software/Variometer/Variometer.code-workspace
+Software/Variometer/debug.log
+Software/Variometer/esp-idf-vscode-generated.gdb
+Software/Variometer/main/.cproject
+Software/Variometer/main/.project
+VariometerAnalysis/.vs/ProjectEvaluation/variometeranalysis.metadata.v5.1
+VariometerAnalysis/.vs/ProjectEvaluation/variometeranalysis.projects.v5.1
+VariometerAnalysis/.vs/VariometerAnalysis/DesignTimeBuild/.dtbcache.v2
+VariometerAnalysis/.vs/VariometerAnalysis/FileContentIndex/038a0b7c-d09b-4824-a582-9a356c7f27b2.vsidx
+VariometerAnalysis/.vs/VariometerAnalysis/FileContentIndex/38a77454-fcbe-4f3d-bfae-3bb428c53f3e.vsidx
+VariometerAnalysis/.vs/VariometerAnalysis/FileContentIndex/7cf82635-98bd-4a6e-bcfe-92bc96a0355d.vsidx
+VariometerAnalysis/.vs/VariometerAnalysis/FileContentIndex/c787fa2b-be68-4df2-9c98-5475a548678a.vsidx
+VariometerAnalysis/.vs/VariometerAnalysis/FileContentIndex/read.lock
+VariometerAnalysis/.vs/VariometerAnalysis/v17/.futdcache.v2
+VariometerAnalysis/.vs/VariometerAnalysis/v17/.suo
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/13ea9a22-5ad3-48a6-afd5-c81e4ec9fec0.vsidx
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/4f12d10e-ffbb-417d-8a58-bde091fd78e2.vsidx
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/96572ba2-699d-44d6-8df4-feec43a08173.vsidx
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/984d9d89-6b34-4765-b315-30ffc5dac258.vsidx
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/e00d3375-b5e7-40e9-a831-479dc151abbd.vsidx
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/FileContentIndex/read.lock
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/v16/.suo
+VariometerAnalysis/FormsVariometerAnalysis/.vs/FormsVariometerAnalysis/v17/.suo
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/ICSharpCode.SharpZipLib.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/ICSharpCode.SharpZipLib.pdb
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/ICSharpCode.SharpZipLib.xml
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/NPOI.OOXML.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/NPOI.OpenXml4Net.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/NPOI.OpenXmlFormats.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/NPOI.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/System.Drawing.Common.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/System.Runtime.CompilerServices.Unsafe.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/System.Runtime.CompilerServices.Unsafe.xml
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/System.Text.Encoding.CodePages.dll
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/WindowsFormsApp1.exe
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/WindowsFormsApp1.exe.config
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/bin/Debug/WindowsFormsApp1.pdb
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/.NETFramework,Version=v4.7.2.AssemblyAttributes.cs
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/DesignTimeResolveAssemblyReferences.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.Properties.Resources.resources
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.AssemblyReference.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.CopyComplete
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.CoreCompileInputs.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.FileListAbsolute.txt
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.GenerateResource.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.csproj.SuggestedBindingRedirects.cache
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.exe
+VariometerAnalysis/FormsVariometerAnalysis/WindowsFormsApp1/obj/Debug/WindowsFormsApp1.pdb
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/ICSharpCode.SharpZipLib.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/Microsoft.Win32.SystemEvents.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/NPOI.OOXML.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/NPOI.OpenXml4Net.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/NPOI.OpenXmlFormats.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/NPOI.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/System.Drawing.Common.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/VariometerAnalysis.deps.json
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/VariometerAnalysis.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/VariometerAnalysis.exe
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/VariometerAnalysis.pdb
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/VariometerAnalysis.runtimeconfig.json
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/runtimes/unix/lib/netcoreapp2.0/System.Drawing.Common.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/runtimes/win/lib/netcoreapp2.0/Microsoft.Win32.SystemEvents.dll
+VariometerAnalysis/VariometerAnalysis/bin/Debug/net6.0/runtimes/win/lib/netcoreapp2.0/System.Drawing.Common.dll
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/.NETCoreApp,Version=v6.0.AssemblyAttributes.cs
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.AssemblyInfo.cs
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.AssemblyInfoInputs.cache
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.GeneratedMSBuildEditorConfig.editorconfig
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.GlobalUsings.g.cs
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.assets.cache
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.csproj.AssemblyReference.cache
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.csproj.BuildWithSkipAnalyzers
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.csproj.CopyComplete
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.csproj.CoreCompileInputs.cache
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.csproj.FileListAbsolute.txt
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.dll
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.genruntimeconfig.cache
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/VariometerAnalysis.pdb
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/apphost.exe
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/ref/VariometerAnalysis.dll
+VariometerAnalysis/VariometerAnalysis/obj/Debug/net6.0/refint/VariometerAnalysis.dll
+VariometerAnalysis/VariometerAnalysis/obj/VariometerAnalysis.csproj.nuget.dgspec.json
+VariometerAnalysis/VariometerAnalysis/obj/VariometerAnalysis.csproj.nuget.g.props
+VariometerAnalysis/VariometerAnalysis/obj/VariometerAnalysis.csproj.nuget.g.targets
+VariometerAnalysis/VariometerAnalysis/obj/project.assets.json
+VariometerAnalysis/VariometerAnalysis/obj/project.nuget.cache
+
+variometer-software.git: historical paths removed (234)
+Variometer.code-workspace
+build/.bin_timestamp
+build/.ninja_deps
+build/.ninja_log
+build/CMakeCache.txt
+build/CMakeFiles/3.24.0/CMakeASMCompiler.cmake
+build/CMakeFiles/3.24.0/CMakeCCompiler.cmake
+build/CMakeFiles/3.24.0/CMakeCXXCompiler.cmake
+build/CMakeFiles/3.24.0/CMakeDetermineCompilerABI_C.bin
+build/CMakeFiles/3.24.0/CMakeDetermineCompilerABI_CXX.bin
+build/CMakeFiles/3.24.0/CMakeSystem.cmake
+build/CMakeFiles/3.24.0/CompilerIdC/CMakeCCompilerId.c
+build/CMakeFiles/3.24.0/CompilerIdCXX/CMakeCXXCompilerId.cpp
+build/CMakeFiles/CMakeOutput.log
+build/CMakeFiles/CheckTypeSize/TIME_T_SIZE.bin
+build/CMakeFiles/CheckTypeSize/TIME_T_SIZE.c
+build/CMakeFiles/TargetDirectories.txt
+build/CMakeFiles/bootloader-complete
+build/CMakeFiles/bootloader.dir/Labels.json
+build/CMakeFiles/bootloader.dir/Labels.txt
+build/CMakeFiles/cmake.check_cache
+build/CMakeFiles/git-data/HEAD
+build/CMakeFiles/git-data/grabRef.cmake
+build/CMakeFiles/git-data/head-ref
+build/CMakeFiles/rules.ninja
+build/Variometer.bin
+build/app-flash_args
+build/bootloader-flash_args
+build/bootloader-prefix/src/bootloader-stamp/bootloader-configure
+build/bootloader-prefix/src/bootloader-stamp/bootloader-done
+build/bootloader-prefix/src/bootloader-stamp/bootloader-download
+build/bootloader-prefix/src/bootloader-stamp/bootloader-install
+build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir
+build/bootloader-prefix/src/bootloader-stamp/bootloader-patch
+build/bootloader-prefix/src/bootloader-stamp/bootloader-source_dirinfo.txt
+build/bootloader-prefix/src/bootloader-stamp/bootloader-update
+build/bootloader-prefix/tmp/bootloader-cfgcmd.txt
+build/bootloader-prefix/tmp/bootloader-mkdirs.cmake
+build/bootloader/.bin_timestamp
+build/bootloader/.ninja_deps
+build/bootloader/.ninja_log
+build/bootloader/CMakeCache.txt
+build/bootloader/CMakeFiles/3.24.0/CMakeASMCompiler.cmake
+build/bootloader/CMakeFiles/3.24.0/CMakeCCompiler.cmake
+build/bootloader/CMakeFiles/3.24.0/CMakeCXXCompiler.cmake
+build/bootloader/CMakeFiles/3.24.0/CMakeDetermineCompilerABI_C.bin
+build/bootloader/CMakeFiles/3.24.0/CMakeDetermineCompilerABI_CXX.bin
+build/bootloader/CMakeFiles/3.24.0/CMakeSystem.cmake
+build/bootloader/CMakeFiles/3.24.0/CompilerIdC/CMakeCCompilerId.c
+build/bootloader/CMakeFiles/3.24.0/CompilerIdCXX/CMakeCXXCompilerId.cpp
+build/bootloader/CMakeFiles/CMakeOutput.log
+build/bootloader/CMakeFiles/CheckTypeSize/TIME_T_SIZE.bin
+build/bootloader/CMakeFiles/CheckTypeSize/TIME_T_SIZE.c
+build/bootloader/CMakeFiles/TargetDirectories.txt
+build/bootloader/CMakeFiles/cmake.check_cache
+build/bootloader/CMakeFiles/git-data/HEAD
+build/bootloader/CMakeFiles/git-data/grabRef.cmake
+build/bootloader/CMakeFiles/git-data/head-ref
+build/bootloader/CMakeFiles/rules.ninja
+build/bootloader/bootloader.bin
+build/bootloader/build.ninja
+build/bootloader/cmake_install.cmake
+build/bootloader/compile_commands.json
+build/bootloader/config.env
+build/bootloader/config/kconfig_menus.json
+build/bootloader/config/sdkconfig.cmake
+build/bootloader/config/sdkconfig.h
+build/bootloader/config/sdkconfig.json
+build/bootloader/esp-idf/bootloader/cmake_install.cmake
+build/bootloader/esp-idf/bootloader_support/cmake_install.cmake
+build/bootloader/esp-idf/cmake_install.cmake
+build/bootloader/esp-idf/efuse/cmake_install.cmake
+build/bootloader/esp-idf/esp_app_format/cmake_install.cmake
+build/bootloader/esp-idf/esp_common/cmake_install.cmake
+build/bootloader/esp-idf/esp_hw_support/cmake_install.cmake
+build/bootloader/esp-idf/esp_hw_support/port/esp32s3/cmake_install.cmake
+build/bootloader/esp-idf/esp_rom/cmake_install.cmake
+build/bootloader/esp-idf/esp_system/cmake_install.cmake
+build/bootloader/esp-idf/esptool_py/cmake_install.cmake
+build/bootloader/esp-idf/freertos/cmake_install.cmake
+build/bootloader/esp-idf/hal/cmake_install.cmake
+build/bootloader/esp-idf/log/cmake_install.cmake
+build/bootloader/esp-idf/main/cmake_install.cmake
+build/bootloader/esp-idf/micro-ecc/cmake_install.cmake
+build/bootloader/esp-idf/newlib/cmake_install.cmake
+build/bootloader/esp-idf/partition_table/cmake_install.cmake
+build/bootloader/esp-idf/soc/cmake_install.cmake
+build/bootloader/esp-idf/spi_flash/cmake_install.cmake
+build/bootloader/esp-idf/xtensa/cmake_install.cmake
+build/bootloader/kconfigs.in
+build/bootloader/kconfigs_projbuild.in
+build/bootloader/project_description.json
+build/bootloader/project_elf_src_esp32s3.c
+build/build.ninja
+build/cmake_install.cmake
+build/compile_commands.json
+build/config.env
+build/config/kconfig_menus.json
+build/config/sdkconfig.cmake
+build/config/sdkconfig.h
+build/config/sdkconfig.json
+build/esp-idf/app_trace/cmake_install.cmake
+build/esp-idf/app_update/cmake_install.cmake
+build/esp-idf/bootloader/bootloader-flash_args.in
+build/esp-idf/bootloader/cmake_install.cmake
+build/esp-idf/bootloader_support/cmake_install.cmake
+build/esp-idf/bt/cmake_install.cmake
+build/esp-idf/cmake_install.cmake
+build/esp-idf/cmock/cmake_install.cmake
+build/esp-idf/console/cmake_install.cmake
+build/esp-idf/cxx/cmake_install.cmake
+build/esp-idf/driver/cmake_install.cmake
+build/esp-idf/efuse/cmake_install.cmake
+build/esp-idf/esp-tls/cmake_install.cmake
+build/esp-idf/esp_adc/cmake_install.cmake
+build/esp-idf/esp_app_format/cmake_install.cmake
+build/esp-idf/esp_coex/cmake_install.cmake
+build/esp-idf/esp_common/cmake_install.cmake
+build/esp-idf/esp_eth/cmake_install.cmake
+build/esp-idf/esp_event/cmake_install.cmake
+build/esp-idf/esp_gdbstub/cmake_install.cmake
+build/esp-idf/esp_hid/cmake_install.cmake
+build/esp-idf/esp_http_client/cmake_install.cmake
+build/esp-idf/esp_http_server/cmake_install.cmake
+build/esp-idf/esp_https_ota/cmake_install.cmake
+build/esp-idf/esp_https_server/cmake_install.cmake
+build/esp-idf/esp_hw_support/cmake_install.cmake
+build/esp-idf/esp_hw_support/port/esp32s3/cmake_install.cmake
+build/esp-idf/esp_lcd/cmake_install.cmake
+build/esp-idf/esp_local_ctrl/cmake_install.cmake
+build/esp-idf/esp_mm/cmake_install.cmake
+build/esp-idf/esp_netif/cmake_install.cmake
+build/esp-idf/esp_netif_stack/cmake_install.cmake
+build/esp-idf/esp_partition/cmake_install.cmake
+build/esp-idf/esp_phy/cmake_install.cmake
+build/esp-idf/esp_pm/cmake_install.cmake
+build/esp-idf/esp_psram/cmake_install.cmake
+build/esp-idf/esp_ringbuf/cmake_install.cmake
+build/esp-idf/esp_rom/cmake_install.cmake
+build/esp-idf/esp_system/cmake_install.cmake
+build/esp-idf/esp_system/ld/memory.ld
+build/esp-idf/esp_system/ld/sections.ld
+build/esp-idf/esp_system/port/cmake_install.cmake
+build/esp-idf/esp_system/port/soc/esp32s3/cmake_install.cmake
+build/esp-idf/esp_timer/cmake_install.cmake
+build/esp-idf/esp_wifi/cmake_install.cmake
+build/esp-idf/espcoredump/cmake_install.cmake
+build/esp-idf/esptool_py/app-flash_args.in
+build/esp-idf/esptool_py/cmake_install.cmake
+build/esp-idf/esptool_py/flasher_args.json.in
+build/esp-idf/fatfs/cmake_install.cmake
+build/esp-idf/freertos/cmake_install.cmake
+build/esp-idf/hal/cmake_install.cmake
+build/esp-idf/heap/cmake_install.cmake
+build/esp-idf/http_parser/cmake_install.cmake
+build/esp-idf/idf_test/cmake_install.cmake
+build/esp-idf/ieee802154/cmake_install.cmake
+build/esp-idf/json/cmake_install.cmake
+build/esp-idf/log/cmake_install.cmake
+build/esp-idf/lwip/cmake_install.cmake
+build/esp-idf/main/cmake_install.cmake
+build/esp-idf/mbedtls/cmake_install.cmake
+build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake
+build/esp-idf/mbedtls/mbedtls/cmake_install.cmake
+build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake
+build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake
+build/esp-idf/mbedtls/mbedtls/library/error.c
+build/esp-idf/mbedtls/mbedtls/library/psa_crypto_driver_wrappers.c
+build/esp-idf/mbedtls/mbedtls/library/ssl_debug_helpers_generated.c
+build/esp-idf/mbedtls/mbedtls/library/version_features.c
+build/esp-idf/mbedtls/x509_crt_bundle
+build/esp-idf/mqtt/cmake_install.cmake
+build/esp-idf/newlib/cmake_install.cmake
+build/esp-idf/newlib/port/cmake_install.cmake
+build/esp-idf/nvs_flash/cmake_install.cmake
+build/esp-idf/openthread/cmake_install.cmake
+build/esp-idf/partition_table/cmake_install.cmake
+build/esp-idf/partition_table/partition-table-flash_args.in
+build/esp-idf/perfmon/cmake_install.cmake
+build/esp-idf/protobuf-c/cmake_install.cmake
+build/esp-idf/protocomm/cmake_install.cmake
+build/esp-idf/pthread/cmake_install.cmake
+build/esp-idf/sdmmc/cmake_install.cmake
+build/esp-idf/soc/cmake_install.cmake
+build/esp-idf/spi_flash/cmake_install.cmake
+build/esp-idf/spiffs/cmake_install.cmake
+build/esp-idf/tcp_transport/cmake_install.cmake
+build/esp-idf/touch_element/cmake_install.cmake
+build/esp-idf/ulp/cmake_install.cmake
+build/esp-idf/unity/cmake_install.cmake
+build/esp-idf/usb/cmake_install.cmake
+build/esp-idf/vfs/cmake_install.cmake
+build/esp-idf/wear_levelling/cmake_install.cmake
+build/esp-idf/wifi_provisioning/cmake_install.cmake
+build/esp-idf/wpa_supplicant/cmake_install.cmake
+build/esp-idf/xtensa/cmake_install.cmake
+build/flash_app_args
+build/flash_args
+build/flash_args.in
+build/flash_bootloader_args
+build/flash_project_args
+build/flasher_args.json
+build/kconfigs.in
+build/kconfigs_projbuild.in
+build/ldgen_libraries
+build/ldgen_libraries.in
+build/log/idf_py_stderr_output_4314
+build/log/idf_py_stderr_output_4673
+build/log/idf_py_stderr_output_9995
+build/log/idf_py_stdout_output_4314
+build/log/idf_py_stdout_output_4673
+build/log/idf_py_stdout_output_9995
+build/partition-table-flash_args
+build/partition_table/partition-table.bin
+build/project_description.json
+build/project_elf_src_esp32s3.c
+build/x509_crt_bundle.S
+debug.log
+esp-idf-vscode-generated.gdb
+main/.cproject
+main/.project
+main/Trace.dump
+main/build/default/CMakeCache.txt
+main/build/default/CMakeFiles/3.25.1/CMakeCCompiler.cmake
+main/build/default/CMakeFiles/3.25.1/CMakeCXXCompiler.cmake
+main/build/default/CMakeFiles/3.25.1/CMakeDetermineCompilerABI_C.bin
+main/build/default/CMakeFiles/3.25.1/CMakeDetermineCompilerABI_CXX.bin
+main/build/default/CMakeFiles/3.25.1/CMakeSystem.cmake
+main/build/default/CMakeFiles/3.25.1/CompilerIdC/CMakeCCompilerId.c
+main/build/default/CMakeFiles/3.25.1/CompilerIdCXX/CMakeCXXCompilerId.cpp
+main/build/default/CMakeFiles/CMakeOutput.log
+main/build/default/CMakeFiles/cmake.check_cache
+screenlog.0
+sdkconfig.old
+

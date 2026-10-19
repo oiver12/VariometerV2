@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <libgen.h>
+#include <stdlib.h>
+#include <string.h>
 
 const char *TAG = "SIMULATION";
 
@@ -35,7 +37,7 @@ static esp_err_t changeToProjectRoot()
         char *last_folder = basename(cwd);
         while (strcmp(last_folder, "Main") != 0)
         {
-            if (chdir("..") != 0)
+            if (strcmp(cwd, "/") == 0 || chdir("..") != 0)
                 return ESP_ERR_INVALID_STATE;
             if (getcwd(cwd, sizeof(cwd)) == NULL)
                 return ESP_ERR_INVALID_STATE;
@@ -43,11 +45,12 @@ static esp_err_t changeToProjectRoot()
         }
         return ESP_OK;
     }
+    return ESP_ERR_INVALID_STATE;
 }
 
 void GPSUpdateTask(void *arg)
 {
-    while (true)
+    while (currPosSimulationGPSData < simulationGPSData_size)
     {
         gps_t *currGPS = simulationGPSData + currPosSimulationGPSData;
         for (size_t i = 0; i < gpsHandlesAdded; i++)
@@ -57,121 +60,72 @@ void GPSUpdateTask(void *arg)
         currPosSimulationGPSData++;
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
 }
 
 static esp_err_t startSimulationFromFile(char *varioName, char *gpsName)
 {
-    if (isInit || simulationData || simulationGPSData)
-    {
-        ESP_LOGE(TAG, "Already initialized");
+    if (isInit)
+        return ESP_ERR_INVALID_STATE;
+    FILE *file = fopen(varioName, "rb");
+    if (!file)
+        return ESP_ERR_NOT_FOUND;
+    fseek(file, 0, SEEK_END);
+    long bytes = ftell(file);
+    rewind(file);
+    /* Ten little-endian float32 values followed by LF. Never read a partial tail. */
+    simulationData_size = bytes / 41;
+    if (bytes % 41)
+        ESP_LOGW(TAG, "Ignoring incomplete final sensor record (%ld bytes)", bytes % 41);
+    simulationData = calloc(simulationData_size, sizeof(*simulationData));
+    if (!simulationData || simulationData_size == 0) {
+        fclose(file);
         return ESP_ERR_INVALID_STATE;
     }
-    FILE *file;
-    char filename[255];
-    strncpy(filename, "VarioLogs/", 255);
-    strncat(filename, varioName, 243);
-    file = fopen(filename, "rb");
-    if (!file)
-    {
-        ESP_LOGE(TAG, "Can't open Simulation file: %s", filename);
-        return ESP_ERR_NOT_FOUND;
-    }
-    fseek(file, 0, SEEK_END);
-    simulationData_size = ftell(file) / (37 + 1) + 1;
-    simulationData = (FlightLogger_t *)calloc(sizeof(FlightLogger_t) * simulationData_size, 1);
-    fseek(file, 0, SEEK_END);
-    size_t fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    size_t currDataPos = 0;
-    while (ftell(file) < fileSize)
-    {
-        if (currDataPos >= simulationData_size)
-        {
-            ESP_LOGE(TAG, "To much data");
-            break;
+    for (size_t i = 0; i < simulationData_size; ++i) {
+        FlightLogger_t *state = &simulationData[i];
+        if (fread(state->acc, sizeof(float), 3, file) != 3 ||
+            fread(state->gyr, sizeof(float), 3, file) != 3 ||
+            fread(state->magn, sizeof(float), 3, file) != 3 ||
+            fread(&state->pressure, sizeof(float), 1, file) != 1 || fgetc(file) != '\n') {
+            fclose(file);
+            return ESP_ERR_INVALID_STATE;
         }
-        // handle Vario File
-        FlightLogger_t *state = simulationData + currDataPos;
-        fread(&state->acc, sizeof(float), 3, file);
-        fread(&state->gyr, sizeof(float), 3, file);
-        fread(&state->magn, sizeof(float), 3, file);
-        fread(&state->pressure, sizeof(float), 1, file);
         state->temperature = 20;
-        if (fgetc(file) == '\n')
-            currDataPos++;
-        else
-        {
-            char n = fgetc(file);
-            if (n == -1)
-                break;
-            ESP_LOGE(TAG, "Not valid log data");
-            while (1)
-            {
-                n = fgetc(file);
-                if (n == '\n')
-                {
-                    continue;
-                }
-            }
-        }
     }
-
-    strncpy(filename, "VarioLogs/", 255);
-    strncat(filename, gpsName, 243);
-    file = fopen(filename, "r");
+    fclose(file);
+    file = fopen(gpsName, "rb");
+    if (!file)
+        return ESP_ERR_NOT_FOUND;
     fseek(file, 0, SEEK_END);
-    simulationGPSData_size = ftell(file) / (51 + 1) + 1;
-    simulationGPSData = (gps_t *)calloc(sizeof(gps_t) * simulationGPSData_size, 1);
-    fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    currDataPos = 0;
-    while (ftell(file) < fileSize)
-    {
-        if (currDataPos >= simulationGPSData_size)
-        {
-            ESP_LOGE(TAG, "To much data GPS");
-            continue;
-        }
-        gps_t *currGPS = simulationGPSData + currDataPos;
-        // handle gps Data
-        fread(&currGPS->tim.hour, sizeof(uint8_t), 1, file);
-        fread(&currGPS->tim.minute, sizeof(uint8_t), 1, file);
-        fread(&currGPS->tim.second, sizeof(uint8_t), 1, file);
-        fread(&currGPS->tim.thousand, sizeof(uint16_t), 1, file);
-        fread(&currGPS->fix, sizeof(gps_fix_t), 1, file);
-        fread(&currGPS->fix_mode, sizeof(gps_fix_mode_t), 1, file);
-        fread(&currGPS->valid, sizeof(bool), 1, file);
-        fread(&currGPS->dop_h, sizeof(float), 1, file);
-        fread(&currGPS->dop_p, sizeof(float), 1, file);
-        fread(&currGPS->dop_v, sizeof(float), 1, file);
-        fread(&currGPS->sats_in_use, sizeof(uint8_t), 1, file);
-        fread(&currGPS->sats_in_view, sizeof(uint8_t), 1, file);
-        fread(&currGPS->latitude, sizeof(float), 1, file);
-        fread(&currGPS->longitude, sizeof(float), 1, file);
-        fread(&currGPS->altitude, sizeof(float), 1, file);
-        fread(&currGPS->speed, sizeof(float), 1, file);
-        fread(&currGPS->cog, sizeof(float), 1, file);
-        fread(&currGPS->variation, sizeof(float), 1, file);
-        if (fgetc(file) == '\n')
-            currDataPos++;
-        else
-        {
-            char n = fgetc(file);
-            if (n == -1)
-                break;
-            ESP_LOGE(TAG, "Not valid log data");
-            while (1)
-            {
-                n = fgetc(file);
-                if (n == '\n')
-                {
-                    continue;
-                }
-            }
+    bytes = ftell(file);
+    rewind(file);
+    /* Serialized GPS record: 52 bytes of fields plus LF (not sizeof(gps_t)). */
+    simulationGPSData_size = bytes / 53;
+    if (bytes % 53)
+        ESP_LOGW(TAG, "Ignoring incomplete final GPS record (%ld bytes)", bytes % 53);
+    simulationGPSData = calloc(simulationGPSData_size, sizeof(*simulationGPSData));
+    if (!simulationGPSData || simulationGPSData_size == 0) {
+        fclose(file);
+        return ESP_ERR_INVALID_STATE;
+    }
+    for (size_t i = 0; i < simulationGPSData_size; ++i) {
+        gps_t *gps = &simulationGPSData[i];
+#define READ_FIELD(field) do { if (fread(&gps->field, sizeof(gps->field), 1, file) != 1) { fclose(file); return ESP_ERR_INVALID_STATE; } } while (0)
+        READ_FIELD(tim.hour); READ_FIELD(tim.minute); READ_FIELD(tim.second);
+        READ_FIELD(tim.thousand); READ_FIELD(fix); READ_FIELD(fix_mode); READ_FIELD(valid);
+        READ_FIELD(dop_h); READ_FIELD(dop_p); READ_FIELD(dop_v);
+        READ_FIELD(sats_in_use); READ_FIELD(sats_in_view);
+        READ_FIELD(latitude); READ_FIELD(longitude); READ_FIELD(altitude);
+        READ_FIELD(speed); READ_FIELD(cog); READ_FIELD(variation);
+#undef READ_FIELD
+        if (fgetc(file) != '\n') {
+            fclose(file);
+            return ESP_ERR_INVALID_STATE;
         }
     }
-    currPosSimulationData = 0;
-    currPosSimulationGPSData = 0;
+    fclose(file);
+    currPosSimulationData = currPosSimulationGPSData = 0;
     isInit = true;
     return ESP_OK;
 }
@@ -182,40 +136,49 @@ void simulation_start(char *varioname, char *gpsName)
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Can't change to root directory of project");
-        return;
+        exit(EXIT_FAILURE);
     }
-    startSimulationFromFile(varioname, gpsName);
+    if (startSimulationFromFile(varioname, gpsName) != ESP_OK) {
+        ESP_LOGE(TAG, "Invalid or missing replay recording");
+        exit(EXIT_FAILURE);
+    }
     xTaskCreate(GPSUpdateTask, "GPS Eventloop", 1024 * 2, NULL, 10, NULL);
 }
 esp_err_t simulation_nextPressure(dps310_t *dps)
 {
-    if (!isInit || currPosSimulationData >= simulationData_size)
+    if (!isInit)
         return ESP_ERR_INVALID_STATE;
+    if (currPosSimulationData >= simulationData_size) {
+        ESP_LOGI(TAG, "Replay complete");
+        exit(EXIT_SUCCESS);
+    }
     FlightLogger_t currData = simulationData[currPosSimulationData];
     dps->Pressure = currData.pressure;
-    dps->Temperature = dps->Temperature;
+    dps->Temperature = currData.temperature;
     currPosSimulationData++;
     return ESP_OK;
 }
 esp_err_t simulation_nextAcc(bmi088_t *bmi)
 {
-    if (!isInit || currPosSimulationData >= simulationData_size)
+    if (!isInit || currPosSimulationData > simulationData_size)
         return ESP_ERR_INVALID_STATE;
-    FlightLogger_t currData = simulationData[currPosSimulationData];
+    FlightLogger_t currData = simulationData[currPosSimulationData ? currPosSimulationData - 1 : 0];
     memcpy(bmi->acc_mps2, currData.acc, sizeof(float) * 3);
     memcpy(bmi->gyr_rps, currData.gyr, sizeof(float) * 3);
     return ESP_OK;
 }
 esp_err_t simulation_nextMagn(qmc588l_t *qmc)
 {
-    if (!isInit || currPosSimulationData >= simulationData_size)
+    if (!isInit || currPosSimulationData > simulationData_size)
         return ESP_ERR_INVALID_STATE;
-    FlightLogger_t currData = simulationData[currPosSimulationData];
+    FlightLogger_t currData = simulationData[currPosSimulationData ? currPosSimulationData - 1 : 0];
     memcpy(qmc->CorrectedMagnValuemG, currData.magn, sizeof(float) * 3);
     return ESP_OK;
 }
 esp_err_t simulation_addGPSHandle(esp_event_handler_t eventHandler)
 {
+    if (gpsHandlesAdded >= sizeof(gpsSubscriptions) / sizeof(gpsSubscriptions[0]))
+        return ESP_ERR_INVALID_STATE;
     gpsSubscriptions[gpsHandlesAdded] = eventHandler;
     gpsHandlesAdded++;
     return ESP_OK;

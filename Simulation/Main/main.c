@@ -172,7 +172,7 @@ int main(void)
 #endif /* if ( projCOVERAGE_TEST != 1 ) */
 
     console_init();
-    console_print("Starting echo blinky demo\n");
+    console_print("Starting variometer sensor replay\n");
     main_full();
     return 0;
 }
